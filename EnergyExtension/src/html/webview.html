@@ -1,0 +1,93 @@
+
+<h2>Calcuate energy consumption</h2>
+</br>
+<label for="types">Type:</label>
+</br>
+<select class="full-width selector" name="types" id="types">
+  <option value="ml">Machine Learning</option>
+  <option value="rapl">RAPL</option>
+</select>
+</br>
+<label for="functions">Select function:</label>
+</br>
+<select class="full-width selector" name="functions" id="functions">
+  <option value="main">Main</option>
+  <option value="helloWorld">Hello world</option>
+  <option value="something">Something</option>
+  <option value="hmmmm">hmmmm</option>
+  <option value="giraf">Giraf</option>
+</select>
+</br>
+<button id="activate-button" class="full-width btn" onclick="myFunction()">Activate!</button>
+</br>
+<p id="calcText">Select function and click activate.</p>
+<ul id="running-functions"></ul>
+
+<script>
+  const vscode = acquireVsCodeApi(); // acquireVsCodeApi can only be invoked once
+
+  window.addEventListener('message', event => {
+    const message = event.data;
+    vscode.postMessage({ type: 'log', value: 'Recived Message' });
+    switch(message.command){
+      case 'progress':
+        let values = message.value;
+        let container = document.getElementById("running-functions");
+        container.innerHTML = '';
+        values.forEach(value => {
+          var item = document.createElement("li");
+          item.appendChild(document.createTextNode(value.functionName));
+          item.appendChild(document.createTextNode(value.eta));
+          item.classList.add('progress-element');
+          container.appendChild(item);
+        });
+        break;
+      case 'done':
+        document.getElementById("activate-button").classList.remove("active");
+        document.getElementById("calcText").textContent = "Done calculateing: 6mj or something";
+        break;
+    };
+  });
+
+  function myFunction() {
+    let functionName = document.getElementById("functions").value;
+    let type = document.getElementById("types").value;
+    document.getElementById("activate-button").classList.add("active");
+
+    vscode.postMessage({ type: 'activate', value: { function: functionName, type: type }});
+    
+    // Maybe don't do this?
+    document.getElementById("calcText").textContent = "Calculating: " + functionName;
+  }
+</script>
+<style>
+
+.full-width {
+  width: 100%;
+}
+
+.progress-element {
+  background-color: hotpink;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  display: flex;
+}
+
+.selector {
+  background: var(--vscode-editor-background);
+  color: var(--vscode-editor-color);
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+  padding: 0.3rem;
+}
+
+.active {
+  background-color: green;
+}
+
+.btn {
+  border-style: none;
+  border-radius: 0.2rem;
+  padding: 0.3rem;
+}
+</style>
