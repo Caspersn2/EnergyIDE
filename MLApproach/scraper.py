@@ -1,9 +1,11 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+import os
 
 base_url = 'http://www.rosettacode.org'
 base_url_csharp = 'http://www.rosettacode.org/wiki/Category:C_sharp'
+
 
 def save_links(url):
     html_page = requests.get(url).content
@@ -19,18 +21,62 @@ def save_links(url):
                 f.write(benchmark_link)
                 f.write('\n')
 
+
 def get_edit_link(url):
     html_page = requests.get(url).content
     soup = BeautifulSoup(html_page, 'html.parser')
-    edit_link = soup.find('a', {'title' : 'Edit section: C#'})
+    edit_link = soup.find('a', {'title': 'Edit section: C#'})
     if edit_link:
         return edit_link['href']
 
 
-save_links(base_url_csharp)
+def get_benchmark_code(url):
+    html_page = requests.get(url).content
+    soup = BeautifulSoup(html_page, 'html.parser')
+    code = soup.find('textarea').string
+    title = re.search(r'View source for (.*)', soup.find('h1').string).group(1)
 
-#with open('benchmark_links.txt') as f:
-#    benchmark_links = f.readlines()
-#for link in benchmark_links:
-#    get_benchmark_code(link.strip())
-#    break
+    all_programs = re.findall(r'<lang csharp>(.*?)</lang>', code, re.DOTALL)
+    for index, program in enumerate(all_programs):
+        namespace = re.search(r'(?<=\bnamespace\s)(\w+)', program)
+        namespace = add_benchmark_without_namespace(
+            program) if namespace is None else add_benchmark_with_namespace(program, namespace.group(1), title, index)
+
+
+def add_benchmark_with_namespace(program, namespace, title, index):
+    title = title.replace(' ','_')
+    path = f'benchmarks/{title}_{index}'
+
+    # Create directory for benchmark.
+    if os.path.exists(path):
+        print("Error")
+    os.makedirs(path)
+
+    # Add implementation
+    with open(f'{path}/Program.cs', 'w+') as f:
+        if 'Console.ReadKey(true);' in program:
+            program = program.replace('Console.ReadKey(true);', '')
+        f.write(program)
+    # Add csproj
+    with open(f'{path}/{namespace}.csproj', 'w+') as f:
+        f.write(get_csproj_string(namespace))
+
+def get_csproj_string(namespace):
+    return f"""<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>{namespace}</RootNamespace>
+  </PropertyGroup>
+</Project>"""
+
+def add_benchmark_without_namespace(program):
+    pass
+
+# save_links(base_url_csharp)
+
+
+with open('benchmark_links.txt') as f:
+    benchmark_links = f.readlines()
+for link in benchmark_links:
+    get_benchmark_code(link.strip())
