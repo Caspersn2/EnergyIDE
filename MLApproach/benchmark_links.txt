@@ -1,4 +1,3 @@
-http://www.rosettacode.org/mw/index.php?title=Hello_world/Newbie&action=edit&section=19
 http://www.rosettacode.org/mw/index.php?title=100_doors&action=edit&section=63
 http://www.rosettacode.org/mw/index.php?title=100_prisoners&action=edit&section=7
 http://www.rosettacode.org/mw/index.php?title=15_puzzle_game&action=edit&section=14
