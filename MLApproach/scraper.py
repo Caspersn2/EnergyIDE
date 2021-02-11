@@ -2,44 +2,35 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-        
+base_url = 'http://www.rosettacode.org'
+base_url_csharp = 'http://www.rosettacode.org/wiki/Category:C_sharp'
+
 def save_links(url):
-    base_url = 'http://www.rosettacode.org'
     html_page = requests.get(url).content
     soup = BeautifulSoup(html_page, 'html.parser')
 
     for link in soup.findAll('a', attrs={'href': re.compile("^/wiki")}):
         link = base_url + link.get('href')
-        if is_benchmark_link(link):
+        benchmark_link = get_edit_link(link)
+        if benchmark_link:
             print(link)
+            benchmark_link = base_url + benchmark_link
             with open("benchmark_links.txt", "a") as f:
-                f.write(link)
+                f.write(benchmark_link)
                 f.write('\n')
 
-def is_benchmark_link(url):
+def get_edit_link(url):
     html_page = requests.get(url).content
     soup = BeautifulSoup(html_page, 'html.parser')
-    toc = soup.find(id='toc')
-
-    if not toc:
-        return False
-
-    for tocelem in toc.find('ul').find_all(class_='toctext'):
-        if tocelem.string and ('C#' in tocelem.string):
-            return True
-    return False
-
-def get_benchmark_code(url):
-    html_page = requests.get(url).content
-    soup = BeautifulSoup(html_page, 'html.parser')
-    code = soup.find(class_='csharp highlighted_source')
+    edit_link = soup.find('a', {'title' : 'Edit section: C#'})
+    if edit_link:
+        return edit_link['href']
 
 
-base_url_csharp = 'http://www.rosettacode.org/wiki/Category:C_sharp'
+save_links(base_url_csharp)
 
-# save_links(base_url_csharp)
-
-with open('test.txt') as f:
-    benchmark_links = f.readlines()
-for link in benchmark_links:
-    get_benchmark_code(link)
+#with open('benchmark_links.txt') as f:
+#    benchmark_links = f.readlines()
+#for link in benchmark_links:
+#    get_benchmark_code(link.strip())
+#    break
