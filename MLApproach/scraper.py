@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import os
+from tqdm import tqdm
 
 base_url = 'http://www.rosettacode.org'
 base_url_csharp = 'http://www.rosettacode.org/wiki/Category:C_sharp'
@@ -21,7 +22,6 @@ def save_links(url):
                 f.write(benchmark_link)
                 f.write('\n')
 
-
 def get_edit_link(url):
     html_page = requests.get(url).content
     soup = BeautifulSoup(html_page, 'html.parser')
@@ -36,15 +36,18 @@ def get_benchmark_code(url):
     code = soup.find('textarea').string
     title = re.search(r'View source for (.*)', soup.find('h1').string).group(1)
 
+    # Some benchmarks have several implementations. This catches all.
     all_programs = re.findall(r'<lang csharp>(.*?)</lang>', code, re.DOTALL)
+    
+    # Handle each benchmark
     for index, program in enumerate(all_programs):
         namespace = re.search(r'(?<=\bnamespace\s)(\w+)', program)
-        namespace = add_benchmark_without_namespace(
-            program) if namespace is None else add_benchmark_with_namespace(program, namespace.group(1), title, index)
+        if(namespace is not None):
+            add_benchmark_with_namespace(program, namespace.group(1), title, index)
 
 
 def add_benchmark_with_namespace(program, namespace, title, index):
-    title = title.replace(' ','_')
+    title = title.replace(' ','_') # Replace whitespace in title
     path = f'benchmarks/{title}_{index}'
 
     # Create directory for benchmark.
@@ -70,13 +73,10 @@ def get_csproj_string(namespace):
   </PropertyGroup>
 </Project>"""
 
-def add_benchmark_without_namespace(program):
-    pass
 
 # save_links(base_url_csharp)
 
-
 with open('benchmark_links.txt') as f:
     benchmark_links = f.readlines()
-for link in benchmark_links:
+for link in tqdm(benchmark_links):
     get_benchmark_code(link.strip())
