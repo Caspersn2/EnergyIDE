@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "GjFP/XfraZin3mNIuKyQ+x12EdFpcQ2m9sY3bK9a/29epR7h2yCiSCbd/lv9j/s20Y0EgcZQdxTIgvjnFL47iw==",
+  "success": true,
+  "projectFilePath": "/home/casper/Documents/GitHub/EnergyIDE/MeasurementTesting/MeasurementTesting/MeasurementTesting.csproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/microsoft.netcore.platforms/1.1.0/microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "/root/.nuget/packages/netstandard.library/2.0.3/netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
