@@ -36,6 +36,34 @@ def add_to_csv(benchmark, counts):
         f.write(','.join(csv_line))
         f.write('\n')
 
+def refactor_for_energy_measurement(path):
+    with open(f'{path}/Program.cs') as f:
+        code = f.readlines()
+    
+    # Find beginning of Main function and insert "bm.Run(() => {"
+    insert_index = 0
+    for index, line in enumerate(code):
+        if 'static void Main(string[] args)' in line:
+            code.insert(index+2, 'bm.Run(() => {\n')
+            insert_index = index + 2
+    
+    # Find end of Main function and insert closing brackets
+    opening_brackets = 0
+    closing_brackets = 0
+    for index, line in enumerate(code[insert_index:]):
+        if '{' in line:
+            opening_brackets += 1
+        if '}' in line:
+            closing_brackets += 1
+        if opening_brackets == closing_brackets and opening_brackets != 0 and closing_brackets != 0:
+            code.insert(index + insert_index -1, '});\n')
+            break
+    
+    # Update code
+    with open(f'{path}/Program.cs', 'w') as f:
+        f.write(''.join(code))
+
+
 
 with open('listOfCILInstructions.txt') as f:
     CIL_INSTRUCTIONS = [x.strip() for x in f.readlines()]
@@ -63,9 +91,12 @@ for benchmark in all_benchmarks:
     # Count instructions
     counts = count_occurrences(f'{path_to_benchmark}/Program.il')
 
+    # Refactor code to implement benchmark library, such that ww can get
+    # energy measurements of the benchmark
+    refactor_for_energy_measurement(path_to_benchmark)
+
     # Add to csv (Columns: Benchmark name, instruction1, instruction2 ...)
     add_to_csv(benchmark, counts)
+    break
 
 print(could_not_build)
-
-# Add energy at some point
