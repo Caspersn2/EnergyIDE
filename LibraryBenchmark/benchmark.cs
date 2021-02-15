@@ -63,6 +63,7 @@ namespace benchmark
             } 
         }
         
+        public void Run<R>(Func<R> benchmark) => Run<R>(benchmark, null); 
 
         // Used to run benchmarks which take a single input argument -- The benchmarks is curried into a function which takes zero input arguments
         public void Run<I, R>(Func<I, R> benchmark, I input, Action<R> benchmarkOutput) => Run(() => benchmark(input), benchmarkOutput);
@@ -89,7 +90,8 @@ namespace benchmark
 
                 if (benchmarkOutputStream.Equals(stdout))
                     print(System.Console.WriteLine, "");
-                benchmarkOutput(res);
+                if(benchmarkOutput != null)
+                    benchmarkOutput(res);
                 
                 if (elapsedTime >= maxExecutionTime){
                     print(System.Console.WriteLine, "\nEnding benchmark due to time constraints");
