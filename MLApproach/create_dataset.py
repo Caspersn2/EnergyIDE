@@ -42,10 +42,12 @@ def refactor_for_energy_measurement(path):
     
     # Find beginning of Main function and insert "bm.Run(() => {"
     insert_index = 0
+    code.insert(0, 'using benchmark;\n')
     for index, line in enumerate(code):
         if 'static void Main(string[] args)' in line:
-            code.insert(index+2, 'bm.Run(() => {\n')
-            insert_index = index + 2
+            code.insert(index+2, 'var bm = new Benchmark(1);\n')
+            code.insert(index+3, 'bm.Run(() => {\n')
+            insert_index = index + 3
     
     # Find end of Main function and insert closing brackets
     opening_brackets = 0
@@ -97,6 +99,5 @@ for benchmark in all_benchmarks:
 
     # Add to csv (Columns: Benchmark name, instruction1, instruction2 ...)
     add_to_csv(benchmark, counts)
-    break
 
 print(could_not_build)

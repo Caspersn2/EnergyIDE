@@ -66,6 +66,9 @@ def add_benchmark_with_namespace(program, namespace, title, index):
 
 def get_csproj_string(namespace):
     return f"""<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\LibraryBenchmark\\benchmark.csproj" />
+  </ItemGroup>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
@@ -80,3 +83,4 @@ with open('benchmark_links.txt') as f:
     benchmark_links = f.readlines()
 for link in tqdm(benchmark_links):
     get_benchmark_code(link.strip())
+    break
