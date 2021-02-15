@@ -10,18 +10,33 @@ namespace MeasurementTesting.Attributes
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class MeasureAttribute : Attribute
     {
-        public Measurement measurement;
+        public List<Measurement> Measurements;
+        public int SampleIterations;
+        public int PlannedIterations;
+        public int IterationsDone;
         
-        public MeasureAttribute(MeasurementType type)
+        public MeasureAttribute(MeasurementType type, int sampleIterations = 10)
         {
-            switch (type)
+            SampleIterations = sampleIterations;
+            PlannedIterations = sampleIterations;
+            Measurements = new List<Measurement>();
+        }
+
+        public void AddMeasure(Measure measure)
+        {
+            this.IterationsDone++;
+            foreach (var api in measure.apis)
             {
-                case MeasurementType.Time:
-                    measurement = new TimeMeasurement();
-                    break;
-                default:
-                    measurement = new TimeMeasurement();
-                    break;
+                if (Measurements.Any(m => m.Name.Equals(api.apiName)))
+                {
+                    Measurements.First(m => m.Name.Equals(api.apiName)).AddMeasurement(api.apiValue);
+                }
+                else
+                {
+                    var temp = new Measurement(api.apiName);
+                    temp.AddMeasurement(api.apiValue);
+                    Measurements.Add(temp);
+                }
             }
         }
     }
@@ -29,8 +44,6 @@ namespace MeasurementTesting.Attributes
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class MeasureClassAttribute : Attribute
     {
-        public MeasureClassAttribute(){}
-
         public MethodInfo GetSetupMethod(Type type)
         {
             var setup = type.GetMethods().Where(method =>

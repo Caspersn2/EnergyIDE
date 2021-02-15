@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -9,13 +10,14 @@ namespace MeasurementTesting.InternalClasses
     {
         public MethodInfo MethodInformation { get; private set; }
         public Exception Exception { get; set; }
-        public Measurement Measurement { get; set; }
-
-        public TestMethod(MethodInfo methodInformation, Measurement measurement, Exception exception)
+        public List<Measurement> Measurements;
+        
+        
+        public TestMethod(MethodInfo methodInformation, List<Measurement> measurements, Exception exception)
         {
             MethodInformation = methodInformation;
+            Measurements = measurements;
             Exception = exception;
-            Measurement = measurement;
         }
 
         // TODO:: Add better toString. Maybe in JSON, XML or HTML?
@@ -24,11 +26,11 @@ namespace MeasurementTesting.InternalClasses
             var result = MethodInformation.DeclaringType + "." + MethodInformation.Name + ": ";
             if (Exception == null)
             {
-                result += "Passed, " + Measurement.ToString();
+                result += "Passed";
             }
             else
             {
-                result += "Faild, " + Exception.Message;
+                result += "Failed, " + Exception.Message;
             }
             return result;
         }

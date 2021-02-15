@@ -2,11 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { fstat, readFile, readFileSync, writeFile } from 'fs';
-import { type } from 'os';
-import { FileParser } from './helpers/fileParser';
+import { readFileSync, writeFile } from 'fs';
 import { Method } from './models';
-import { stdout } from 'process';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

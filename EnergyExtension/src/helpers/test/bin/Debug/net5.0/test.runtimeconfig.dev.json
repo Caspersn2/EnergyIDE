@@ -1,9 +1,8 @@
 {
   "runtimeOptions": {
     "additionalProbingPaths": [
-      "C:\\Users\\Caspe\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\Caspe\\.nuget\\packages",
-      "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      "/home/casper/.dotnet/store/|arch|/|tfm|",
+      "/home/casper/.nuget/packages"
     ]
   }
 }

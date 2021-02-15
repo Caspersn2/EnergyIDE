@@ -14,9 +14,9 @@ namespace MeasurementTesting.InternalClasses
             methodsCalled = new List<TestMethod>();
         }
 
-        public void MethodCalled(MethodInfo methodInfo, Measurement measurement, Exception exception = null)
+        public void MethodCalled(MethodInfo methodInfo, List<Measurement> measurements, Exception exception = null)
         {
-            methodsCalled.Add(new TestMethod(methodInfo, measurement, exception));
+            methodsCalled.Add(new TestMethod(methodInfo, measurements, exception));
         }
 
         public override string ToString()

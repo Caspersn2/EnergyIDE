@@ -10,29 +10,29 @@
 		"Other"
 	],
 	"activationEvents": [
-    "onView:energyWebView"
+		"onView:energyWebView"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"viewsContainers": {
-        "activitybar": [
-            {
-                "id": "energy-explorer",
-                "title": "Energy Explorer",
-                "icon": "resources/energy-explorer.svg"
-            }
-        ]
-    },
-    "views": {
-        "energy-explorer": [
-            {
-              "name": "Energy Consumption",
-              "id": "energyWebView",
-              "type": "webview"
-            }
-        ]
-    },
-    "commands": [
+			"activitybar": [
+				{
+					"id": "energy-explorer",
+					"title": "Energy Explorer",
+					"icon": "resources/energy-explorer.svg"
+				}
+			]
+		},
+		"views": {
+			"energy-explorer": [
+				{
+					"name": "Energy Consumption",
+					"id": "energyWebView",
+					"type": "webview"
+				}
+			]
+		},
+		"commands": [
 			{
 				"command": "Energy.calculate",
 				"title": "Calculate energy consumption"
@@ -67,6 +67,7 @@
 		"webpack-cli": "^4.4.0"
 	},
 	"dependencies": {
+		"watch": "^1.0.2",
 		"yarn": "^1.22.10"
 	}
 }

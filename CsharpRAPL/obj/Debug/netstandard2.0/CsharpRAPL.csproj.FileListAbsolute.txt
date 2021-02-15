@@ -1,0 +1,9 @@
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/bin/Debug/netstandard2.0/CsharpRAPL.deps.json
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/bin/Debug/netstandard2.0/CsharpRAPL.dll
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/bin/Debug/netstandard2.0/CsharpRAPL.pdb
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/obj/Debug/netstandard2.0/CsharpRAPL.csprojAssemblyReference.cache
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/obj/Debug/netstandard2.0/CsharpRAPL.AssemblyInfoInputs.cache
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/obj/Debug/netstandard2.0/CsharpRAPL.AssemblyInfo.cs
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/obj/Debug/netstandard2.0/CsharpRAPL.csproj.CoreCompileInputs.cache
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/obj/Debug/netstandard2.0/CsharpRAPL.dll
+/home/casper/Documents/GitHub/EnergyIDE/CsharpRAPL/obj/Debug/netstandard2.0/CsharpRAPL.pdb

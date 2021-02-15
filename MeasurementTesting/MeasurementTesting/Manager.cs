@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using MeasurementTesting.InternalClasses;
 using MeasurementTesting.Attributes;
 using benchmark;
@@ -42,27 +44,31 @@ namespace MeasurementTesting
                         var measureClass = type.Assembly.CreateInstance(type.FullName);
                         try
                         {
-                            attribute.measurement.Start();
-                            var bm = new Benchmark(10, false);
-                            bm.SingleRunComplete += ProcessMeasure;  
+                            var bm = new Benchmark(1, false);
+                            bm.SingleRunComplete += measure => ProcessMeasure(measure, attribute);
                             if (setup != null)
                                 setup.Invoke(measureClass, Type.EmptyTypes);
                             
-                            bm.Run(() =>
+                            // Running sample iterations
+                            runBenchmark(method, measureClass, bm, attribute.SampleIterations);
+                            
+                            //Checking if it is enough runs
+                            var numRuns = (int)Math.Ceiling(ComputeSampleSize(attribute.Measurements));
+                            if (!IsEnough(numRuns, attribute.Measurements, attribute.SampleIterations))
                             {
-                                method.Invoke(measureClass, Type.EmptyTypes);
-                                return true;
-                            }, res => {});
+                                Console.Write($"Performing more samples.. {numRuns - attribute.SampleIterations}");
+                                attribute.PlannedIterations = numRuns;
+                                runBenchmark(method, measureClass, bm, (numRuns - attribute.SampleIterations));
+                            }
+                            
                             if (cleanUp != null)
                                 cleanUp.Invoke(measureClass, Type.EmptyTypes);
                             
-                            attribute.measurement.Stop();
-                            attribute.measurement.Save();
-                            output.MethodCalled(method, attribute.measurement);
+                            output.MethodCalled(method, attribute.Measurements);
                         }
                         catch(Exception e)
                         {
-                            output.MethodCalled(method, attribute.measurement, e.InnerException ?? e);
+                            output.MethodCalled(method, attribute.Measurements, e.InnerException ?? e);
                         }
                     }
                 }
@@ -70,9 +76,45 @@ namespace MeasurementTesting
             }
         }
 
-        private static void ProcessMeasure(Measure measure)
+        private static void runBenchmark(MethodInfo method, object measureClass, Benchmark bm, int iterations)
         {
-            Console.WriteLine("New measure");
+            for (int i = 0; i < iterations; i++)
+            {
+                bm.Run(() =>
+                {
+                    method.Invoke(measureClass, Type.EmptyTypes);
+                    return true;
+                });
+            }
+        }
+
+        
+        private static double ComputeSampleSize(List<Measurement> measurements)
+        {
+            var numRuns = new double[measurements.Count];
+            var zScore = 1.96; // For 95% confidence
+            int i = 0;
+            foreach (var mes in measurements)
+            {
+                mes.ComputeResults();
+                var top = zScore * mes.Deviation;
+                var err = mes.Mean * 0.005;
+                numRuns[i++] = (top / err) * (top / err);
+            }
+            return numRuns.Max();
+        }
+
+        private static bool IsEnough(double numRuns, List<Measurement> measurements, int iterations)
+        {
+            return iterations >= numRuns || measurements.All(m => m.ErrorPercent <= 0.005);
+        }
+
+        private static void ProcessMeasure(Measure measure, MeasureAttribute attribute)
+        {
+            attribute.AddMeasure(measure);
+            
+            // writes the measure to console
+            Console.WriteLine($"New measure: {attribute.IterationsDone}:{attribute.PlannedIterations}");
             foreach(var m in measure.apis)
             {
                 Console.WriteLine($"Measure: {m.apiName}, {m.apiValue}");

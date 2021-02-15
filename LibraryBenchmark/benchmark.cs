@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using CsharpRAPL;
 using CsharpRAPL.Devices;
 
-struct Measure
+public struct Measure
 {
     public double duration;
     public List<(string apiName, double apiValue)> apis;
@@ -17,6 +17,7 @@ struct Measure
 
 namespace benchmark
 {
+    public delegate void SingleRun(Measure measure);
     public class Benchmark
     {
         static readonly int maxExecutionTime = 2700; //In seconds
@@ -27,7 +28,7 @@ namespace benchmark
         RAPL _rapl;
         TextWriter stdout;
         TextWriter benchmarkOutputStream = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
-
+        public event SingleRun SingleRunComplete;
 
         public Benchmark(int iterations, bool silenceBenchmarkOutput = true) 
         {
@@ -59,6 +60,7 @@ namespace benchmark
             if (_rapl.IsValid()) {
                 Measure mes = new Measure(_rapl.GetResults());
                 _resultBuffer.Add(mes);
+                SingleRunComplete?.Invoke(mes);
                 elapsedTime += mes.duration / 1_000;
             } 
         }
