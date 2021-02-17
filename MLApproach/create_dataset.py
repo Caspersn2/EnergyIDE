@@ -1,7 +1,7 @@
 import os
 from collections import Counter
 import subprocess
-
+from tqdm import tqdm
 
 def count_occurrences(benchmark):
     # Read cil code
@@ -15,14 +15,18 @@ def count_occurrences(benchmark):
 
 
 def dissamble(path_to_benchmark):
-    # Build benchmark
-    subprocess.call(f'dotnet build {path_to_benchmark}', shell=True)
+    # Build benchmark. Supress output
+    subprocess.call(f'dotnet build {path_to_benchmark}', shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL)
 
     # Disassemble to CIL. Save as Prorgam.il
     path_to_assembly = f'{path_to_benchmark}/bin/Debug/net5.0'
-    assembly = [f for f in os.listdir(path_to_assembly) if '.dll' in f][0]
+    assembly = list(filter(lambda x: x not in ['benchmark.dll', 'CsharpRAPL.dll'],[f for f in os.listdir(path_to_assembly) if '.dll' in f]))[0]
     subprocess.call(
-        f'dotnet-ildasm {path_to_assembly}/{assembly} -o {path_to_benchmark}/Program.il', shell=True)
+        f'dotnet-ildasm {path_to_assembly}/{assembly} -o {path_to_benchmark}/Program.il', shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL)
 
 
 def add_to_csv(benchmark, counts):
@@ -35,36 +39,6 @@ def add_to_csv(benchmark, counts):
     with open(dataset_file, 'a') as f:
         f.write(','.join(csv_line))
         f.write('\n')
-
-def refactor_for_energy_measurement(path):
-    with open(f'{path}/Program.cs') as f:
-        code = f.readlines()
-    
-    # Find beginning of Main function and insert "bm.Run(() => {"
-    insert_index = 0
-    code.insert(0, 'using benchmark;\n')
-    for index, line in enumerate(code):
-        if 'static void Main(string[] args)' in line:
-            code.insert(index+2, 'var bm = new Benchmark(1);\n')
-            code.insert(index+3, 'bm.Run(() => {\n')
-            insert_index = index + 3
-    
-    # Find end of Main function and insert closing brackets
-    opening_brackets = 0
-    closing_brackets = 0
-    for index, line in enumerate(code[insert_index:]):
-        if '{' in line:
-            opening_brackets += 1
-        if '}' in line:
-            closing_brackets += 1
-        if opening_brackets == closing_brackets and opening_brackets != 0 and closing_brackets != 0:
-            code.insert(index + insert_index -1, '});\n')
-            break
-    
-    # Update code
-    with open(f'{path}/Program.cs', 'w') as f:
-        f.write(''.join(code))
-
 
 
 with open('listOfCILInstructions.txt') as f:
@@ -80,22 +54,22 @@ with open(dataset_file, 'w+') as f:
 
 # Enumerate all benchmarks
 all_benchmarks = os.listdir(base_dir)
-for benchmark in all_benchmarks:
+for benchmark in tqdm(all_benchmarks):
+    # Path_to_benchmark is benchmarks/name
     path_to_benchmark = f'{base_dir}/{benchmark}'
 
     # Dissamble C# to CIL
     try:
         dissamble(path_to_benchmark)
     except:
+        # If the project cannot be build or dissambled, 
+        # delete it from the benchmarks folder
+        subprocess.call(f'rm -rf {path_to_benchmark}', shell=True)
         could_not_build.append(benchmark)
         continue
 
     # Count instructions
     counts = count_occurrences(f'{path_to_benchmark}/Program.il')
-
-    # Refactor code to implement benchmark library, such that ww can get
-    # energy measurements of the benchmark
-    refactor_for_energy_measurement(path_to_benchmark)
 
     # Add to csv (Columns: Benchmark name, instruction1, instruction2 ...)
     add_to_csv(benchmark, counts)

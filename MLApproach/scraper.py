@@ -3,6 +3,7 @@ import requests
 import re
 import os
 from tqdm import tqdm
+import subprocess
 
 base_url = 'http://www.rosettacode.org'
 base_url_csharp = 'http://www.rosettacode.org/wiki/Category:C_sharp'
@@ -40,14 +41,17 @@ def get_benchmark_code(url):
     all_programs = re.findall(r'<lang csharp>(.*?)</lang>', code, re.DOTALL)
     
     # Handle each benchmark
+    # Do not consider programs that do not have a namespace,
+    # Main function or take user input
     for index, program in enumerate(all_programs):
         namespace = re.search(r'(?<=\bnamespace\s)(\w+)', program)
-        if(namespace is not None):
-            add_benchmark_with_namespace(program, namespace.group(1), title, index)
+        if namespace is None or 'Console.ReadLine' in program or 'Main' not in program:
+            continue
+        add_benchmark_with_namespace(program, namespace.group(1), title, index)
 
 
 def add_benchmark_with_namespace(program, namespace, title, index):
-    title = title.replace(' ','_') # Replace whitespace in title
+    title = title.replace(' ','_').replace('\'', '') # Replace whitespace in title
     path = f'benchmarks/{title}_{index}'
 
     # Create directory for benchmark.
@@ -57,8 +61,9 @@ def add_benchmark_with_namespace(program, namespace, title, index):
 
     # Add implementation
     with open(f'{path}/Program.cs', 'w+') as f:
-        if 'Console.ReadKey(true);' in program:
+        if 'Console.ReadKey' in program:
             program = program.replace('Console.ReadKey(true);', '')
+            program = program.replace('Console.ReadKey();', '')
         f.write(program)
     # Add csproj
     with open(f'{path}/{namespace}.csproj', 'w+') as f:
@@ -79,8 +84,11 @@ def get_csproj_string(namespace):
 
 # save_links(base_url_csharp)
 
+if len(os.listdir('benchmarks')) != 0:
+    subprocess.call('rm -rf benchmarks/*', shell=True)
+
+
 with open('benchmark_links.txt') as f:
     benchmark_links = f.readlines()
 for link in tqdm(benchmark_links):
     get_benchmark_code(link.strip())
-    break
