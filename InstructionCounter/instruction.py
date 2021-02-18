@@ -1,19 +1,30 @@
 import re
 import output
 from variable import variable
+from utilities import get_arguments
 
 
 class_name = r'class\s(.*)'
+instruction_match = r'\s+(IL_[0-9a-f]+):\s(.+)'
 
 
 def is_library_call(value):
-    class_match = re.search(class_name, value)
-    if class_match:
-        method_name = class_match.groups()[0]
-        if re.search(r'\[|\]', method_name):
-            return (True, method_name)
-        else:
-            return (False, method_name)
+    if re.search(r'\[|\]', value):
+        return True
+    else:
+        return False
+
+
+# Returns all instructions from a (List) of text. (Split at newlines)
+def get_all_instructions(text):
+    instructions = {}
+    for line in text:
+        match = re.match(instruction_match, line)
+        if match:
+            name, data = match.groups()
+            instr = instruction.create(data)
+            instructions[name] = instr
+    return instructions
 
 
 # Represents a single instruction
@@ -27,10 +38,13 @@ class instruction():
     def create(cls, text):
         elements = text.split(' ')
         name = elements[0]
-        cleaned = list(filter(None, elements[1:]))
+        cleaned = list(filter(lambda x: x != 'class', elements[1:]))
+        cleaned = list(filter(None, cleaned))
 
         if len(cleaned) == 1 and re.match(r'\d+', cleaned[0]):
             cleaned = int(cleaned[0])
+        elif len(cleaned) == 1:
+            cleaned = cleaned[0]
 
         return instruction(name, cleaned)
 
@@ -55,8 +69,14 @@ class instruction_rule():
 
 
     def call(self, methods, instructionset):
-        is_library, name = is_library_call(' '.join(self.value))
-        if not is_library:
+        name = ' '.join(self.value)
+        is_library = is_library_call(name)
+        if is_library:
+            name = name.split('::')[1]
+            arguments = get_arguments(name)
+            for _ in range(len(arguments)):
+                self.stack.pop()
+        else:
             # TODO: Fix that calls can go across classes
             name = name.split('::')[1]
             method = methods[name]
@@ -78,15 +98,25 @@ class instruction_rule():
             output.write_to_file(method.name, res, 'results.csv')
 
 
+    def bool_to_integral(self, boolean):
+        if type(boolean) == bool:
+            if boolean:
+                return 1
+            else:
+                return 0
+        else:
+            return boolean
+
+
     def compare(self):
         val1 = None
         val2 = None
         if self.value is not None:
-            val1 = self.stack.pop()
+            val1 = self.bool_to_integral(self.stack.pop())
             val2 = self.value
         else:
-            val2 = self.stack.pop()
-            val1 = self.stack.pop()
+            val1 = self.bool_to_integral(self.stack.pop())
+            val2 = self.bool_to_integral(self.stack.pop())
 
         if self.comparison == '>':
             return val1 > val2

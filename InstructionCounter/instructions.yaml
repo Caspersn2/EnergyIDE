@@ -23,6 +23,12 @@
   value: 0
 
 - !Inst
+  name: brtrue.s
+  action: [POP, COMPARE]
+  comparison: '=='
+  value: 1
+
+- !Inst
   name: stloc.0
   location: LOCALS
   action: [POP]
@@ -41,6 +47,17 @@
   value: 2
 
 - !Inst
+  name: stloc.3
+  location: LOCALS
+  action: [POP]
+  value: 3
+
+- !Inst
+  name: stloc.s
+  location: LOCALS
+  action: [POP]
+
+- !Inst
   name: ldloc.0
   location: LOCALS
   action: [PUSH]
@@ -57,6 +74,21 @@
   location: LOCALS
   action: [PUSH]
   value: 2
+
+- !Inst
+  name: ldloc.3
+  location: LOCALS
+  action: [PUSH]
+  value: 3
+
+- !Inst
+  name: ldloc.s
+  location: LOCALS
+  action: [PUSH]
+
+- !Inst
+  name: ldstr
+  action: [PUSH]
 
 - !Inst
   name: nop
@@ -94,6 +126,11 @@
   name: cgt
   action: [POP, POP, COMPARE]
   comparison: '>'
+
+- !Inst
+  name: clt
+  action: [POP, POP, COMPARE]
+  comparison: '<'
 
 - !Inst
   name: call

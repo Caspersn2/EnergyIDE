@@ -75,7 +75,7 @@ class state_machine():
                     res = current.compare()
                     self.stack.append(res)
                 elif action == 'CALL':
-                    current.add_values(copy.deepcopy(self.stack))
+                    current.add_values(self.stack)
                     current.call(self.methods, self.instructionset)
 
             self.executed.append(current)

@@ -1,10 +1,8 @@
 import re
 from method import method
-from instruction import instruction
 
 method_instruction = r'\.method'
 method_name = r'\s(\S+?)\(.*?\)\s'
-instruction_match = r'\s+(IL_[0-9a-f]+):\s(.+)'
 locals_instruction = r'\.locals init'
 variable_name = r'\.?[a-zA-Z][_0-9a-zA-Z]*'
 variable_type = rf'{variable_name}\[?\]?'
@@ -48,18 +46,6 @@ def get_by_method(text):
         end = count_by_set({'{': 0, '}': 0}, text[start:])
         methods[name] = method(name, text[start: start + end])
     return methods
-
-
-# Returns all instructions from a (List) of text. (Split at newlines)
-def get_all_instructions(text):
-    instructions = {}
-    for line in text:
-        match = re.match(instruction_match, line)
-        if match:
-            name, data = match.groups()
-            instr = instruction.create(data)
-            instructions[name] = instr
-    return instructions
 
 
 def get_local_stack(text):

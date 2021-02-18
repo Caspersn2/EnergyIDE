@@ -1,4 +1,5 @@
 import utilities
+import instruction
 from statemachine import state_machine
 
 # Represents an entire method
@@ -8,7 +9,7 @@ class method():
         self.text = text.split('\n')
         self.arguments = utilities.get_arguments(name)
         self.locals = utilities.get_local_stack(text)
-        self.data = utilities.get_all_instructions(self.text)
+        self.data = instruction.get_all_instructions(self.text)
 
     def count_instructions(self, instructions):
         counter = {}
@@ -29,7 +30,7 @@ class method():
             current = instructions[index]
             jump = machine.simulate(self.data[current])
             if jump:
-                index = instructions.index(jump[0])
+                index = instructions.index(jump)
             else:
                 index += 1
 
