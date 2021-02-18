@@ -56,24 +56,35 @@ class state_machine():
 
             if step.args and current.value is None:
                 current.value = step.args
+            elif step.args and current.value:
+                current.args = step.args
             
             for action in current.actions:
                 if action == 'PUSH' and current.location == 'STACK':
                     self.stack.append(current.value)
+
                 elif action == 'PUSH' and current.location in ['LOCALS', 'ARGUMENTS']:
                     val = self.get_local(current.value, current.location).get_value()
                     self.stack.append(val)
+
                 elif action == 'JUMP':
-                    return current.value
+                    if 'COMPARE' in current.actions and current.can_jump:
+                        return current.args
+                    else:
+                        return current.value
+
                 elif action == 'POP' and current.location == 'LOCALS':
                     val = self.stack.pop()
                     self.get_local(current.value, current.location).set_value(val)
+
                 elif action == 'POP' and current.location == 'STACK':
                     val = self.stack.pop()
                     current.add_value(val)
+
                 elif action == 'COMPARE':
                     res = current.compare()
                     self.stack.append(res)
+
                 elif action == 'CALL':
                     current.add_values(self.stack)
                     current.call(self.methods, self.instructionset)

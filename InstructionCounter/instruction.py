@@ -56,6 +56,8 @@ class instruction_rule():
         self.actions = action
         self.comparison = comparison
         self.value = value
+        self.can_jump = False
+        self.args = None
         self.stack = []
 
 
@@ -119,14 +121,19 @@ class instruction_rule():
             val2 = self.bool_to_integral(self.stack.pop())
 
         if self.comparison == '>':
+            self.can_jump = val1 > val2
             return val1 > val2
         elif self.comparison == '<':
+            self.can_jump = val1 < val2
             return val1 < val2
         elif self.comparison == '==':
+            self.can_jump = val1 == val2
             return val1 == val2
         elif self.comparison == '<=':
+            self.can_jump = val1 <= val2
             return val1 <= val2
         elif self.comparison == '>=':
+            self.can_jump = val1 >= val2
             return val1 >= val2
         else:
             raise Exception(f"The comparison operator '{self.comparison}' has not been implemented")
