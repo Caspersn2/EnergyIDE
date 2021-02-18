@@ -1,0 +1,90 @@
+- !Inst 
+  name: ldc.i4.s
+  action: [PUSH]
+
+- !Inst
+  name: ldc.i4.0
+  action: [PUSH]
+  value: 0
+
+- !Inst
+  name: ldc.i4.5
+  action: [PUSH]
+  value: 5
+
+- !Inst
+  name: br.s
+  action: [JUMP]
+
+- !Inst
+  name: stloc.0
+  location: LOCALS
+  action: [POP]
+  value: 0
+
+- !Inst
+  name: stloc.1
+  location: LOCALS
+  action: [POP]
+  value: 1
+
+- !Inst
+  name: stloc.2
+  location: LOCALS
+  action: [POP]
+  value: 2
+
+- !Inst
+  name: ldloc.0
+  location: LOCALS
+  action: [PUSH]
+  value: 0
+
+- !Inst
+  name: ldloc.1
+  location: LOCALS
+  action: [PUSH]
+  value: 1
+
+- !Inst
+  name: ldloc.2
+  location: LOCALS
+  action: [PUSH]
+  value: 2
+
+- !Inst
+  name: nop
+  action: []
+
+- !Inst
+  name: newarr
+  action: [POP, PUSH]
+
+- !Inst
+  name: ldarg.0
+  location: ARGUMENTS
+  action: [PUSH]
+  value: 0
+
+- !Inst
+  name: ldarg.1
+  location: ARGUMENTS
+  action: [PUSH]
+  value: 1
+
+- !Inst
+  name: ret
+  action: [PUSH]
+
+- !Inst
+  name: call
+  action: []
+
+- !Inst
+  name: add
+  action: [POP, POP, PUSH]
+
+- !Inst
+  name: cgt
+  action: [POP, POP, COMPARE]
+  comparison: '>'
