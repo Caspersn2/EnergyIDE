@@ -17,6 +17,12 @@
   action: [JUMP]
 
 - !Inst
+  name: brfalse.s
+  action: [POP, COMPARE]
+  comparison: '=='
+  value: 0
+
+- !Inst
   name: stloc.0
   location: LOCALS
   action: [POP]
@@ -88,3 +94,7 @@
   name: cgt
   action: [POP, POP, COMPARE]
   comparison: '>'
+
+- !Inst
+  name: call
+  action: [CALL]

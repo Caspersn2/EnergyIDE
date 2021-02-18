@@ -30,6 +30,7 @@ python main.py -f file.il -m 'generateNumber()'
 
 ## Work list
 
-- [ ] Implement Call functionality, to follow calls in the CIL code
+- [x] Implement Call functionality, to follow calls in the CIL code
 - [ ] Fix unimplemented instructions
 - [ ] Implement option to select between (Simple Counting and Simulation)
+- [ ] Make the simulation work with multiple classes (Call, results)

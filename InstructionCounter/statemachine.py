@@ -1,11 +1,14 @@
 import copy
+from variable import variable
+
 
 # An object representing a state machine to evaluate instructions
 class state_machine():
-    def __init__(self, available_instructions):
+    def __init__(self, available_instructions, available_methods):
         self.locals = {}
         self.arguments = {}
         self.stack = []
+        self.methods = available_methods
         self.instructionset = available_instructions
         self.executed = []
 
@@ -19,7 +22,10 @@ class state_machine():
     def load_arguments(self, variables):
         if variables:
             for (k, v) in variables.items():
-                self.arguments[k] = variable(k, v)
+                if type(v) == variable:
+                    self.arguments[k] = v
+                else:
+                    self.arguments[k] = variable(k, v)
 
 
     # Obtain locals based on either a numeric key or string key
@@ -68,21 +74,10 @@ class state_machine():
                 elif action == 'COMPARE':
                     res = current.compare()
                     self.stack.append(res)
+                elif action == 'CALL':
+                    current.add_values(copy.deepcopy(self.stack))
+                    current.call(self.methods, self.instructionset)
 
             self.executed.append(current)
         else:
             raise Exception(f'The instruction "{step.name}" does not exist in the current configuration file')
-
-
-# Represents a variable
-class variable():
-    def __init__(self, name, type):
-        self.name = name
-        self.type = type
-        self.value = None
-
-    def set_value(self, value):
-        self.value = value
-
-    def get_value(self):
-        return self.value

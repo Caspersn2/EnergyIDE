@@ -18,8 +18,8 @@ class method():
             counter[inst.name] += 1
         return counter
 
-    def get_instructions(self, available_instructions):
-        machine = state_machine(available_instructions)
+    def get_instructions(self, available_instructions, available_methods):
+        machine = state_machine(available_instructions, available_methods)
         machine.load_arguments(self.arguments)
         machine.load_locals(self.locals)
 

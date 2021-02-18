@@ -6,7 +6,7 @@ method_instruction = r'\.method'
 method_name = r'\s(\S+?)\(.*?\)\s'
 instruction_match = r'\s+(IL_[0-9a-f]+):\s(.+)'
 locals_instruction = r'\.locals init'
-variable_name = r'[a-zA-Z][_0-9a-zA-Z]*'
+variable_name = r'\.?[a-zA-Z][_0-9a-zA-Z]*'
 variable_type = rf'{variable_name}\[?\]?'
 
 
@@ -25,13 +25,26 @@ def count_by_set(search_set, text):
             search_set[c] += 1
 
 
+def remove_parameter_names(name):
+    method_name = ''
+    parameters = []
+    start = re.match(variable_name, name)
+    matches = re.finditer(f'({variable_type})\s{variable_name},?', name[start.end(0)+1:-1])
+    method_name += start.group() + "("
+    for m in matches:
+        parameters.append(m.groups()[0])
+    method_name += ', '.join(parameters) + ')'
+    return method_name
+
+
 # Returns method objects based
 def get_by_method(text):
     methods = {}
     matches = re.finditer(method_instruction, text)
     for match in matches:
         start = match.start()
-        name = re.search(method_name, text[start:]).group().strip()
+        tmp_name = re.search(method_name, text[start:]).group().strip()
+        name = remove_parameter_names(tmp_name)
         end = count_by_set({'{': 0, '}': 0}, text[start:])
         methods[name] = method(name, text[start: start + end])
     return methods
@@ -48,6 +61,7 @@ def get_all_instructions(text):
             instructions[name] = instr
     return instructions
 
+
 def get_local_stack(text):
     locals = {}
     match = re.search(locals_instruction, text)
@@ -60,19 +74,24 @@ def get_local_stack(text):
             put_variable_in_set(locals, m)
         return locals
 
+
 def put_variable_in_set(locals, m):
     name = len(locals.keys())
     datatype = None
-    elements = list(filter(None, m.groups()))
+    data = m.group().split(' ')
+    elements = list(filter(None, data))
     if len(elements) == 2:
         datatype, name = elements
     else:
-        datatype = elements
+        datatype = elements[0]
     locals[name] = datatype
+
 
 def get_arguments(text):
     arguments = {}
-    matches = re.finditer(rf'({variable_type})\s({variable_name})', text)
-    for m in matches:
-        put_variable_in_set(arguments, m)
+    arg_list = re.match(r'.+\((.+)\)', text)
+    if arg_list:
+        matches = re.finditer(rf'{variable_type}', arg_list.groups()[0])
+        for m in matches:
+            put_variable_in_set(arguments, m)
     return arguments
