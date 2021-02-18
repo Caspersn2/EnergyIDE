@@ -27,13 +27,13 @@ def count_by_set(search_set, text):
 
 # Returns method objects based
 def get_by_method(text):
-    methods = []
+    methods = {}
     matches = re.finditer(method_instruction, text)
     for match in matches:
         start = match.start()
         name = re.search(method_name, text[start:]).group().strip()
         end = count_by_set({'{': 0, '}': 0}, text[start:])
-        methods.append(method(name, text[start: start + end]))
+        methods[name] = method(name, text[start: start + end])
     return methods
 
 

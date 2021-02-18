@@ -61,7 +61,7 @@ class state_machine():
                     return current.value
                 elif action == 'POP' and current.location == 'LOCALS':
                     val = self.stack.pop()
-                    self.get_local(current.value).set_value(val)
+                    self.get_local(current.value, current.location).set_value(val)
                 elif action == 'POP' and current.location == 'STACK':
                     val = self.stack.pop()
                     current.add_value(val)
