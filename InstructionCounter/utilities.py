@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 from method import method
 
 method_instruction = r'\.method'
@@ -81,3 +82,20 @@ def get_arguments(text):
         for m in matches:
             put_variable_in_set(arguments, m)
     return arguments
+
+
+def load_CIL():
+    instructions = open('CIL_Instructions.txt').readlines()
+    return [x.strip() for x in instructions]
+
+
+def simple_count(text):
+    cil_instructions = load_CIL()
+    res = []
+    for line in text:
+        for inst in cil_instructions:
+            match = re.search(rf'IL_[0-9a-f]+:\s({inst})', line)
+            if match:
+                res.append(match.groups()[0])
+                break
+    return Counter(res)
