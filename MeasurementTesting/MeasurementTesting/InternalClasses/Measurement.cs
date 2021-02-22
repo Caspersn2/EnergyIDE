@@ -22,7 +22,8 @@ namespace MeasurementTesting.InternalClasses
         }
         public override string ToString()
         {
-            return "Yeahh... Later";
+            this.ComputeResults();
+            return this.Name + " " + this.Mean.ToString() + "µj\n";
         }
 
         public void AddMeasurement(double value)

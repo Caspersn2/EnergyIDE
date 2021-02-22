@@ -15,7 +15,7 @@ namespace MeasurementTesting.Attributes
         public int PlannedIterations;
         public int IterationsDone;
         
-        public MeasureAttribute(MeasurementType type, int sampleIterations = 10)
+        public MeasureAttribute(int sampleIterations = 100)
         {
             SampleIterations = sampleIterations;
             PlannedIterations = sampleIterations;
@@ -44,6 +44,15 @@ namespace MeasurementTesting.Attributes
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class MeasureClassAttribute : Attribute
     {
+        public List<MeasureTypes> Types;
+        public bool Dependent;
+        public MeasureClassAttribute(bool dependent = false, params MeasureTypes[] types)
+        {
+            // If any types are specified then use them. Otherwise, use all types.
+            Types = types != null && types.Length > 0 ? types.ToList() : new List<MeasureTypes>() {MeasureTypes.Package, MeasureTypes.Temp, MeasureTypes.Timer, MeasureTypes.DRAM};
+            Dependent = dependent;
+        }
+        
         public MethodInfo GetSetupMethod(Type type)
         {
             var setup = type.GetMethods().Where(method =>

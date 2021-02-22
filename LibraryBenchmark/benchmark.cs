@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using CsharpRAPL;
 using CsharpRAPL.Devices;
 
@@ -13,6 +14,13 @@ public struct Measure
         this.duration = raplResult.Find(res => res.Item1.Equals("timer")).Item2;
         this.apis = raplResult;
     }
+}
+
+public enum MeasureTypes {
+    Timer,
+    Package,
+    DRAM,
+    Temp
 }
 
 namespace benchmark
@@ -30,7 +38,7 @@ namespace benchmark
         TextWriter benchmarkOutputStream = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
         public event SingleRun SingleRunComplete;
 
-        public Benchmark(int iterations, bool silenceBenchmarkOutput = true) 
+        public Benchmark(int iterations, List<MeasureTypes> types, bool silenceBenchmarkOutput = true) 
         {
             this.stdout = System.Console.Out;
 
@@ -39,14 +47,24 @@ namespace benchmark
 
             this.iterations = iterations;
 
-            this._rapl = new RAPL(
-                new List<Sensor>() {
-                    new Sensor("timer", new TimerAPI(), CollectionApproach.DIFFERENCE),
-                    new Sensor("package", new PackageAPI(), CollectionApproach.DIFFERENCE),
-                    new Sensor("dram", new DramAPI(), CollectionApproach.DIFFERENCE),
-                    new Sensor("temp", new TempAPI(), CollectionApproach.AVERAGE)
+            List<Sensor> sensors = types.Select(x =>
+            {
+                switch (x)
+                {
+                    case MeasureTypes.Timer:
+                        return new Sensor("timer", new TimerAPI(), CollectionApproach.DIFFERENCE);
+                    case MeasureTypes.Package:
+                        return new Sensor("package", new PackageAPI(), CollectionApproach.DIFFERENCE);
+                    case MeasureTypes.DRAM:
+                        return new Sensor("dram", new DramAPI(), CollectionApproach.DIFFERENCE);
+                    case MeasureTypes.Temp:
+                        return new Sensor("temp", new TempAPI(), CollectionApproach.AVERAGE); 
+                    default:
+                        return null;
                 }
-            );
+            }).ToList();
+            
+            this._rapl = new RAPL(sensors);
         }
 
         private void start() => _rapl.Start();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -17,7 +18,7 @@ namespace MeasurementDebugging
         }
     }
 
-    [MeasureClass]
+    [MeasureClass(false)]
     public class MeasurementExample
     {
         private int number;
@@ -29,11 +30,16 @@ namespace MeasurementDebugging
             number = 6;
         }
         
-        [Measure(MeasurementType.Time)]
+        [Measure(5)]
+        public void something()
+        {
+            Console.WriteLine("blabla");
+        }
+        
+        [Measure(10)]
         public void Testing1()
         {
             Benchmark.Start();
-            number = 8;
         }
 
         [MeasureCleanup]
@@ -56,7 +62,6 @@ namespace MeasurementDebugging
         {
             rng = new Random(2);
             var res = performPlayingCards(1000, 0);
-            Console.WriteLine(res);
         }
 
         private static int performPlayingCards(int runs, int count)

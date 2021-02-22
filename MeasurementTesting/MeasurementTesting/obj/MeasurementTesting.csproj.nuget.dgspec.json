@@ -10,11 +10,11 @@
         "projectUniqueName": "/home/casper/Documents/GitHub/EnergyIDE/MeasurementTesting/MeasurementTesting/MeasurementTesting.csproj",
         "projectName": "MeasurementTesting",
         "projectPath": "/home/casper/Documents/GitHub/EnergyIDE/MeasurementTesting/MeasurementTesting/MeasurementTesting.csproj",
-        "packagesPath": "/root/.nuget/packages/",
+        "packagesPath": "/home/casper/.nuget/packages/",
         "outputPath": "/home/casper/Documents/GitHub/EnergyIDE/MeasurementTesting/MeasurementTesting/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/root/.nuget/NuGet/NuGet.Config"
+          "/home/casper/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netstandard2.0"
@@ -55,7 +55,7 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "runtimeIdentifierGraphPath": "/usr/lib/mono/msbuild/Current/bin/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/5.0.103/RuntimeIdentifierGraph.json"
         }
       }
     }

@@ -38,41 +38,73 @@ namespace MeasurementTesting
                 Object[] attributes = method.GetCustomAttributes(false);
                 foreach (var tempAttribute in attributes)
                 {
-                    if (tempAttribute is MeasureAttribute)
+                    // Checks for measure attribute 
+                    if (!(tempAttribute is MeasureAttribute)) continue;
+                    
+                    // Cast to measure attribute and create class
+                    var attribute = (MeasureAttribute)tempAttribute;
+                    var measureClass = type.Assembly.CreateInstance(type.FullName);
+                    try
                     {
-                        var attribute = (MeasureAttribute)tempAttribute;
-                        var measureClass = type.Assembly.CreateInstance(type.FullName);
-                        try
-                        {
-                            var bm = new Benchmark(1, false);
-                            bm.SingleRunComplete += measure => ProcessMeasure(measure, attribute);
-                            if (setup != null)
-                                setup.Invoke(measureClass, Type.EmptyTypes);
-                            
-                            // Running sample iterations
-                            runBenchmark(method, measureClass, bm, attribute.SampleIterations);
-                            
-                            //Checking if it is enough runs
-                            var numRuns = (int)Math.Ceiling(ComputeSampleSize(attribute.Measurements));
-                            if (!IsEnough(numRuns, attribute.Measurements, attribute.SampleIterations))
-                            {
-                                Console.Write($"Performing more samples.. {numRuns - attribute.SampleIterations}");
-                                attribute.PlannedIterations = numRuns;
-                                runBenchmark(method, measureClass, bm, (numRuns - attribute.SampleIterations));
-                            }
-                            
-                            if (cleanUp != null)
-                                cleanUp.Invoke(measureClass, Type.EmptyTypes);
-                            
-                            output.MethodCalled(method, attribute.Measurements);
-                        }
-                        catch(Exception e)
-                        {
-                            output.MethodCalled(method, attribute.Measurements, e.InnerException ?? e);
-                        }
+                        // Running setup
+                        if (setup != null)
+                            setup.Invoke(measureClass, Type.EmptyTypes);
+
+                        PerformBenchmark(measureClass, method, classAtt, attribute);
+                        
+                        // Cleanup
+                        if (cleanUp != null)
+                            cleanUp.Invoke(measureClass, Type.EmptyTypes);
+                        
+                        // Save results to output class
+                        output.MethodCalled(method, attribute.Measurements);
+                    }
+                    catch(Exception e)
+                    {
+                        output.MethodCalled(method, attribute.Measurements, e.InnerException ?? e);
                     }
                 }
 
+            }
+        }
+
+        private static void PerformBenchmark(Object measureClass, MethodInfo method, MeasureClassAttribute classAtt, MeasureAttribute attribute)
+        {
+            // Checking for dependency (JIT)
+            if (classAtt.Dependent)
+            {
+                Console.WriteLine("Dependant");
+                var bm = new Benchmark(attribute.SampleIterations, classAtt.Types, false);
+                bm.SingleRunComplete += measure => ProcessMeasure(measure, attribute);
+                // Running sample iterations
+                runBenchmark(method, measureClass, bm, 1);
+                var numRuns = (int) Math.Ceiling(ComputeSampleSize(attribute.Measurements));
+                if (!IsEnough(numRuns, attribute.Measurements, attribute.SampleIterations))
+                {
+                    Console.Write($"Performing more samples.. {numRuns}");
+                    attribute.PlannedIterations = numRuns + attribute.SampleIterations;
+                    var newBm = new Benchmark(numRuns, classAtt.Types, false);
+                    newBm.SingleRunComplete += measure => ProcessMeasure(measure, attribute);                    
+                    runBenchmark(method, measureClass, newBm, 1);
+                }
+            }
+            else
+            {
+                // Creating the benchmark class
+                var bm = new Benchmark(1, classAtt.Types, false);
+                bm.SingleRunComplete += measure => ProcessMeasure(measure, attribute);
+
+                // Running sample iterations
+                runBenchmark(method, measureClass, bm, attribute.SampleIterations);
+
+                //Checking if it is enough runs
+                var numRuns = (int) Math.Ceiling(ComputeSampleSize(attribute.Measurements));
+                if (!IsEnough(numRuns, attribute.Measurements, attribute.SampleIterations))
+                {
+                    Console.Write($"Performing more samples.. {numRuns - attribute.SampleIterations}");
+                    attribute.PlannedIterations = numRuns;
+                    runBenchmark(method, measureClass, bm, (numRuns - attribute.SampleIterations));
+                }
             }
         }
 
@@ -88,7 +120,6 @@ namespace MeasurementTesting
             }
         }
 
-        
         private static double ComputeSampleSize(List<Measurement> measurements)
         {
             var numRuns = new double[measurements.Count];
