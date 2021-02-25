@@ -95,6 +95,7 @@ class instruction_rule():
             arguments = get_arguments(name)
             for _ in range(len(arguments)):
                 self.stack.pop()
+            return self.stack, None
         else:
             method = methods[name]
 
@@ -112,7 +113,7 @@ class instruction_rule():
             res, return_val = method.get_instructions(methods, active_class)
 
             output.write_to_file(method.name, res, output_file, method.arguments)
-            return return_val
+            return self.stack, return_val
 
 
     def bool_to_integral(self, boolean):

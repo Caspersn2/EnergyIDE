@@ -164,10 +164,11 @@ class state_machine():
                     
                     current.add_values(self.stack)
                     if self.temp:
-                        return_val = current.call(self.methods, self.temp, state_machine.output)
+                        stack, return_val = current.call(self.methods, self.temp, state_machine.output)
                     else:
-                        return_val = current.call(self.methods, self.active_class, state_machine.output)
+                        stack, return_val = current.call(self.methods, self.active_class, state_machine.output)
 
+                    self.stack = stack
                     if return_val:
                         self.stack.append(return_val)
 
@@ -176,7 +177,9 @@ class state_machine():
                     class_name, method = current.create_name()
                     cls = self.stack.pop()
                     current.value = f'{cls.name}::{method}'
-                    return_val = current.call(self.methods, cls, state_machine.output)
+                    stack, return_val = current.call(self.methods, cls, state_machine.output)
+                    
+                    self.stack = stack
                     if return_val:
                         self.stack.append(return_val)
 
@@ -185,6 +188,8 @@ class state_machine():
                     self.executed.append(current)
                     if self.stack:
                         return Actions.RETURN, self.stack.pop()
+                    else:
+                        return Actions.RETURN, None
 
                 else:
                     raise Exception(f"The action '{action}' has not been implemented with the extra variables: '{current.location}'")

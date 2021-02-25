@@ -32,8 +32,9 @@ python main.py -f file.il -m 'generateNumber()'
 
 - [x] Implement Call functionality, to follow calls in the CIL code
 - [x] Implement option to select between (Simple Counting and Simulation)
+- [x] Make the simulation work with multiple classes (Call, results)
+- [x] Fix stack popping properly when calling another method
 - [ ] Fix unimplemented instructions (ongoing)
-- [ ] Make the simulation work with multiple classes (Call, results)
 - [ ] Find out how to call third part libraries / system libraries
 - [ ] Add option to decompile existing DLL files and count
 - [ ] Add functionality to randomize the input parameters for specified functions which takes arguments
