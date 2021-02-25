@@ -12,6 +12,11 @@
   value: 0
 
 - !Inst
+  name: ldc.i4.1
+  action: [PUSH]
+  value: 1
+
+- !Inst
   name: ldc.i4.5
   action: [PUSH]
   value: 5
@@ -104,7 +109,7 @@
 
 - !Inst
   name: newarr
-  action: [POP, PUSH]
+  action: [POP, CREATE, PUSH]
 
 - !Inst
   name: newobj
@@ -163,6 +168,11 @@
   operator: '*'
 
 - !Inst
+  name: rem
+  action: [POP, POP, COMPUTE]
+  operator: '%'
+
+- !Inst
   name: cgt
   action: [POP, POP, COMPARE]
   operator: '>'
@@ -173,9 +183,27 @@
   operator: '<'
 
 - !Inst
+  name: ceq
+  action: [POP, POP, COMPARE]
+  operator: '=='
+
+- !Inst
+  name: stelem.i1
+  action: [POP, POP, POP, STORE_ARR]
+
+- !Inst
+  name: ldelem.u1
+  action: [POP, POP, LOAD_ARR]
+
+- !Inst
   name: call
   action: [CALL]
 
 - !Inst
   name: callvirt
   action: [CALLVIRT]
+
+  # This is not an ideal version of box!!
+- !Inst
+  name: box
+  action: []
