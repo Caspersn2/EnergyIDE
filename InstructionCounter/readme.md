@@ -34,7 +34,9 @@ python main.py -f file.il -m 'generateNumber()'
 - [x] Implement option to select between (Simple Counting and Simulation)
 - [x] Make the simulation work with multiple classes (Call, results)
 - [x] Fix stack popping properly when calling another method
-- [ ] Fix unimplemented instructions (ongoing)
+- [x] Implement array mutation
+- [x] Add functionality to randomize the random values from system calls
+- [ ] Add functionality to randomize input parameters for specificed method
 - [ ] Find out how to call third part libraries / system libraries
+- [ ] Fix unimplemented instructions (ongoing)
 - [ ] Add option to decompile existing DLL files and count
-- [ ] Add functionality to randomize the input parameters for specified functions which takes arguments

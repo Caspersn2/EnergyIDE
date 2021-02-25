@@ -148,12 +148,26 @@ class state_machine():
                     res = current.compute()
                     self.stack.append(res)
 
+                # CHANGE a single value in ARRAY
+                elif action == 'STORE_ARR':
+                    _ = current.mutate(store=True)
+
+                # GET a single value in ARRAY
+                elif action == 'LOAD_ARR':
+                    val = current.mutate(store=False)
+                    self.stack.append(val)
+
                 # CREATE
                 elif action == 'CREATE':
-                    class_name, const = current.create_name()
-                    cls = copy.deepcopy(self.classes[class_name])
-                    current.value = f'{cls.name}::{const}'
-                    self.temp = cls
+                    if current.name == 'newobj':
+                        class_name, const = current.create_name()
+                        cls = copy.deepcopy(self.classes[class_name])
+                        current.value = f'{cls.name}::{const}'
+                        self.temp = cls
+                    elif current.name == 'newarr':
+                        current.value = current.create_array()
+                    else:
+                        raise Exception(f"The action create should not be used with other instructions than 'newobj' or 'newarr'")
 
                 # CALL
                 elif action == 'CALL':

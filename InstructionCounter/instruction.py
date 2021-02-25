@@ -1,7 +1,8 @@
+from random_arguments import create_random_argument
 import re
 import output
 from variable import variable
-from utilities import get_arguments
+import utilities
 
 
 class_name = r'class\s(.*)'
@@ -60,6 +61,7 @@ class instruction_rule():
         self.value = value
         self.can_jump = False
         self.args = None
+        self.type = None
         self.stack = []
 
 
@@ -71,6 +73,19 @@ class instruction_rule():
     def add_value(self, value):
         self.stack.append(value)
 
+
+    def get_default_value(self):
+        if self.value == 'System.Boolean':
+            return 0
+
+
+    def create_array(self):
+        arr = []
+        length = self.stack.pop()
+        for _ in range(length):
+            arr.append(self.get_default_value())
+        return arr
+
     
     def create_name(self):
         cls = None
@@ -79,11 +94,27 @@ class instruction_rule():
         for elem in self.value:
             if found:
                 method += f' {elem}'
+            else:
+                if elem in ['void', 'string', 'int32', 'bool']:
+                    self.type = elem
 
             if '::' in elem:
                 cls, method = elem.split('::')
                 found = True
         return cls, method
+
+    
+    # I have not quite wrapped my head around the fact that this is a purely referential change
+    def mutate(self, store):
+        array = self.stack.pop()
+        index = self.stack.pop()
+        value = None
+        if store:
+            value = self.stack.pop()
+            array[index] = value
+        else:
+            value = array[index]
+        return value
 
 
     def call(self, methods, active_class, output_file):
@@ -92,10 +123,11 @@ class instruction_rule():
         is_library = is_library_call(name)
         if is_library:
             name = name.split('::')[1]
-            arguments = get_arguments(name)
+            cleaned = utilities.remove_library_names(name)
+            arguments = utilities.get_arguments(cleaned)
             for _ in range(len(arguments)):
                 self.stack.pop()
-            return self.stack, None
+            return self.stack, create_random_argument(self.type)
         else:
             method = methods[name]
 
@@ -167,5 +199,7 @@ class instruction_rule():
             return val1 / val2
         elif self.operator == '*':
             return val1 * val2
+        elif self.operator == '%':
+            return val1 % val2
         else:
             raise Exception(f"The compute operator '{self.operator}' has not been implemented")

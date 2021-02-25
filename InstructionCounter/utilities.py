@@ -7,7 +7,7 @@ method_instruction = r'\.method'
 method_name = r'\s(\S+?)\(.*?\)\s'
 class_name = r'\.class.+\s(.+)\sextends'
 locals_instruction = r'\.locals init'
-variable_name = r'\.?[a-zA-Z<>][_0-9a-zA-Z<>]*'
+variable_name = r'\.?[a-zA-Z<>][_0-9a-zA-Z<>\.]*'
 variable_type = rf'{variable_name}\[?\]?'
 instance_keyword = r'instance'
 
@@ -112,3 +112,7 @@ def simple_count(text):
     joined = ' '.join(text).split()
     res = [x for x in joined if x in cil_instructions]
     return Counter(res)
+
+
+def remove_library_names(text):
+    return re.sub(r'\[System\..+\]', '', text)
