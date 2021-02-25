@@ -1,4 +1,5 @@
 import argparse
+from statemachine import state_machine
 import yamlclass
 import utilities
 import output
@@ -23,9 +24,21 @@ if __name__ == '__main__':
     
     ## Split all code into methods
     instructionset = yamlclass.load('instructions.yaml')
-    methods = utilities.get_by_method(text)
+    classes = utilities.get_all_classes(text)
+    methods = {}
+    for _, cls in classes.items():
+        for m in cls.methods:
+            methods[m.name] = m
+
+    state_machine.available_instructions = instructionset
+    state_machine.available_classes = classes
+    state_machine.output = args.output
+
     if args.list:
-        print(f'The available methods are as follows: {methods.keys()}')
+        print(f'The available methods are as follows:')
+        keys = [f'{x}' for x in methods.keys()]
+        for key in keys:
+            print(key)
     else:
         if args.method:
             if args.method in methods:
@@ -37,21 +50,22 @@ if __name__ == '__main__':
                 if args.counting_method == 'Simple':
                     res = utilities.simple_count(method.text)
                 else:
-                   res = method.get_instructions(instructionset, methods)
+                   res, _ = method.get_instructions(methods, None)
 
                 output.write_to_file(method.name, res, args.output)
             else:
                 raise Exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
         else:
-            if args.entry in methods:
-                entry = methods[args.entry]
+            found = False
+            for k, method in methods.items():
+                if args.entry in k:
+                    found = True
+                    res = None
+                    if args.counting_method == 'Simple':
+                        res = utilities.simple_count(method.text)
+                    else:
+                        res, _ = method.get_instructions(methods, None)
 
-                res = None
-                if args.counting_method == 'Simple':
-                    res = utilities.simple_count(entry.text)
-                else:
-                    res = entry.get_instructions(instructionset, methods)
-
-                output.write_to_file(entry.name, res, args.output)
-            else:
+                    output.write_to_file(method.name, res, args.output)
+            if not found:
                 raise Exception(f"The default method: '{args.entry}' does not exist in the .il file, please specify another method using `-e` or `--entry`")

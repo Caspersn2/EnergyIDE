@@ -41,7 +41,9 @@ class instruction():
         cleaned = list(filter(lambda x: x != 'class', elements[1:]))
         cleaned = list(filter(None, cleaned))
 
-        if len(cleaned) == 1 and re.match(r'\d+', cleaned[0]):
+        if len(cleaned) == 1 and re.match(r'-?\d,\d', cleaned[0]):
+            cleaned = float(cleaned[0].replace(',','.'))
+        elif len(cleaned) == 1 and re.match(r'-?\d+', cleaned[0]):
             cleaned = int(cleaned[0])
         elif len(cleaned) == 1:
             cleaned = cleaned[0]
@@ -50,11 +52,11 @@ class instruction():
 
 
 class instruction_rule():
-    def __init__(self, name, location = 'STACK', action = None, comparison = None, value = None):
+    def __init__(self, name, location = 'STACK', action = None, operator = None, value = None):
         self.name = name
         self.location = location
         self.actions = action
-        self.comparison = comparison
+        self.operator = operator
         self.value = value
         self.can_jump = False
         self.args = None
@@ -69,9 +71,24 @@ class instruction_rule():
     def add_value(self, value):
         self.stack.append(value)
 
+    
+    def create_name(self):
+        cls = None
+        method = None
+        found = False
+        for elem in self.value:
+            if found:
+                method += f' {elem}'
 
-    def call(self, methods, instructionset):
-        name = ' '.join(self.value)
+            if '::' in elem:
+                cls, method = elem.split('::')
+                found = True
+        return cls, method
+
+
+    def call(self, methods, active_class, output_file):
+        name = self.value
+
         is_library = is_library_call(name)
         if is_library:
             name = name.split('::')[1]
@@ -79,8 +96,6 @@ class instruction_rule():
             for _ in range(len(arguments)):
                 self.stack.pop()
         else:
-            # TODO: Fix that calls can go across classes
-            name = name.split('::')[1]
             method = methods[name]
 
             parameter_list = {}
@@ -94,10 +109,10 @@ class instruction_rule():
                 parameter_list[key] = var
             
             method.arguments = parameter_list
-            res = method.get_instructions(instructionset, methods)
+            res, return_val = method.get_instructions(methods, active_class)
 
-            # TODO: Fix the output, set it to the same as in main
-            output.write_to_file(method.name, res, 'results.csv')
+            output.write_to_file(method.name, res, output_file, method.arguments)
+            return return_val
 
 
     def bool_to_integral(self, boolean):
@@ -120,20 +135,36 @@ class instruction_rule():
             val1 = self.bool_to_integral(self.stack.pop())
             val2 = self.bool_to_integral(self.stack.pop())
 
-        if self.comparison == '>':
+        if self.operator == '>':
             self.can_jump = val1 > val2
             return val1 > val2
-        elif self.comparison == '<':
+        elif self.operator == '<':
             self.can_jump = val1 < val2
             return val1 < val2
-        elif self.comparison == '==':
+        elif self.operator == '==':
             self.can_jump = val1 == val2
             return val1 == val2
-        elif self.comparison == '<=':
+        elif self.operator == '<=':
             self.can_jump = val1 <= val2
             return val1 <= val2
-        elif self.comparison == '>=':
+        elif self.operator == '>=':
             self.can_jump = val1 >= val2
             return val1 >= val2
         else:
-            raise Exception(f"The comparison operator '{self.comparison}' has not been implemented")
+            raise Exception(f"The comparison operator '{self.operator}' has not been implemented")
+
+    
+    def compute(self):
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+
+        if self.operator == '+':
+            return val1 + val2
+        elif self.operator == '-':
+            return val1 - val2
+        elif self.operator == '/':
+            return val1 / val2
+        elif self.operator == '*':
+            return val1 * val2
+        else:
+            raise Exception(f"The compute operator '{self.operator}' has not been implemented")

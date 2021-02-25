@@ -1,12 +1,15 @@
 import re
 from collections import Counter
 from method import method
+from class_obj import class_obj
 
 method_instruction = r'\.method'
 method_name = r'\s(\S+?)\(.*?\)\s'
+class_name = r'\.class.+\s(.+)\sextends'
 locals_instruction = r'\.locals init'
-variable_name = r'\.?[a-zA-Z][_0-9a-zA-Z]*'
+variable_name = r'\.?[a-zA-Z<>][_0-9a-zA-Z<>]*'
 variable_type = rf'{variable_name}\[?\]?'
+instance_keyword = r'instance'
 
 
 # Assert that all values in the set have the same value
@@ -37,16 +40,31 @@ def remove_parameter_names(name):
 
 
 # Returns method objects based
-def get_by_method(text):
-    methods = {}
+def get_by_method(text, cls):
+    methods = []
     matches = re.finditer(method_instruction, text)
     for match in matches:
         start = match.start()
         tmp_name = re.search(method_name, text[start:]).group().strip()
         name = remove_parameter_names(tmp_name)
+        name = f'{cls.name}::{name}'
         end = count_by_set({'{': 0, '}': 0}, text[start:])
-        methods[name] = method(name, text[start: start + end])
+
+        # This is quite hardcoded
+        is_instance = True if re.search(instance_keyword, text[start:start + end].split('\n')[0]) else False
+        methods.append(method(name, cls, is_instance, text[start:start + end]))
     return methods
+
+
+def get_all_classes(text):
+    classes = {}
+    matches = re.finditer(class_name, text)
+    for match in matches:
+        start = match.start()
+        name = match.groups()[0].strip()
+        end = count_by_set({'{': 0, '}': 0}, text[start:])
+        classes[name] = class_obj(name, text[start:start + end])
+    return classes
 
 
 def get_local_stack(text):
@@ -91,11 +109,6 @@ def load_CIL():
 
 def simple_count(text):
     cil_instructions = load_CIL()
-    res = []
-    for line in text:
-        for inst in cil_instructions:
-            match = re.search(rf'IL_[0-9a-f]+:\s({inst})', line)
-            if match:
-                res.append(match.groups()[0])
-                break
+    joined = ' '.join(text).split()
+    res = [x for x in joined if x in cil_instructions]
     return Counter(res)
