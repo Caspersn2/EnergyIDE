@@ -144,6 +144,11 @@
   value: 2
 
 - !Inst
+  name: ldnull
+  action: [PUSH]
+  value: None
+
+- !Inst
   name: ret
   action: [RETURN]
 
