@@ -39,4 +39,4 @@ python main.py -f file.il -m 'generateNumber()'
 - [ ] Add functionality to randomize input parameters for specificed method
 - [ ] Find out how to call third part libraries / system libraries
 - [ ] Fix unimplemented instructions (ongoing)
-- [ ] Add option to decompile existing DLL files and count
+- [x] Add option to decompile existing DLL files and count

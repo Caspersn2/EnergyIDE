@@ -3,6 +3,7 @@ from statemachine import state_machine
 import yamlclass
 import utilities
 import output
+import subprocess
 
 
 if __name__ == '__main__':
@@ -12,6 +13,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--method', type=str, help='Countes the instructions for the specific method')
     parser.add_argument('-e', '--entry', default='Main(string[])', help='If "Main(string[])" is not the default entry method please specify with this command')
     parser.add_argument('-l', '--list', action='store_true', help='Will print a list of available methods')
+    parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
     parser.add_argument('-o', '--output', type=str, default='results.csv', help='The name of the output file (Default = "results.csv")')
     parser.add_argument('-d', '--debug', action='store_true', help='Prints all of the args and their name after parsing')
     args = parser.parse_args()
@@ -20,7 +22,18 @@ if __name__ == '__main__':
         print(args)
 
     ## Read the il file
-    text = args.file.read()
+    if args.assembly:
+        name = args.file.name.split('/')[-1].split('.')[0]
+        try:
+            subprocess.call(
+            f'dotnet-ildasm {args.file.name} -o {name}.il', shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
+            text = open(f'{name}.il').read()
+        except:
+            raise Exception("Could not dissamble file")
+    else:
+        text = args.file.read()
     
     ## Split all code into methods
     instructionset = yamlclass.load('instructions.yaml')
