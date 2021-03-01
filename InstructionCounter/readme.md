@@ -1,6 +1,6 @@
 # Instructions
 
-This tool can be used to determine the number of CIL instructions will be executed for a given method within the CIL code.
+This tool can be used to determine the number of CIL instructions that will be executed for a given method within the CIL code.
 
 ## How to use
 
@@ -26,7 +26,7 @@ If one only wants to know the CIL instructions for a single method, this can be 
 python main.py -f file.il -m 'generateNumber()'
 ```
 
-> **WARNING:** if the method takes any input, then `-m` cannot be used, because it make random guesses about the input parameters.
+> **WARNING:** if the method takes any input, then `-m` cannot be used, because it can't make random guesses about the input parameters.
 
 ## Work list
 
