@@ -31,13 +31,7 @@
 					"type": "webview"
 				}
 			]
-		},
-		"commands": [
-			{
-				"command": "Energy.calculate",
-				"title": "Calculate energy consumption"
-			}
-		]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
@@ -67,6 +61,8 @@
 		"webpack-cli": "^4.4.0"
 	},
 	"dependencies": {
+		"axios": "^0.21.1",
+		"httpclient": "^0.1.0",
 		"watch": "^1.0.2",
 		"yarn": "^1.22.10"
 	}

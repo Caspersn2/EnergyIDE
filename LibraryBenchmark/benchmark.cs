@@ -28,6 +28,7 @@ namespace benchmark
     public delegate void SingleRun(Measure measure);
     public class Benchmark
     {
+        public bool stop_running { get; set; }
         static readonly int maxExecutionTime = 2700; //In seconds
         static readonly string outputFilePath = "tempResults.csv";
         int iterations { get; }
@@ -100,6 +101,7 @@ namespace benchmark
             _resultBuffer = new List<Measure>();
             for (int i = 0; i < iterations; i++)
             {
+                if (stop_running) break;
                 if(iterations != 1)
                     print(System.Console.Write, $"\r{i + 1} of {iterations}");
                 

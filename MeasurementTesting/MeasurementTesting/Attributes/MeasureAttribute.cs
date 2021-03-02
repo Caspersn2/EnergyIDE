@@ -39,6 +39,17 @@ namespace MeasurementTesting.Attributes
                 }
             }
         }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.Append("Measurements: ");
+            foreach(var measurement in Measurements)
+            {
+                builder.Append(measurement.ToString());
+            }
+            return builder.ToString();
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
@@ -46,10 +57,27 @@ namespace MeasurementTesting.Attributes
     {
         public List<MeasureTypes> Types;
         public bool Dependent;
-        public MeasureClassAttribute(bool dependent = false, params MeasureTypes[] types)
+        public MeasureClassAttribute(bool dependent = false, params MeasurementType[] types)
         {
             // If any types are specified then use them. Otherwise, use all types.
-            Types = types != null && types.Length > 0 ? types.ToList() : new List<MeasureTypes>() {MeasureTypes.Package, MeasureTypes.Temp, MeasureTypes.Timer, MeasureTypes.DRAM};
+            Types = types != null && types.Length > 0 ? new List<MeasureTypes>() : new List<MeasureTypes>(){ MeasureTypes.Timer, MeasureTypes.Temp, MeasureTypes.Package, MeasureTypes.DRAM };
+            foreach(var type in types){
+                switch(type){
+                    case MeasurementType.DRAM:
+                        Types.Add(MeasureTypes.DRAM);
+                        break;
+                    case MeasurementType.Package:
+                        Types.Add(MeasureTypes.Package);
+                        break;
+                    case MeasurementType.Temp:
+                        Types.Add(MeasureTypes.Temp);
+                        break;
+                    case MeasurementType.Timer:
+                        Types.Add(MeasureTypes.Timer);
+                        break;
+                }
+            }
+            
             Dependent = dependent;
         }
         
@@ -96,10 +124,10 @@ namespace MeasurementTesting.Attributes
         }
     }
 
-    public enum MeasurementType
-    {
-        Time,
-        Energy,
-        Temperature
+    public enum MeasurementType {
+        Timer,
+        Package,
+        DRAM,
+        Temp
     }
 }

@@ -18,7 +18,7 @@ namespace MeasurementDebugging
         }
     }
 
-    [MeasureClass(false)]
+    [MeasureClass(false, MeasurementType.Timer)]
     public class MeasurementExample
     {
         private int number;

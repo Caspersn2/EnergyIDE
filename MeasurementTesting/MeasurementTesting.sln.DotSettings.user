@@ -1,6 +1,0 @@
-﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=_002Fhome_002Fcasper_002FDocuments_002FGitHub_002FEnergyIDE_002FLibraryBenchmark_002Fbin_002FDebug_002Fnetstandard2_002E0_002Fbenchmark_002Edll/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=_002Fhome_002Fcasper_002FDocuments_002FGitHub_002FEnergyIDE_002FLibraryBenchmark_002Fbin_002FDebug_002Fnetstandard2_002E0_002FCsharpRAPL_002Edll/@EntryIndexedValue">True</s:Boolean>
-	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;
-  &lt;Assembly Path="/home/casper/Documents/GitHub/ParadigmComparison/library_benchmark/bin/Debug/netstandard2.0/benchmark.dll" /&gt;
-&lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

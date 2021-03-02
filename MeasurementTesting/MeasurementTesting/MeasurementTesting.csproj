@@ -1,16 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="benchmark, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\LibraryBenchmark\bin\Debug\netstandard2.0\benchmark.dll</HintPath>
-    </Reference>
-    <Reference Include="CsharpRAPL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\LibraryBenchmark\bin\Debug\netstandard2.0\CsharpRAPL.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\CsharpRAPL\CsharpRAPL.csproj" />
+    <ProjectReference Include="..\..\LibraryBenchmark\benchmark.csproj" />
   </ItemGroup>
 
 </Project>

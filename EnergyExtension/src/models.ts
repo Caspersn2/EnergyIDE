@@ -6,5 +6,3 @@ export class Method {
   filePath: vscode.Uri | undefined;
   lineNumber: Number | undefined;
 }
-
-

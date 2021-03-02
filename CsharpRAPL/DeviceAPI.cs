@@ -47,8 +47,12 @@ namespace CsharpRAPL
             return socket_id_list.Distinct().ToList();
         }
 
-        public DeviceAPI(List<int> socketIds = null)
+        public DeviceAPI(List<int> socketIds = null, bool ReadSockets = true)
         {
+            if (!ReadSockets) return;
+            
+            // Reads sockets on the computer for DRRAM, PACKAGE, and TEMP.
+            // This will only work on linux
             List<int> allSocketIds = getSocketIds();
             if (socketIds == null){
                 this._socketIds = allSocketIds;

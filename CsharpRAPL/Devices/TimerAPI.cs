@@ -5,7 +5,7 @@ namespace CsharpRAPL.Devices {
     public class TimerAPI : DeviceAPI {
         private Stopwatch sw = new Stopwatch();
         
-        public TimerAPI() {
+        public TimerAPI(): base(null, false) {
             sw.Start();
         }
 
