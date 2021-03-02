@@ -5,6 +5,7 @@ from variable import variable
 
 # An object representing a state machine to evaluate instructions
 class state_machine():
+    # Static/class variables
     available_instructions = None
     available_classes = None
     output = None

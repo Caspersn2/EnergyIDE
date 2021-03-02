@@ -71,14 +71,14 @@ if __name__ == '__main__':
         else:
             found = False
             for k, method in methods.items():
-                res = None
-                if args.counting_method == 'Simple':
-                    res = utilities.simple_count(method.text)
-                    output.write_to_file(method.name, res, args.output)
-                else:
-                    if args.entry in k:
-                        found = True
+                if args.entry in k:
+                    found = True
+                    res = None
+                    if args.counting_method == 'Simple':
+                        res = utilities.simple_count(method.text)
+                    else:
                         res, _ = method.get_instructions(methods, None)
-                        output.write_to_file(method.name, res, args.output)
-            if args.counting_method == 'Simulation' and not found:
+
+                    output.write_to_file(method.name, res, args.output)
+            if not found:
                 raise Exception(f"The default method: '{args.entry}' does not exist in the .il file, please specify another method using `-e` or `--entry`")
