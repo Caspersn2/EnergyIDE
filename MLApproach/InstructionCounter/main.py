@@ -6,18 +6,7 @@ import output
 import subprocess
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=argparse.FileType('r'), help='Counts all of the instructions used', required=True)
-    parser.add_argument('-c', '--counting-method', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
-    parser.add_argument('-m', '--method', type=str, help='Countes the instructions for the specific method')
-    parser.add_argument('-e', '--entry', default='Main(string[])', help='If "Main(string[])" is not the default entry method please specify with this command')
-    parser.add_argument('-l', '--list', action='store_true', help='Will print a list of available methods')
-    parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
-    parser.add_argument('-o', '--output', type=str, default='results.csv', help='The name of the output file (Default = "results.csv")')
-    parser.add_argument('-d', '--debug', action='store_true', help='Prints all of the args and their name after parsing')
-    args = parser.parse_args()
-
+def main(args):
     if args.debug:
         print(args)
 
@@ -71,14 +60,28 @@ if __name__ == '__main__':
         else:
             found = False
             for k, method in methods.items():
-                if args.entry in k:
-                    found = True
-                    res = None
-                    if args.counting_method == 'Simple':
-                        res = utilities.simple_count(method.text)
-                    else:
-                        res, _ = method.get_instructions(methods, None)
-
+                res = None
+                if args.counting_method == 'Simple':
+                    res = utilities.simple_count(method.text)
                     output.write_to_file(method.name, res, args.output)
-            if not found:
+                else:
+                    if args.entry in k:
+                        found = True
+                        res, _ = method.get_instructions(methods, None)
+                        output.write_to_file(method.name, res, args.output)
+            if args.counting_method == 'Simulation' and not found:
                 raise Exception(f"The default method: '{args.entry}' does not exist in the .il file, please specify another method using `-e` or `--entry`")
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file', type=argparse.FileType('r'), help='Counts all of the instructions used', required=True)
+    parser.add_argument('-c', '--counting-method', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
+    parser.add_argument('-m', '--method', type=str, help='Countes the instructions for the specific method')
+    parser.add_argument('-e', '--entry', default='Main(string[])', help='If "Main(string[])" is not the default entry method please specify with this command')
+    parser.add_argument('-l', '--list', action='store_true', help='Will print a list of available methods')
+    parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
+    parser.add_argument('-o', '--output', type=str, default='results.csv', help='The name of the output file (Default = "results.csv")')
+    parser.add_argument('-d', '--debug', action='store_true', help='Prints all of the args and their name after parsing')
+    args = parser.parse_args()
+    main(args)

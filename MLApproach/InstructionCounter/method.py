@@ -30,7 +30,6 @@ class method():
         machine.load_arguments(self.arguments)
         machine.load_locals(self.locals)
         machine.is_instance(self.is_instance)
-        print(state_machine.available_instructions)
 
         if active_class:
             machine.load_active_class(active_class)

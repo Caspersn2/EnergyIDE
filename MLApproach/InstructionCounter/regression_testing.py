@@ -20,9 +20,9 @@ def count_occurrences(benchmark):
 def helper(il_file, correct, is_simple):
     # Act Simple
     if is_simple:
-        subprocess.run(f'python main.py -f {il_file} -c Simple', shell=True)
+        subprocess.run(f'python3 main.py -f {il_file} -c Simple', shell=True)
     else:
-        subprocess.run(f'python main.py -f {il_file}', shell=True)
+        subprocess.run(f'python3 main.py -f {il_file}', shell=True)
 
     # Assert Simple
     res = count_occurrences('results.csv')
