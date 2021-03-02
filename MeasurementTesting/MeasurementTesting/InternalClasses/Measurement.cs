@@ -20,10 +20,20 @@ namespace MeasurementTesting.InternalClasses
             this.Name = name;
             this.Values = new List<double>();
         }
+
         public override string ToString()
         {
             this.ComputeResults();
-            return this.Name + " " + this.Mean.ToString();
+            var result = new StringBuilder();
+            result.Append("<measurement>");
+            result.Append($"<name>{Name}</name>");
+            result.Append($"<mean>{Mean}</mean>");
+            result.Append($"<completed-runs>{Values.Count}</completed-runs>");
+            result.Append($"<deviation>{Deviation}</deviation>");
+            result.Append($"<ErrorMargin>{ErrorMargin}</ErrorMargin>");
+            result.Append($"<ErrorPercent>{ErrorPercent}</ErrorPercent>");
+            result.Append("</measurement>");
+            return result.ToString();
         }
 
         public void AddMeasurement(double value)

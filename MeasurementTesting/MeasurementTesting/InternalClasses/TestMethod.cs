@@ -23,20 +23,26 @@ namespace MeasurementTesting.InternalClasses
         // TODO:: Add better toString. Maybe in JSON, XML or HTML?
         public override string ToString()
         {
-            var result = new StringBuilder(MethodInformation.DeclaringType + "." + MethodInformation.Name + ": ");
+            var result = new StringBuilder();
+            result.Append("<method>");
+            result.Append($"<declaring-type>{MethodInformation.DeclaringType}</declaring-type>");
+            result.Append($"<name>{MethodInformation.Name}</name>");
+            
             if (Exception == null)
             {
-                result.Append("Passed\n");
+                result.Append("<result>Passed</result>");
                 foreach (var measurement in Measurements)
                 {
-                    result.Append(measurement);
+                    result.Append(measurement.ToString());
                 }
             }
             else
             {
-                result.Append("Failed\n");
-                result.Append(Exception.Message);
+                result.Append("<result>Failed</result>");
+                result.Append($"<error-message>{Exception.Message}</error-message>");
             }
+            
+            result.Append("</method>");
             return result.ToString();
         }
     }

@@ -22,7 +22,7 @@
   <div class="overSelect"></div>
 </div>
 <div id="checkboxes">
-  <label class="inRow"><input type="checkbox">This is just to test how it will look like if you have a really long name in the selector.</label>
+  <label class="inRow"><input type="checkbox">No methods found in the .dll files. Try to press the reload button to check for new files and methods.</label>
 </div>
 
 </br>
@@ -30,7 +30,7 @@
 </br>
 <p id="calcText">Select function and click activate.</p>
 <ul id="running-functions"></ul>
-<button id="activate-button" class="full-width btn" onclick="stop()">Stop</button>
+<button id="stop-button" style="display: none;" class="full-width btn btn-stop" onclick="stop()">Stop</button>
 
 <script>
   
@@ -55,7 +55,7 @@ window.addEventListener("message", (event) => {
         methodHTML.appendChild(label);
 
         var progressText = document.createElement("p");
-        progressText.innerText = method.Stage + ": " + method.RunsDone + "/" + method.PlannedRuns + " = " + ((100 / method.PlannedRuns) * method.RunsDone) + "%";
+        progressText.innerText = method.Stage + ": " + method.RunsDone + "/" + method.PlannedRuns + " = " + ((100 / method.PlannedRuns) * method.RunsDone).toFixed(2) + "%";
         methodHTML.appendChild(progressText);
 
         var progressBar = document.createElement("progress");
@@ -70,9 +70,13 @@ window.addEventListener("message", (event) => {
       break;
 
     case "done":
-      document.getElementById("activate-button").classList.remove("active");
-      document.getElementById("calcText").textContent =
-        "Done calculateing: 6mj or something";
+      var activateButton = document.getElementById("activate-button");  
+      activateButton.classList.remove("active");
+      activateButton.disabled = false;
+      
+      var stopButton = document.getElementById("stop-button");
+      stopButton.style.display = "none";
+      
       break;
 
     case "methods":
@@ -138,16 +142,24 @@ function methodSelected(id) {
 }
 
 function activate() {
+  // changeing the color of activate button to green, and disableing it.
+  var activateButton = document.getElementById("activate-button");
+  activateButton.classList.add("active");
+  activateButton.disabled = true;
+
+  // Show the stop button
+  var stopButton = document.getElementById("stop-button");
+  stopButton.style.display = "block";
+
+  // Call the server to activate the selected methods.
   let selected = getSelectedMethods().map(selected => JSON.parse(selected));
   let type = document.getElementById("types").value;
-  document.getElementById("activate-button").classList.add("active");
-
   vscode.postMessage({
     type: "activate",
     value: { methods: selected, type: type },
   });
 
-  // Maybe don't do this?
+  
   document.getElementById("calcText").textContent ="Calculating: " + selected.map(s => s.name).join(', ');
 }
 
@@ -259,6 +271,11 @@ function updateNumSelected() {
   border-style: none;
   border-radius: 0.2rem;
   padding: 0.3rem;
+  cursor: pointer;
+}
+
+.btn-stop:hover {
+  background-color: red;
 }
 
 .option {

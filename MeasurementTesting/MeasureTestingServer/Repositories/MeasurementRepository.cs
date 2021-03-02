@@ -5,11 +5,8 @@ using System.Reflection;
 using System.Threading;
 using MeasurementTesting;
 using MeasurementTesting.Attributes;
-using MeasurementTesting.InternalClasses;
 using MeasureTestingServer.Controllers;
-using System.Runtime.Loader;
 using System.IO;
-using System.Text.Json;
 
 namespace Measurement.Repositories
 {
@@ -21,7 +18,7 @@ namespace Measurement.Repositories
         private static List<TypeMethods> Methods { get; set; }
         
         public MeasureProgress GetMeasurements() => Manager.Progress;
-
+        
         public string Start(int[] MethodIds)
         {
             //Spawns a new thread to run the testing
@@ -89,7 +86,7 @@ namespace Measurement.Repositories
                             }
                         }
                     }
-                } catch (Exception e)
+                } catch (Exception)
                 {
                     Console.WriteLine("Error occured in file: " + file);
                 }

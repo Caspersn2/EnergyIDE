@@ -13,6 +13,14 @@ export class Measure
         });
     }
 
+    static async openOutput(output: string) {
+        const document = await vscode.workspace.openTextDocument({
+            language: "xml",
+            content: output,
+        });
+        vscode.window.showTextDocument(document);
+    }
+
     static delay(ms: number) {
         return new Promise( resolve => setTimeout(resolve, ms) );
     }
@@ -22,14 +30,20 @@ export class Measure
         MeasureTestingService.checkStatus().then(status => {
             if (typeof(status) !== typeof(String)){
                 status = <MeasureProgess>status;
-                if (status.Done) {this.stopProgress = status.Done;}
-                console.log(this.stopProgress);
-                webviewview.webview.postMessage({ command: 'progress', value: status });
-                this.delay(1000).then(() => {
-                    if (!this.stopProgress) {
-                        this.startProgressListen(webviewview);
-                    }
-                });
+                // If the measurements are done, stop listen and call the webview with done
+                if (status.Done) {
+                    this.stopProgress = status.Done;
+                    webviewview.webview.postMessage({ command: 'done', value: status });
+                    this.openOutput( status.Output == undefined ? "Could not read the output." : status.Output );
+                }
+                else {
+                    webviewview.webview.postMessage({ command: 'progress', value: status });
+                    this.delay(1000).then(() => {
+                        if (!this.stopProgress) {
+                            this.startProgressListen(webviewview);
+                        }
+                    });
+                }
             }
         });
     }
@@ -72,11 +86,12 @@ export class Method {
 }
 
 export class MeasureProgess {
+    PlannedMethods: Array<MethodProgress> | undefined;
+    ClassesPlanned: Array<string> | undefined;
+    ExceptionString: string | undefined;
+    ExceptionThrown: boolean| undefined;
     Done: boolean | undefined;
-    plannedMethods: Array<MethodProgress> | undefined;
-    classesPlanned: Array<string> | undefined;
-    exceptionString: string | undefined;
-    exceptionThrown: boolean| undefined;
+    Output: string | undefined;
 }
 
 export class MethodProgress {

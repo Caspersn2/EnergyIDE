@@ -5,7 +5,7 @@ using System.Reflection;
 using MeasurementTesting.InternalClasses;
 using MeasurementTesting.Attributes;
 using benchmark;
-using System.Text.Json;
+using System.Text;
 
 namespace MeasurementTesting
 {
@@ -17,6 +17,7 @@ namespace MeasurementTesting
         public bool ExceptionThrown { get; set; }
         public string ExceptionString { get; set; }
         public bool Done { get; set; }
+        public string Output { get; set; }
     }
 
     public class MethodProgress
@@ -46,10 +47,11 @@ namespace MeasurementTesting
             Progress.Done = false;
             Progress.ClassesPlanned = new List<string>{ type.Name };
 
-            var output = new Output();
+            var output = new Output(type.Name);
             TestRunner(type, output);
 
             Progress.Done = true;
+            Progress.Output = output.ToString();
             return output.ToString();
         }
 
@@ -63,12 +65,13 @@ namespace MeasurementTesting
             var outputs = new List<Output>();
             foreach(var type in types)
             {
-                var output = new Output();
+                var output = new Output(type.Name);
                 TestRunner(type, output, methodHashCodes);
                 outputs.Add(output);
             }
 
             Progress.Done = true;
+            Progress.Output = String.Join('\n', outputs.Select(o => o.ToString()));
             return String.Join('\n', outputs.Select(o => o.ToString()));
         }
 
@@ -95,13 +98,15 @@ namespace MeasurementTesting
             var outputs = new List<Output>();
             foreach(var type in types.Keys)
             {
-                var output = new Output();
+                var output = new Output(type.Name);
                 TestRunner(type, output, types[type]);
                 outputs.Add(output);
             }
 
             Progress.Done = true;
-            return String.Join('\n', outputs.Select(o => o.ToString()));
+            var outputString = string.Join("\n", outputs);
+            Progress.Output = outputString;
+            return outputString;
         }
 
         private static void TestRunner(Type type, Output output, IEnumerable<int> methodHashCodes = null)
