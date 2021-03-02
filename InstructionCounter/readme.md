@@ -28,6 +28,14 @@ python main.py -f file.il -m 'generateNumber()'
 
 > **WARNING:** if the method takes any input, then `-m` cannot be used, because it can't make random guesses about the input parameters.
 
+## Regression testing
+
+Since any small change can have a large impact on the internals of the simulation engine, the package include a testSet for the purpose of regression testing. This way, one can quickly identify if some part of the engine has unwanted consequences. In order to execute said regression tests, be sure to have a folder named 'testSets' and run the following command:
+
+```bash
+python regression_testing.py
+```
+
 ## Work list
 
 - [x] Implement Call functionality, to follow calls in the CIL code
