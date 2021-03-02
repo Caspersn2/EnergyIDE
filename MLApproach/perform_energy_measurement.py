@@ -44,30 +44,30 @@ def refactor_for_energy_measurement(path):
         f.write(''.join(code))
 
 
-# Clear temp results
-with open('tempResults.csv', 'w+') as data:
-    data.write('name;duration(ms);pkg(µj);dram(µj);temp(C)\n')
+if __name__ == '__main__':
+    # Clear temp results
+    with open('tempResults.csv', 'w+') as data:
+        data.write('name;duration(ms);pkg(µj);dram(µj);temp(C)\n')
 
-# Enumerate all benchmarks
-all_benchmarks = os.listdir(base_dir)
-could_not_run = []
-for benchmark in tqdm(all_benchmarks):
-    print(benchmark)
-    path_to_benchmark = f'{base_dir}/{benchmark}'
+    # Enumerate all benchmarks
+    all_benchmarks = os.listdir(base_dir)
+    could_not_run = []
+    for benchmark in tqdm(all_benchmarks):
+        path_to_benchmark = f'{base_dir}/{benchmark}'
 
-    # Refactor code to implement benchmark library, such that ww can get
-    # energy measurements of the benchmark
-    refactor_for_energy_measurement(path_to_benchmark)
+        # Refactor code to implement benchmark library, such that ww can get
+        # energy measurements of the benchmark
+        refactor_for_energy_measurement(path_to_benchmark)
 
-    # Perform energy measurement
-    try:
-        subprocess.run(f'dotnet build {path_to_benchmark}', shell=True, check=True,
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL)
-        subprocess.run(f'dotnet run -p {path_to_benchmark}', shell=True, check=True,
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL)
-    except:
-        could_not_run.append(benchmark)
+        # Perform energy measurement
+        try:
+            subprocess.run(f'dotnet build {path_to_benchmark}', shell=True, check=True,
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL)
+            subprocess.run(f'dotnet run -p {path_to_benchmark}', shell=True, check=True,
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL)
+        except:
+            could_not_run.append(benchmark)
 
-print(could_not_run)
+    print(could_not_run)

@@ -5,31 +5,6 @@ import os
 from tqdm import tqdm
 import subprocess
 
-base_url = 'http://www.rosettacode.org'
-base_url_csharp = 'http://www.rosettacode.org/wiki/Category:C_sharp'
-
-
-def save_links(url):
-    html_page = requests.get(url).content
-    soup = BeautifulSoup(html_page, 'html.parser')
-
-    for link in soup.findAll('a', attrs={'href': re.compile("^/wiki")}):
-        link = base_url + link.get('href')
-        benchmark_link = get_edit_link(link)
-        if benchmark_link:
-            print(link)
-            benchmark_link = base_url + benchmark_link
-            with open("benchmark_links.txt", "a") as f:
-                f.write(benchmark_link)
-                f.write('\n')
-
-def get_edit_link(url):
-    html_page = requests.get(url).content
-    soup = BeautifulSoup(html_page, 'html.parser')
-    edit_link = soup.find('a', {'title': 'Edit section: C#'})
-    if edit_link:
-        return edit_link['href']
-
 
 def get_benchmark_code(url):
     html_page = requests.get(url).content
@@ -39,19 +14,23 @@ def get_benchmark_code(url):
 
     # Some benchmarks have several implementations. This catches all.
     all_programs = re.findall(r'<lang csharp>(.*?)</lang>', code, re.DOTALL)
-    
+
     # Handle each benchmark
     # Do not consider programs that do not have a namespace,
     # Main function or take user input
+    saved_paths = []
     for index, program in enumerate(all_programs):
         namespace = re.search(r'(?<=\bnamespace\s)(\w+)', program)
         if namespace is None or 'Console.ReadLine' in program or 'Main' not in program:
             continue
-        add_benchmark_with_namespace(program, namespace.group(1), title, index)
+        saved_paths.append(save_benchmark(
+            program, namespace.group(1), title, index))
+    return saved_paths
 
 
-def add_benchmark_with_namespace(program, namespace, title, index):
-    title = title.replace(' ','_').replace('\'', '') # Replace whitespace in title
+def save_benchmark(program, namespace, title, index):
+    title = title.replace(' ', '_').replace(
+        '\'', '')  # Replace whitespace in title
     path = f'benchmarks/{title}_{index}'
 
     # Create directory for benchmark.
@@ -69,6 +48,9 @@ def add_benchmark_with_namespace(program, namespace, title, index):
     with open(f'{path}/{namespace}.csproj', 'w+') as f:
         f.write(get_csproj_string(namespace))
 
+    return path
+
+
 def get_csproj_string(namespace):
     return f"""<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
@@ -82,13 +64,42 @@ def get_csproj_string(namespace):
 </Project>"""
 
 
-# save_links(base_url_csharp)
+def dissamble(path_to_benchmark):
+    # Build benchmark. Supress output
+    subprocess.call(f'dotnet build {path_to_benchmark}', shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL)
 
-if len(os.listdir('benchmarks')) != 0:
-    subprocess.call('rm -rf benchmarks/*', shell=True)
+    # Disassemble to CIL. Save as Prorgam.il
+    path_to_assembly = f'{path_to_benchmark}/bin/Debug/net5.0'
+    assembly = list(filter(lambda x: x not in ['benchmark.dll', 'CsharpRAPL.dll'], [
+                    f for f in os.listdir(path_to_assembly) if '.dll' in f]))[0]
+    subprocess.call(
+        f'dotnet-ildasm {path_to_assembly}/{assembly} -o {path_to_benchmark}/Program.il', shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL)
 
 
-with open('benchmark_links.txt') as f:
-    benchmark_links = f.readlines()
-for link in tqdm(benchmark_links):
-    get_benchmark_code(link.strip())
+if __name__ == '__main__':
+    if len(os.listdir('benchmarks')) != 0:
+        subprocess.call('rm -rf benchmarks/*', shell=True)
+
+    with open('benchmark_links.txt') as f:
+        benchmark_links = f.readlines()
+
+    base_dir = 'benchmarks'
+    could_not_build = []
+    for benchmark in tqdm(benchmark_links):
+        # Path_to_benchmark is benchmarks/name
+        paths = get_benchmark_code(benchmark.strip())
+        for path in paths:
+            # Dissamble C# to CIL
+            try:
+                dissamble(path)
+            except:
+                # If the project cannot be build or dissambled,
+                # delete it from the benchmarks folder
+                subprocess.call(f'rm -rf {path}', shell=True)
+                could_not_build.append(benchmark)
+                continue
+    print(could_not_build)
