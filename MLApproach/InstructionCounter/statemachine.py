@@ -8,7 +8,6 @@ class state_machine():
     # Static/class variables
     available_instructions = None
     available_classes = None
-    output = None
 
     def __init__(self, available_methods):
         self.locals = {}
@@ -179,9 +178,9 @@ class state_machine():
                     
                     current.add_values(self.stack)
                     if self.temp:
-                        stack, return_val = current.call(self.methods, self.temp, state_machine.output)
+                        stack, return_val = current.call(self.methods, self.temp)
                     else:
-                        stack, return_val = current.call(self.methods, self.active_class, state_machine.output)
+                        stack, return_val = current.call(self.methods, self.active_class)
 
                     self.stack = stack
                     if return_val:
@@ -192,7 +191,7 @@ class state_machine():
                     class_name, method = current.create_name()
                     cls = self.stack.pop()
                     current.value = f'{cls.name}::{method}'
-                    stack, return_val = current.call(self.methods, cls, state_machine.output)
+                    stack, return_val = current.call(self.methods, cls)
                     
                     self.stack = stack
                     if return_val:

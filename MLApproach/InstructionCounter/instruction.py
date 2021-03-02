@@ -1,8 +1,8 @@
 from random_arguments import create_random_argument
 import re
-import output
 from variable import variable
 import utilities
+import result
 
 
 class_name = r'class\s(.*)'
@@ -117,7 +117,7 @@ class instruction_rule():
         return value
 
 
-    def call(self, methods, active_class, output_file):
+    def call(self, methods, active_class):
         name = self.value
 
         is_library = is_library_call(name)
@@ -144,7 +144,7 @@ class instruction_rule():
             method.arguments = parameter_list
             res, return_val = method.get_instructions(methods, active_class)
 
-            output.write_to_file(method.name, res, output_file, method.arguments)
+            result.add_results(res, method.name, method.arguments)
             return self.stack, return_val
 
 
