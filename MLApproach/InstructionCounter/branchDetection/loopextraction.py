@@ -7,12 +7,14 @@ class Branch():
         self.location = location
         self.where_to = where_to
         self.is_conditional = is_conditional
+        self.jump_type = 'JUMP'
         self.direction = self.get_direction()
         self.condition = None
 
 
     def get_direction(self):
         if self.name == 'switch':
+            self.jump_type = 'SWITCH'
             return 'Forwards'
 
         if self.location < self.where_to:
@@ -25,12 +27,13 @@ class Branch():
         return f'({self.location}: {self.name} --> {self.where_to})'
 
 
-class FlowTypes(Enum):
+class FlowType(Enum):
     LOOP = 0,
     IF = 1,
     IF_ELSE = 2,
-    IF_ELIF_ELSE = 3
-    SWITCH = 4 # Not considering this yet
+    IF_ELIF = 3,
+    IF_ELIF_ELSE = 4,
+    SWITCH = 5 # Not considering this yet
 
 
 # Describes a single flow structure (LOOP or IF)
@@ -46,7 +49,10 @@ class Flow():
 
     def add_branch(self, branch):
         self.branches.append(branch)
-        self.end = branch
+        if branch.location > self.end:
+            self.end = branch.location
+        if branch.where_to > self.end:
+            self.end = branch.where_to
 
     def __repr__(self) -> str:
         return f'({self.flow_type}: {self.start} --> {self.end})'
@@ -59,21 +65,59 @@ def is_branch(inst, lookup):
         return False
 
 
-def get_flows(inst_list, branches, lookup):
-    flows = {}
-    keys = list(inst_list.keys())
+def branch_vicinity(location, branches, forwards = True):
+    locations = [x.location for x in branches]
+    for index, loc in enumerate(locations):
+        if loc > location:
+            return branches[index] if forwards else branches[index - 1]
+    return None if forwards else branches[-1]
 
-    for index, branch in enumerate(branches):
-        if branch.direction == 'Forwards':
-            flows[branch.location] = Flow(branch, FlowTypes.IF)
+
+def get_flows(inst_list, branches, lookup):
+    flows = []
+
+    branch_list = branches
+    for branch in branch_list:
+        # Gets the next if-statement if available
+
+        if branch.is_conditional:
+            nextup = branch_vicinity(branch.where_to, branches, forwards=False)
+            if branch.direction == 'Forwards' and nextup and not nextup.is_conditional:
+                current = Flow(branch, FlowType.IF_ELSE)
+                current.add_branch(nextup)
+                branch_list.remove(nextup)
+                head = nextup
+
+                while True:
+                    nextup = branch_vicinity(branch.where_to, branches)
+                    if nextup and nextup.is_conditional and nextup.location < head.where_to:
+                        current.set_type(FlowType.IF_ELIF)
+                        current.add_branch(nextup)
+                        branch_list.remove(nextup)
+                        head = nextup
+
+                        nextup = branch_vicinity(head.where_to, branches, forwards=False)
+                        if head.direction == 'Forwards' and nextup and not nextup.is_conditional:
+                            current.set_type(FlowType.IF_ELIF_ELSE)
+                            current.add_branch(nextup)
+                            branch_list.remove(nextup)
+                            head = nextup
+                        else:
+                            break
+                    else:
+                        break
+
+                flows.append(current)
+            else:
+                current = Flow(branch, FlowType.IF)
+                flows.append(current)
         else:
-            index = keys.index(branch.where_to)
-            previous = keys[index - 1]
-            prev_inst = inst_list[previous]
-            if is_branch(prev_inst, lookup):
-                current = flows[previous]
-                current.set_type(FlowTypes.LOOP)
-                current.add_branch(branch.location)
+            nextup = branch_vicinity(branch.where_to, branches)
+            if nextup and nextup.direction == 'Backwards':
+                current = Flow(branch, FlowType.LOOP)
+                current.add_branch(nextup)
+                branch_list.remove(nextup)
+                flows.append(current)
     return flows
 
 
