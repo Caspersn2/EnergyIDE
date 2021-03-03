@@ -5,6 +5,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import KFold, RepeatedKFold
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, RidgeCV
 import os
+import pickle
 
 # Merge tempResults.csv and training.csv
 if not os.path.exists('output.csv'):
@@ -32,9 +33,8 @@ cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
 # RidgeCV: version of the algorithm that automatically finds good hyperparameters
 #model = RidgeCV(alphas=np.arange(0, 1, 0.01), cv=cv, scoring='neg_mean_absolute_error')
 model.fit(X, y)
+f = open('model.obj','wb')
+pickle.dump(model, f)
 
 # Score is R^2 value
 score = model.score(X, y)
-print(score)
-print(model.coef_)
-print(model.intercept_)
