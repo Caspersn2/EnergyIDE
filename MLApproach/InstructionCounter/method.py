@@ -6,10 +6,11 @@ from statemachine import state_machine
 
 # Represents an entire method
 class method():
-    def __init__(self, name, cls, is_instance, text):
+    def __init__(self, name, cls, is_instance, return_type, text):
         self.name = name
         self.cls = cls
         self.is_instance = is_instance
+        self.return_type = return_type
         self.text = text.split('\n')
         self.arguments = utilities.get_arguments(name)
         self.locals = utilities.get_local_stack(text)
