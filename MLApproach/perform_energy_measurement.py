@@ -2,9 +2,7 @@ import os
 import re
 import subprocess
 from tqdm import tqdm
-
-base_dir = 'benchmarks'
-new_dir = 'benchmarks_energy'
+from loguru import logger
 
 
 def refactor_for_energy_measurement(path):
@@ -45,29 +43,30 @@ def refactor_for_energy_measurement(path):
 
 
 if __name__ == '__main__':
+    logger.add('perform_energy_measurements.log')
     # Clear temp results
     with open('tempResults.csv', 'w+') as data:
         data.write('name;duration(ms);pkg(µj);dram(µj);temp(C)\n')
 
     # Enumerate all benchmarks
-    all_benchmarks = os.listdir(base_dir)
-    could_not_run = []
+    all_benchmarks = os.listdir('benchmarks')
+    all_benchmarks = list(map(lambda x: f'benchmarks/' + x, all_benchmarks))
+    clbg_benchmarks = os.listdir('clbg_benchmarks')
+    all_benchmarks.extend(list(map(lambda x: f'clbg_benchmarks/' + x, clbg_benchmarks)))
+
     for benchmark in tqdm(all_benchmarks):
-        path_to_benchmark = f'{base_dir}/{benchmark}'
 
         # Refactor code to implement benchmark library, such that ww can get
         # energy measurements of the benchmark
-        refactor_for_energy_measurement(path_to_benchmark)
+        refactor_for_energy_measurement(benchmark)
 
         # Perform energy measurement
         try:
-            subprocess.run(f'dotnet build {path_to_benchmark}', shell=True, check=True,
+            subprocess.run(f'dotnet build {benchmark}', shell=True, check=True,
                            stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL)
-            subprocess.run(f'dotnet run -p {path_to_benchmark}', shell=True, check=True,
+            subprocess.run(f'dotnet run -p {benchmark}', shell=True, check=True,
                            stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL)
         except:
-            could_not_run.append(benchmark)
-
-    print(could_not_run)
+            logger.info(f'Could not build or run: {benchmark}')
