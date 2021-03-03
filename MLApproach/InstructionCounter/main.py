@@ -4,6 +4,7 @@ import yamlclass
 import utilities
 import subprocess
 import result
+import branchDetection.loopextraction as analysis
 
 
 def count_instructions(args, text):
@@ -14,6 +15,11 @@ def count_instructions(args, text):
     for _, cls in classes.items():
         for m in cls.methods:
             methods[m.name] = m
+
+    if args.test_feature:
+        for m in methods.values():
+            analysis.identify_flows(m, instructionset)
+        exit()
 
     state_machine.available_instructions = instructionset
     state_machine.available_classes = classes
@@ -67,6 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', type=str, help='The name of the output file')
     parser.add_argument('-d', '--debug', action='store_true', help='Prints all of the args and their name after parsing')
     parser.add_argument('-i', '--instruction-set', type=str, default='instructions.yaml', help='Path to the file containing all of the behavior of CIL instructions')
+    parser.add_argument('-t', '--test-feature', action='store_true', help='ONLY EXISTS TO BE ABLE TO EASILY TEST NEW FEATURE')
     args = parser.parse_args()
 
     if args.debug:

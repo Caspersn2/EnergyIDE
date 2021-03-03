@@ -42,7 +42,7 @@ class instruction():
         cleaned = list(filter(lambda x: x != 'class', elements[1:]))
         cleaned = list(filter(None, cleaned))
 
-        if len(cleaned) == 1 and re.match(r'-?\d,\d', cleaned[0]):
+        if len(cleaned) == 1 and re.match(r'-?\d(,|\.)\d', cleaned[0]):
             cleaned = float(cleaned[0].replace(',','.'))
         elif len(cleaned) == 1 and re.match(r'-?\d+', cleaned[0]):
             cleaned = int(cleaned[0])
@@ -95,7 +95,7 @@ class instruction_rule():
             if found:
                 method += f' {elem}'
             else:
-                if elem in ['void', 'string', 'int32', 'bool']:
+                if elem in ['void', 'string', 'float32', 'float64', 'int16' 'int32', 'int64', 'bool', 'char']:
                     self.type = elem
 
             if '::' in elem:
@@ -170,23 +170,32 @@ class instruction_rule():
 
         if self.operator == '>':
             self.can_jump = val1 > val2
-            return val1 > val2
         elif self.operator == '<':
             self.can_jump = val1 < val2
-            return val1 < val2
         elif self.operator == '==':
             self.can_jump = val1 == val2
-            return val1 == val2
         elif self.operator == '<=':
             self.can_jump = val1 <= val2
-            return val1 <= val2
         elif self.operator == '>=':
             self.can_jump = val1 >= val2
-            return val1 >= val2
+        elif self.operator == '&&':
+            self.can_jump = val1 and val2
+        elif self.operator == '||':
+            self.can_jump = val1 or val2
         else:
             raise Exception(f"The comparison operator '{self.operator}' has not been implemented")
+        return self.can_jump
 
     
+    def compute_index(self):
+        available_jumps = [x.replace('(','').replace(',','').replace(')','') for x in self.value]
+        index = self.stack.pop()
+        if index < len(available_jumps):
+            self.value = available_jumps[index]
+        else:
+            self.value = None
+
+
     def compute(self):
         val1 = self.stack.pop()
         val2 = self.stack.pop()

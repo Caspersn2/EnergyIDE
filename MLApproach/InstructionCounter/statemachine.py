@@ -115,7 +115,7 @@ class state_machine():
                     self.executed.append(current)
                     if 'COMPARE' in current.actions and current.can_jump:
                         return Actions.JUMP, current.args
-                    elif 'COMPARE' not in current.actions:
+                    elif 'COMPARE' not in current.actions and current.value:
                         return Actions.JUMP, current.value
 
                 # POP from LOCALS
@@ -157,6 +157,10 @@ class state_machine():
                     val = current.mutate(store=False)
                     self.stack.append(val)
 
+                # USED to determine the index within a jump table
+                elif action == 'INDEX':
+                    current.compute_index()
+
                 # CREATE
                 elif action == 'CREATE':
                     if current.name == 'newobj':
@@ -183,7 +187,7 @@ class state_machine():
                         stack, return_val = current.call(self.methods, self.active_class)
 
                     self.stack = stack
-                    if return_val:
+                    if return_val or return_val == 0:
                         self.stack.append(return_val)
 
                 # CALLVIRT
@@ -194,7 +198,7 @@ class state_machine():
                     stack, return_val = current.call(self.methods, cls)
                     
                     self.stack = stack
-                    if return_val:
+                    if return_val or return_val == 0:
                         self.stack.append(return_val)
 
                 # RETURN
