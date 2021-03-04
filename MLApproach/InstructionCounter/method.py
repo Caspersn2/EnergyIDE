@@ -3,6 +3,7 @@ import utilities
 import instruction
 import copy
 from statemachine import state_machine
+from collections import Counter
 
 # Represents an entire method
 class method():
@@ -18,12 +19,8 @@ class method():
 
 
     def count_instructions(self, instructions):
-        counter = {}
-        for inst in instructions:
-            if inst.name not in counter:
-                counter[inst.name] = 0
-            counter[inst.name] += 1
-        return counter
+        instr_list = [inst.name for inst in instructions]
+        return Counter(instr_list)
 
 
     def get_instructions(self, available_methods, active_class):
