@@ -19,7 +19,7 @@ def add_to_csv(benchmark, counts):
         f.write(','.join(csv_line))
         f.write('\n')
 
-with open('listOfCILInstructions.txt') as f:
+with open('CIL_Instructions.txt') as f:
     CIL_INSTRUCTIONS = [x.strip() for x in f.readlines()]
 
 base_dir = 'benchmarks'
