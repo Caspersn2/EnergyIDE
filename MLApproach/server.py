@@ -1,11 +1,19 @@
-from aiohttp import web
-import asyncio
+import sys
+sys.path.append('InstructionCounter')
+from functools import reduce
+import argparse
+import pickle
+import os
+import json
+import requests
 import subprocess
-import requests, json, os, pickle, argparse
+import asyncio
+from aiohttp import web
 from InstructionCounter import main
 
 routes = web.RouteTableDef()
 model_path = 'model.obj'
+
 
 @routes.post('/post')
 async def get_estimate(request):
@@ -27,29 +35,34 @@ async def get_estimate(request):
     text = open(f'{name}.il').read()
 
     # count instructions
-    counts = {}
+    counts = {}  # maps method/program name to IL instruction Counter
     if methods:
         for method_name in methods:
-            args = argparse.Namespace(method=methods, list=False, instruction_set='InstructionCounter/instructions.yaml', counting_method='Simulation',entry='Main')
+            args = argparse.Namespace(method=methods, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                      counting_method='Simulation', entry='Main(string[])', output=None)
             counts[method_name] = main.count_instructions(args, text)
     else:
-        args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml', counting_method='Simulation',entry='Main')
+        args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                  counting_method='Simple', entry='Main(string[])', output=None)
         counts[name] = main.count_instructions(args, text)
 
     # make prediction
     predictions = {}
-    model = pickle.load(model_path)
-    with open('listOfCILInstructions.txt') as f:
+    model = pickle.load(open(model_path, "rb"))
+    with open('CIL_Instructions.txt') as f:
         CIL_INSTRUCTIONS = [x.strip() for x in f.readlines()]
 
-    for count in counts:
+    for name, count in counts.items():
+        # Hvis result altid er en counter, ville det være rart den ikke er i en liste
+        count = reduce(lambda a, b: a+b, count, count[0])
         temp = []
         for instruction in CIL_INSTRUCTIONS:
-            temp.append(counts[instruction]) if instruction in counts else temp.append(0)
-        predictions[count] = model.predict(temp)
+            temp.append(count[instruction]
+                        ) if instruction in count else temp.append(0)
+        predictions[name] = model.predict([temp])[0][0] / 1000000 # µj to j
 
     # return result
-    return web.Response(text=json.dumps(predictions),status=200)
+    return web.Response(text=json.dumps(predictions), status=200)
 
 
 app = web.Application()
