@@ -5,49 +5,66 @@ import os
 from tqdm import tqdm
 import subprocess
 from loguru import logger
+from multiprocessing import Pool
 
 # These statements requires the user to provide some input.
 # We do not want to consider programs that require input.
-blacklist = ['=Read', '=ReadLine', '=ReadKey', 
+blacklist = ['=Read', '=ReadLine', '=ReadKey',
              '= Read', '= ReadLine', '= ReadKey',
-             '=Console.Read', '=Console.ReadLine', '=Console.ReadKey', 
-             '= Console.Read', '= Console.ReadLine', '= Console.ReadKey']
+             '=Console.Read', '=Console.ReadLine', '=Console.ReadKey',
+             '= Console.Read', '= Console.ReadLine', '= Console.ReadKey',
+             '(Read())', '(ReadLine())', '(ReadKey())',
+             # If in function call (int.Parse(Console.XX))
+             '(Console.Read())', '(Console.ReadLine())', '(Console.ReadKey())',
+             'args['  # Index into commandline arguments
+             ]
 
 
-def get_benchmark_code_rosetta(url):
-    html_page = requests.get(url).content
-    soup = BeautifulSoup(html_page, 'html.parser')
-    code = soup.find('textarea').string
-    title = re.search(r'View source for (.*)', soup.find('h1').string).group(1)
+def get_benchmark_code(url, type='rosetta'):
+    html_page = requests.get(url).text
+    new_html = re.sub(r'<br\s*/>', '\n', html_page)
+    soup = BeautifulSoup(new_html, 'html.parser')
+    if url.endswith('/'):
+        url = url[:-1]
 
-    # Some benchmarks have several implementations. This catches all.
-    all_programs = re.findall(r'<lang csharp>(.*?)</lang>', code, re.DOTALL)
+    if type == 'rosetta':
+        # Some benchmarks have several implementations. This catches all.
+        all_pre = soup.find_all("pre", {"class": "csharp highlighted_source"})
+        all_programs = [pre.text for pre in all_pre]
+    elif type == 'sanfoundry':
+        all_programs = [soup.find('pre').text]
+    elif type == 'includehelp':
+        all_programs = [soup.find('pre', {"class": "i3-code"}).text]
+        url = url.replace('.aspx', '')
+    title = url.split('/')[-1]
 
     # Handle each benchmark
-    # Do not consider programs that do not have a Main function 
+    # Do not consider programs that do not have a Main function
     # or take user input
     saved_paths = []
     for index, program in enumerate(all_programs):
         if any(x in program for x in blacklist):
-            logger.info(f"Benchmark contains something blacklisted: {title}_{index}")
+            logger.info(
+                f"Benchmark contains something blacklisted: {title}_{index}")
             continue
         if 'Main' not in program:
-            logger.info(f"Benchmark does not contain a Main function: {title}_{index}")
+            logger.info(
+                f"Benchmark does not contain a Main function: {title}_{index}")
             continue
         saved_paths.append(save_benchmark(
             program, title, index))
     return saved_paths
 
 
-
 def save_benchmark(program, title, index):
     # Replace whitespace in title
-    title = title.replace(' ', '_').replace('\'', '')
+    title = title.replace(' ', '_')
+    title = re.sub(r'[^0-9a-zA-Z_\-]', '', title)
     path = f'benchmarks/{title}_{index}'
 
     # Create directory for benchmark.
     if os.path.exists(path):
-        print("Error")
+        return
     os.makedirs(path)
 
     # Add implementation
@@ -91,26 +108,33 @@ def dissamble(path_to_benchmark):
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL)
 
+def scrape_benchmark(benchmark):
+    if 'rosetta' in benchmark:
+        paths = get_benchmark_code(benchmark.strip(), type='rosetta')
+    elif 'sanfoundry' in benchmark:
+        paths = get_benchmark_code(benchmark.strip(), type='sanfoundry')
+    elif 'includehelp' in benchmark:
+        paths = get_benchmark_code(benchmark.strip(), type='includehelp')
+
+    for path in paths:
+        # Dissamble C# to CIL
+        try:
+            dissamble(path)
+        except:
+            # If the project cannot be build or dissambled,
+            # delete it from the benchmarks folder
+            subprocess.call(f'rm -rf {path}', shell=True)
+            logger.info(f'Could not build or dissamble: {path}')
+            continue
 
 if __name__ == '__main__':
     logger.add('scraper.log')
     if len(os.listdir('benchmarks')) != 0:
         subprocess.call('rm -rf benchmarks/*', shell=True)
-
+#
     with open('benchmark_links.txt') as f:
         benchmark_links = f.readlines()
+    
+    pool = Pool(processes=4)
+    pool.map(scrape_benchmark, benchmark_links)
 
-    base_dir = 'benchmarks'
-    for benchmark in tqdm(benchmark_links):
-        # Path_to_benchmark is benchmarks/name
-        paths = get_benchmark_code_rosetta(benchmark.strip())
-        for path in paths:
-            # Dissamble C# to CIL
-            try:
-                dissamble(path)
-            except:
-                # If the project cannot be build or dissambled,
-                # delete it from the benchmarks folder
-                subprocess.call(f'rm -rf {path}', shell=True)
-                logger.info(f'Could not build or dissamble: {path}')
-                continue
