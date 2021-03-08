@@ -6,7 +6,6 @@ export class Measure
 {
     static getMethods(webviewView: WebviewView) {
         vscode.workspace.findFiles('**/*.dll').then(files => {
-            console.log(files);
             MeasureTestingService.getMethods(files.map(f => f.fsPath)).then(methods => {
                 webviewView.webview.postMessage({ command: 'methods', value: methods });
             });
@@ -58,7 +57,6 @@ export class Measure
         
         if (message.methods != null) {
             MeasureTestingService.startRunning(ids).then(response => {
-                console.log(response);
                 if (response) {
                     //Starting to listen to progress
                     this.stopProgress = false;

@@ -51,7 +51,6 @@ export class MeasureTestingService
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await axios.put("http://localhost:5000/GetMethods", { files: files });
-                console.log(response);
                 if (response.status == 200){
                     resolve(response.data);
                 }

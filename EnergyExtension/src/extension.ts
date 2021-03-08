@@ -2,9 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { readFileSync, writeFile } from 'fs';
-import { Method } from './models';
-import { MeasureTestingService } from './service/measure-testing.service';
+import { readFileSync } from 'fs';
 import { ActivateClass, Measure } from './messageParsers/MeasurePasers';
 
 // this method is called when your extension is activated
@@ -40,7 +38,6 @@ export class EnergyViewProvider implements vscode.WebviewViewProvider {
     
     //called when a message from the HTML is sent to the extension
     webviewView.webview.onDidReceiveMessage(message => {
-      console.log(message.type);
       switch(message.type){
         case 'log':
           console.log(message.value);
