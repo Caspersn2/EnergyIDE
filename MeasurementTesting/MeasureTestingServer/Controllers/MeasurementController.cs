@@ -27,7 +27,6 @@ namespace MeasureTestingServer.Controllers
         public ActionResult<string> GetProgress() 
         {
             return Ok(JsonSerializer.Serialize(this.MeasurementRepo.GetMeasurements()));
-            //return Ok("{ test: 'Hello there!' }");
         }
 
         [HttpPut("getmethods")]
@@ -89,10 +88,4 @@ namespace MeasureTestingServer.Controllers
         public string[] Files { get; set; }
     }
 
-    /* export class Method {
-        id: number | undefined;
-        name: string | undefined;
-        filePath: vscode.Uri | undefined;
-        lineNumber: Number | undefined;
-    } */
 }
