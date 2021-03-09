@@ -11,7 +11,6 @@ export function activate(context: vscode.ExtensionContext) {
 	let webviewProvider = new EnergyViewProvider(context);
   vscode.window.registerWebviewViewProvider("energyWebView", webviewProvider);
   
-  // const filePath: vscode.Uri = vscode.Uri.file(context.extensionPath);
 }
 
 // this method is called when your extension is deactivated
@@ -49,7 +48,6 @@ export class EnergyViewProvider implements vscode.WebviewViewProvider {
         case 'stop':
           Measure.stop();
         case 'methodSelected':
-          // You could maybe use this for something
           break;
         case 'reloadMethods':
           Measure.getMethods(webviewView);
@@ -66,4 +64,3 @@ export class EnergyViewProvider implements vscode.WebviewViewProvider {
     return readFileSync(filePath.fsPath, 'utf8');
   }
 }
-
