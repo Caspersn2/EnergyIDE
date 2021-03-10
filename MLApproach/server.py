@@ -20,7 +20,7 @@ async def get_estimate(request):
     # If the machine learning model is not available
     # return 503: service unavailable
     if model_path not in os.listdir():
-        return web.Response(text='This service is currently unavailable.', status=503)
+        return web.Response(text='This service is currently unavailable. No regression model is present', status=503)
 
     fileinfo = await request.json()
     path_to_assembly = fileinfo['path']
@@ -38,8 +38,8 @@ async def get_estimate(request):
     counts = {}  # maps method/program name to IL instruction Counter
     if methods:
         for method_name in methods:
-            args = argparse.Namespace(method=methods, list=False, instruction_set='InstructionCounter/instructions.yaml',
-                                      counting_method='Simulation', entry='Main(string[])', output=None)
+            args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                      counting_method='Simple', entry='Main(string[])', output=None)
             counts[method_name] = main.count_instructions(args, text)
     else:
         args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
@@ -47,18 +47,16 @@ async def get_estimate(request):
         counts[name] = main.count_instructions(args, text)
 
     # make prediction
-    predictions = {}
+    predictions = {} # maps method/program name to energy prediction
     model = pickle.load(open(model_path, "rb"))
     with open('CIL_Instructions.txt') as f:
         CIL_INSTRUCTIONS = [x.strip() for x in f.readlines()]
 
     for name, count in counts.items():
-        # Hvis result altid er en counter, ville det være rart den ikke er i en liste
         count = reduce(lambda a, b: a+b, count, count[0])
         temp = []
         for instruction in CIL_INSTRUCTIONS:
-            temp.append(count[instruction]
-                        ) if instruction in count else temp.append(0)
+            temp.append(count[instruction]) if instruction in count else temp.append(0)
         predictions[name] = model.predict([temp])[0][0] / 1000000 # µj to j
 
     # return result
