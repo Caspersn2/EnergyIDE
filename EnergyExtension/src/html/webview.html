@@ -1,6 +1,5 @@
 <!-- Inside header -->
 
-
 <!-- This is body -->
 <h2>Calcuate energy consumption</h2>
 </br>
@@ -11,6 +10,7 @@
   <option value="rapl">RAPL</option>
 </select>
 </br>
+<p id="reloadMethods" style="cursor: pointer;" onclick="reloadMethods()">Reload</p>
 <label for="functions">Select function:</label>
 </br>
 
@@ -22,159 +22,217 @@
   <div class="overSelect"></div>
 </div>
 <div id="checkboxes">
-  <label class="inRow"><input type="checkbox">something that is really long er some shit, i dunno. this meight be stupid and not worth it.</label>
+  <label class="inRow"><input type="checkbox">No methods found in the .dll files. Try to press the reload button to check for new files and methods.</label>
 </div>
-
-<!-- <select class="full-width selector select-checkbox" name="functions" id="functions" onchange="if (this.selectedIndex) methodSelected();">
-  <option value="nothingFound">Nothing found</option>
-  <option value="something">something</option>
-  <option value="Apple">Apple</option>
-  <option value="Aligator">Aligator</option>
-</select> -->
-
 
 </br>
 <button id="activate-button" class="full-width btn" onclick="activate()">Activate!</button>
 </br>
 <p id="calcText">Select function and click activate.</p>
 <ul id="running-functions"></ul>
+<button id="stop-button" style="display: none;" class="full-width btn btn-stop" onclick="stop()">Stop</button>
 
 <script>
-  const vscode = acquireVsCodeApi(); // acquireVsCodeApi can only be invoked once
-  var methodsShown = [];
-  window.addEventListener('message', event => {
-    const message = event.data;
-    switch(message.command){
-      case 'progress':
-        let values = message.value;
-        let container = document.getElementById("running-functions");
-        container.innerHTML = '';
-        values.forEach(value => {
-          var item = document.createElement("li");
-          item.appendChild(document.createTextNode(value.functionName));
-          item.appendChild(document.createTextNode(value.eta));
-          item.classList.add('progress-element');
-          container.appendChild(item);
-        });
-        break;
-      
-      case 'done':
-        document.getElementById("activate-button").classList.remove("active");
-        document.getElementById("calcText").textContent = "Done calculateing: 6mj or something";
-        break;
-      
-      case 'methods':
-        let methodGroups = message.value;
-        this.methodsShown = message.value;
-        let functionsDropdown = document.getElementById('checkboxes');
-        functionsDropdown.innerHTML = "";
-        methodGroups.forEach(methodGroup => {
-          let surround = document.createElement('div');
-          let groupLabel = document.createElement('label');
-          groupLabel.for = methodGroup.key;
-          groupLabel.textContent = methodGroup.key;
-          groupLabel.classList.add("groupLabel");
-          groupLabel.title = methodGroup.key;
-          
-          let groupCheck = document.createElement('input');
-          groupCheck.type = "checkbox";
-          groupCheck.id = methodGroup.key;
-          
-          groupCheck.addEventListener('change', (event) => {
-            this.groupSelected(methodGroup.key);
-          });
-          groupLabel.insertBefore(groupCheck, groupLabel.childNodes[0]);
-          surround.appendChild(groupLabel);
+  
+const vscode = acquireVsCodeApi(); // acquireVsCodeApi can only be invoked once
 
-          methodGroup.value.forEach(method => {
-            let option = document.createElement('label');
-            option.for = method.id;
-            option.textContent = method.name;
-            option.classList.add("inRow");
-            option.classList.add("option");
-            
-            let checkbox = document.createElement('input');
-            checkbox.type = "checkbox";
-            checkbox.id = method.id;
-            option.addEventListener('change', (event) => {
-              this.methodSelected(method.id);
-            });
-            option.insertBefore(checkbox, option.childNodes[0]);
+var methodsShown = [];
 
-            option.value = JSON.stringify(method);
-            surround.appendChild(option);
-          });
-          
-          functionsDropdown.appendChild(surround);
+window.addEventListener("message", (event) => {
+  const message = event.data;
+  switch (message.command) {
+    case "progress": // value = plannedMethods, classesPlanned, exceptionString, exceptionThrown
+      let values = message.value;
+      let container = document.getElementById("running-functions");
+      container.innerHTML = "";
+      
+      values.PlannedMethods.forEach(method => { // Method = id, runsDone, plannedRuns, methodName, className, stage
+        var methodHTML = document.createElement("li");
+        methodHTML.id = method.Id;
+
+        var label = document.createElement("label");
+        label.innerText = method.MethodName;
+        methodHTML.appendChild(label);
+
+        var progressText = document.createElement("p");
+        progressText.innerText = method.Stage + ": " + method.RunsDone + "/" + method.PlannedRuns + " = " + ((100 / method.PlannedRuns) * method.RunsDone).toFixed(2) + "%";
+        methodHTML.appendChild(progressText);
+
+        var progressBar = document.createElement("progress");
+        progressBar.value = method.RunsDone;
+        progressBar.max = method.PlannedRuns;
+        progressBar.style = "width: 100%";
+        methodHTML.appendChild(progressBar);
+        
+        container.appendChild(methodHTML);
+      });
+      
+      break;
+
+    case "done":
+      var activateButton = document.getElementById("activate-button");  
+      activateButton.classList.remove("active");
+      activateButton.disabled = false;
+      
+      var stopButton = document.getElementById("stop-button");
+      stopButton.style.display = "none";
+      
+      break;
+
+    case "methods":
+      let methodGroups = message.value;
+      methodsShown = methodGroups;
+      
+      // Clear the dropdown
+      let functionsDropdown = document.getElementById("checkboxes");
+      functionsDropdown.innerHTML = "";
+      
+      // Add methods to the dropdown
+      methodGroups.forEach((methodGroup) => {
+        // Create the surrounding element
+        let surround = document.createElement("div");
+        
+        // Create the grouplabel
+        let groupLabel = document.createElement("label");
+        groupLabel.for = methodGroup.key;
+        groupLabel.textContent = methodGroup.key;
+        groupLabel.classList.add("groupLabel");
+        groupLabel.title = methodGroup.key;
+
+        // Create the checkbox for the group
+        let groupCheck = document.createElement("input");
+        groupCheck.type = "checkbox";
+        groupCheck.id = methodGroup.key;
+
+        groupCheck.addEventListener("change", (event) => {
+          this.groupSelected(methodGroup.key);
         });
-        break;
-    };
+        groupLabel.insertBefore(groupCheck, groupLabel.childNodes[0]);
+        surround.appendChild(groupLabel);
+
+        // Inserts the methods as children to the group
+        methodGroup.value.forEach((method) => {
+          let option = document.createElement("label");
+          option.for = method.id;
+          option.textContent = method.name;
+          option.classList.add("inRow");
+          option.classList.add("option");
+          option.value = JSON.stringify({ id: method.id, name: method.name });
+
+          let checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.id = method.id;
+          checkbox.value = JSON.stringify({ id: method.id, name: method.name });
+          option.addEventListener("change", (event) => {
+            this.methodSelected(method);
+          });
+          option.insertBefore(checkbox, option.childNodes[0]);
+
+          surround.appendChild(option);
+        });
+
+        functionsDropdown.appendChild(surround);
+      });
+      break;
+  }
+});
+
+function methodSelected(id) {
+  this.updateNumSelected();
+}
+
+function activate() {
+  // changeing the color of activate button to green, and disableing it.
+  var activateButton = document.getElementById("activate-button");
+  activateButton.classList.add("active");
+  activateButton.disabled = true;
+
+  // Show the stop button
+  var stopButton = document.getElementById("stop-button");
+  stopButton.style.display = "block";
+
+  // Call the server to activate the selected methods.
+  let selected = getSelectedMethods().map(selected => JSON.parse(selected));
+  let type = document.getElementById("types").value;
+  vscode.postMessage({
+    type: "activate",
+    value: { methods: selected, type: type },
   });
 
-  function methodSelected(id) {
-    this.updateNumSelected();
+  
+  document.getElementById("calcText").textContent ="Calculating: " + selected.map(s => s.name).join(', ');
+}
+
+function reloadMethods() {
+  vscode.postMessage({
+    type: "reloadMethods",
+    value: true
+  });
+}
+
+function stop() {
+  vscode.postMessage({
+    type: "stop",
+    value: true
+  });
+}
+
+var expanded = false;
+function showCheckboxes() {
+  var checkboxes = document.getElementById("checkboxes");
+  if (!expanded) {
+    checkboxes.style.display = "block";
+    expanded = true;
+  } else {
+    checkboxes.style.display = "none";
+    expanded = false;
   }
+}
 
-  function activate() {
-    let functionName = document.getElementById("functions").value.name;
-    let type = document.getElementById("types").value;
-    document.getElementById("activate-button").classList.add("active");
-
-    vscode.postMessage({ type: 'activate', value: { function: functionName, type: type }});
-    
-    // Maybe don't do this?
-    document.getElementById("calcText").textContent = "Calculating: " + functionName;
-  }
-
-  var expanded = false;
-  function showCheckboxes() {
-    var checkboxes = document.getElementById("checkboxes");
-    if (!expanded) {
-      checkboxes.style.display = "block";
-      expanded = true;
+function groupSelected(group) {
+  let groupElement = document.getElementById(group);
+  let check = groupElement.checked;
+  let next = groupElement.parentNode.nextSibling;
+  while (next) {
+    let input = next.firstChild;
+    if (check) {
+      if (!input.checked) {
+        input.checked = true;
+      }
     } else {
-      checkboxes.style.display = "none";
-      expanded = false;
-    }
-  }
-
-  function groupSelected(group){
-    let groupElement = document.getElementById(group);
-    let check = groupElement.checked;
-    let next = groupElement.parentNode.nextSibling;
-    while (next){
-      let input = next.firstChild;
-      if (check){
-        if (!input.checked){
-          input.checked = true;
-        }
+      if (input.checked) {
+        input.checked = false;
       }
-      else {
-        if (input.checked){
-          input.checked = false;
-        }
-      }
-      next = next.nextSibling;
     }
-    this.updateNumSelected();
+    next = next.nextSibling;
   }
+  this.updateNumSelected();
+}
 
-  function updateNumSelected() {
-    let selected = [];
-    this.methodsShown.forEach(g => {
-      g.value.forEach(m => {
-        elm = document.getElementById(m.id);
-        if (elm.checked || elm.getAttribute('checked')){
-          selected.push(elm.value);
-        }
-      });
+function getSelectedMethods() {
+  let selected = [];
+  this.methodsShown.forEach((g) => {
+    g.value.forEach((m) => {
+      elm = document.getElementById(m.id);
+      if (elm.checked || elm.getAttribute("checked")) {
+        selected.push(elm.value);
+      }
     });
-    let counter = document.getElementById('selectText');
-    counter.textContent = selected.length + " methods selected";
-  }
-</script>
-<style>
+  });
+  // Value = { id: url, name: string }
+  return selected;
+}
 
+function updateNumSelected() {
+  let selected = getSelectedMethods();
+  let counter = document.getElementById("selectText");
+  counter.textContent = selected.length + " methods selected";
+}
+
+</script>
+
+
+<style>
 .full-width {
   width: 100%;
 }
@@ -213,6 +271,11 @@
   border-style: none;
   border-radius: 0.2rem;
   padding: 0.3rem;
+  cursor: pointer;
+}
+
+.btn-stop:hover {
+  background-color: red;
 }
 
 .option {
