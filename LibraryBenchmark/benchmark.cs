@@ -38,10 +38,12 @@ namespace benchmark
         TextWriter stdout;
         TextWriter benchmarkOutputStream = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
         public event SingleRun SingleRunComplete;
+        string name;
 
-        public Benchmark(int iterations, List<MeasureTypes> types, bool silenceBenchmarkOutput = true) 
+        public Benchmark(int iterations, List<MeasureTypes> types, bool silenceBenchmarkOutput = true, string name = "not specified") 
         {
             this.stdout = System.Console.Out;
+            this.name = name;
 
             if(!silenceBenchmarkOutput)
                 benchmarkOutputStream = stdout;
@@ -144,11 +146,12 @@ namespace benchmark
         //This is overwritten each time SaveResults is run
         private void saveResults()
         {
-            var header = "duration(ms);pkg(µj);dram(µj);temp(C)" + "\n";
+            var header = "name;duration(ms);pkg(µj);dram(µj);temp(C)" + "\n";
             string result = header;
             
             foreach (Measure m in _resultBuffer)
             {
+                result += name;
                 foreach (var res in m.apis)
                 {
                     //Temperature api

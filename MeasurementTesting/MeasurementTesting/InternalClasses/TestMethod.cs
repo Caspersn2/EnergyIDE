@@ -39,7 +39,7 @@ namespace MeasurementTesting.InternalClasses
             else
             {
                 result.Append("<result>Failed</result>");
-                result.Append($"<error-message>{Exception.Message}</error-message>");
+                result.Append($"<error-message>{Exception.ToString()}</error-message>");
             }
             
             result.Append("</method>");

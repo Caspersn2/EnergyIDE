@@ -1,6 +1,7 @@
 ﻿using MeasurementTesting.InternalClasses;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -14,12 +15,14 @@ namespace MeasurementTesting.Attributes
         public int SampleIterations;
         public int PlannedIterations;
         public int IterationsDone;
+        public string[] InputList;
         
         public MeasureAttribute(int sampleIterations = 100)
         {
             SampleIterations = sampleIterations;
             PlannedIterations = sampleIterations;
             Measurements = new List<Measurement>();
+            //this.InputList = Directory.GetDirectories(@"C:\Users\Caspe\Documents\GitHub\EnergyIDE\energyModeling\Benchmarks");
         }
 
         public void AddMeasure(Measure measure)
