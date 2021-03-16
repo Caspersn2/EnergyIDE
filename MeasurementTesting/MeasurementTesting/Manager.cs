@@ -219,7 +219,7 @@ namespace MeasurementTesting
 
         private static void PerformBenchmark(Object measureClass, MethodInfo method, MeasureClassAttribute classAtt, MeasureAttribute attribute, MethodProgress methodProgress, string stringInput)
         {
-            Console.WriteLine("Starting to perform benchmark");
+            Console.WriteLine("Starting to perform benchmark: " + method.Name);
             // Checking for dependency (JIT)
             var itterationsPrRun = classAtt.Dependent ?  attribute.SampleIterations : 1;
             var itterationsTotal = classAtt.Dependent ? 1 : attribute.SampleIterations;
@@ -269,6 +269,9 @@ namespace MeasurementTesting
                     var rnd = new Random();
                     var typeSwitch = new Dictionary<Type, Object> {
                         { typeof(int), rnd.Next(int.MinValue, int.MaxValue) },
+                        { typeof(long), (long)rnd.Next(int.MinValue, int.MaxValue) },
+                        { typeof(float), (float)rnd.NextDouble() },
+                        { typeof(double), rnd.NextDouble() },
                         
                         { typeof(string), new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", rnd.Next(1, 1000) )
                                                                     .Select(s => s[rnd.Next(s.Length)]).ToArray())},
