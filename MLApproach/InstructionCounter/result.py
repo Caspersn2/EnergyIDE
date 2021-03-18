@@ -1,6 +1,3 @@
-from collections import Counter
-
-
 result_store = []
 
 

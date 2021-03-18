@@ -17,35 +17,9 @@ class method():
         self.locals = utilities.get_local_stack(text)
         self.data = instruction.get_all_instructions(self.text)
 
-
-    def count_instructions(self, instructions):
-        instr_list = [inst.name for inst in instructions]
-        return Counter(instr_list)
-
-
-    def get_instructions(self, available_methods, active_class):
-        machine = state_machine(available_methods)
-        machine.load_arguments(self.arguments)
-        machine.load_locals(self.locals)
-        machine.is_instance(self.is_instance)
-
-        if active_class:
-            machine.load_active_class(active_class)
-        else:
-            machine.load_active_class(copy.deepcopy(self.cls))
-
-        instructions = list(self.data.keys())
-        index = 0
-        return_val = None
-        while index != len(instructions):
-            current = instructions[index]
-            action, value = machine.simulate(self.data[current])
-            if action == Actions.JUMP:
-                index = instructions.index(value)
-            elif action == Actions.NOP:
-                index += 1
-            elif action == Actions.RETURN:
-                return_val = value
-                break
-
-        return self.count_instructions(machine.executed), return_val
+    
+    def get_instructions(self):
+        return self.data
+    
+    def get_class(self):
+        return copy.deepcopy(self.cls)

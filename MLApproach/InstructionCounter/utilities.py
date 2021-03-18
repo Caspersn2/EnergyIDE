@@ -113,13 +113,13 @@ def get_arguments(text):
     return arguments
 
 
-def load_CIL():
+def load_cil():
     instructions = open('CIL_Instructions.txt').readlines()
     return [x.strip() for x in instructions]
 
 
 def simple_count(text):
-    cil_instructions = load_CIL()
+    cil_instructions = load_cil()
     joined = ' '.join(text).split()
     res = [x for x in joined if x in cil_instructions]
     return Counter(res)
