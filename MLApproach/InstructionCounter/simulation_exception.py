@@ -1,2 +1,3 @@
 class simulation_exception(Exception):
-    pass
+    def __init__(self, name) -> None:
+        super().__init__(f'The instruction "{name}" has not been implemented')

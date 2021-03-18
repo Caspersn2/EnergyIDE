@@ -1,4 +1,5 @@
 import random
+from simulation_exception import simulation_exception
 
 
 def random_bool():
@@ -10,10 +11,10 @@ def random_int32():
 
 
 def random_string():
-    return generate_symbols(random.randint(0, 10000))
+    return generate_string(random.randint(0, 10000))
 
 
-def generate_symbols(number):
+def generate_string(number):
     symbols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'æ', 'ø',
          'å', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '-', ',', '.']
@@ -35,4 +36,4 @@ def create_random_argument(datatype):
     elif datatype == 'string':
         return random_string()
     else:
-        raise Exception(f"The type '{datatype}' has no random implementation")
+        raise simulation_exception(f"The type '{datatype}' has no random implementation")

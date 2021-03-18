@@ -1,31 +1,26 @@
 import argparse
 from simulation_exception import simulation_exception
 from statemachine import state_machine
-import yamlclass
 import utilities
 import subprocess
 import result
 
 
 def execute(counting_type, method, state_machine):
-    res = None
-
     if counting_type == 'Simple':
         res = utilities.simple_count(method.text)
+        result.add_results(res, method.name)
     elif counting_type == 'Simulation' and method.arguments:
         raise simulation_exception(f"The chosen method requires arguments, and can therefore not be counted by itself")
     else:
-        res, _ = state_machine.simulate(method, None)
-    
-    result.add_results(res, method.name)
+        state_machine.simulate(method, None)
 
 
 def count_instructions(args, text):
     ## Split all code into methods
-    instructionset = yamlclass.load(args.instruction_set)
     classes = utilities.get_all_classes(text)
     methods = get_methods_from_classes(classes)
-    state = state_machine(instructionset, classes, methods)
+    state = state_machine(classes, methods)
 
     if args.list:
         print_methods(methods)
