@@ -1,8 +1,10 @@
+from statemachine import state_machine
 from random_arguments import create_random_argument
 import re
 from variable import variable
 import utilities
 import result
+from simulation_exception import simulation_exception
 
 
 class_name = r'class\s(.*)'
@@ -42,7 +44,7 @@ class instruction():
         cleaned = list(filter(lambda x: x != 'class', elements[1:]))
         cleaned = list(filter(None, cleaned))
 
-        if len(cleaned) == 1 and re.match(r'-?\d,\d', cleaned[0]):
+        if len(cleaned) == 1 and re.match(r'-?\d(,|\.)\d', cleaned[0]):
             cleaned = float(cleaned[0].replace(',','.'))
         elif len(cleaned) == 1 and re.match(r'-?\d+', cleaned[0]):
             cleaned = int(cleaned[0])
@@ -95,7 +97,7 @@ class instruction_rule():
             if found:
                 method += f' {elem}'
             else:
-                if elem in ['void', 'string', 'int32', 'bool']:
+                if elem in ['void', 'string', 'float32', 'float64', 'int16', 'int32', 'int64', 'bool', 'char']:
                     self.type = elem
 
             if '::' in elem:
@@ -117,7 +119,7 @@ class instruction_rule():
         return value
 
 
-    def call(self, methods, active_class):
+    def call(self, state, active_class):
         name = self.value
 
         is_library = is_library_call(name)
@@ -129,7 +131,7 @@ class instruction_rule():
                 self.stack.pop()
             return self.stack, create_random_argument(self.type)
         else:
-            method = methods[name]
+            method = state.methods[name]
 
             parameter_list = {}
             args = []
@@ -142,7 +144,8 @@ class instruction_rule():
                 parameter_list[key] = var
             
             method.arguments = parameter_list
-            res, return_val = method.get_instructions(methods, active_class)
+            machine = state_machine(state.instructionset, state.classes, state.methods)
+            res, return_val = machine.simulate(method, active_class)
 
             result.add_results(res, method.name, method.arguments)
             return self.stack, return_val
@@ -170,23 +173,32 @@ class instruction_rule():
 
         if self.operator == '>':
             self.can_jump = val1 > val2
-            return val1 > val2
         elif self.operator == '<':
             self.can_jump = val1 < val2
-            return val1 < val2
         elif self.operator == '==':
             self.can_jump = val1 == val2
-            return val1 == val2
         elif self.operator == '<=':
             self.can_jump = val1 <= val2
-            return val1 <= val2
         elif self.operator == '>=':
             self.can_jump = val1 >= val2
-            return val1 >= val2
+        elif self.operator == '&&':
+            self.can_jump = val1 and val2
+        elif self.operator == '||':
+            self.can_jump = val1 or val2
         else:
-            raise Exception(f"The comparison operator '{self.operator}' has not been implemented")
+            raise simulation_exception(f"The comparison operator '{self.operator}' has not been implemented")
+        return self.can_jump
 
     
+    def compute_index(self):
+        available_jumps = [x.replace('(','').replace(',','').replace(')','') for x in self.value]
+        index = self.stack.pop()
+        if index < len(available_jumps):
+            self.value = available_jumps[index]
+        else:
+            self.value = None
+
+
     def compute(self):
         val1 = self.stack.pop()
         val2 = self.stack.pop()
@@ -202,4 +214,4 @@ class instruction_rule():
         elif self.operator == '%':
             return val1 % val2
         else:
-            raise Exception(f"The compute operator '{self.operator}' has not been implemented")
+            raise simulation_exception(f"The compute operator '{self.operator}' has not been implemented")

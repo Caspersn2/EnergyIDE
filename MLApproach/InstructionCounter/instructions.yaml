@@ -212,3 +212,17 @@
 - !Inst
   name: box
   action: []
+
+- !Inst
+  name: switch
+  action: [POP, INDEX, JUMP]
+
+- !Inst
+  name: and
+  action: [POP, POP, COMPARE]
+  operator: '&&'
+
+- !Inst
+  name: or
+  action: [POP, POP, COMPARE]
+  operator: '||'

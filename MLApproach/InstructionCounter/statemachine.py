@@ -1,23 +1,21 @@
 import copy
+from collections import Counter
+from simulation_exception import simulation_exception
 from action_enum import Actions
 from variable import variable
 
 
 # An object representing a state machine to evaluate instructions
 class state_machine():
-    # Static/class variables
-    available_instructions = None
-    available_classes = None
-
-    def __init__(self, available_methods):
+    def __init__(self, instructions, classes, methods):
         self.locals = {}
         self.arguments = {}
         self.stack = []
-        self.methods = available_methods
-        self.classes = state_machine.available_classes
-        self.instructionset = state_machine.available_instructions
+        self.methods = methods
+        self.classes = classes
+        self.instructionset = instructions
         self.executed = []
-        self.is_instance
+        self.is_instance = None
         self.active_class = None
         self.temp = None
 
@@ -26,10 +24,6 @@ class state_machine():
         if variables:
             for (k, v) in variables.items():
                 self.locals[k] = variable(k, v)
-
-            
-    def is_instance(self, value):
-        self.is_instance = value
 
 
     def load_arguments(self, variables):
@@ -45,7 +39,7 @@ class state_machine():
         if cls:
             self.active_class = cls
         else:
-            raise Exception("We always have to be in an active class")
+            raise simulation_exception("We always have to be in an active class")
 
 
     # Obtain locals based on either a numeric key or string key
@@ -65,11 +59,39 @@ class state_machine():
         elif storage == 'ARGUMENTS':
             return self.arguments
         else:
-            raise Exception(f"The desired storage medium: '{storage}' is not part of the state machine")
+            raise simulation_exception(f"The desired storage medium: '{storage}' is not part of the state machine")
+
+    # Entry method for the state_machine
+    def simulate(self, method, active_class):
+        if active_class:
+            self.load_active_class(active_class)
+        else:
+            self.load_active_class(method.get_class())
+
+        self.load_arguments(method.arguments)
+        self.load_locals(method.locals)
+        self.is_instance = method.is_instance
+
+        instructions = method.get_instructions()
+        instruction_index = list(instructions.keys())
+        index = 0
+        return_val = None
+        while index != len(instruction_index):
+            current = instruction_index[index]
+            action, value = self._simulate_(instructions[current])
+            if action == Actions.JUMP:
+                index = instruction_index.index(value)
+            elif action == Actions.NOP:
+                index += 1
+            elif action == Actions.RETURN:
+                return_val = value
+                break
+
+        return Counter([x.name for x in self.executed]), return_val
 
 
     # Simulates the individual steps of a CIL program
-    def simulate(self, step):
+    def _simulate_(self, step):
         if step.name in self.instructionset:
             current = copy.deepcopy(self.instructionset[step.name])
 
@@ -108,14 +130,14 @@ class state_machine():
                         val = cls.state[field_name].get_value()
                         self.stack.append(val)
                     else:
-                        raise Exception(f"The field: '{field_name}' was not found in the class: '{self.active_class.name}'")
+                        raise simulation_exception(f"The field: '{field_name}' was not found in the class: '{self.active_class.name}'")
 
                 # JUMP
                 elif action == 'JUMP':
                     self.executed.append(current)
                     if 'COMPARE' in current.actions and current.can_jump:
                         return Actions.JUMP, current.args
-                    elif 'COMPARE' not in current.actions:
+                    elif 'COMPARE' not in current.actions and current.value:
                         return Actions.JUMP, current.value
 
                 # POP from LOCALS
@@ -136,7 +158,7 @@ class state_machine():
                     if field_name in cls.state:
                         cls.state[field_name].set_value(val)
                     else:
-                        raise Exception(f"The field: '{field_name}' was not found in the class: '{cls.name}'")
+                        raise simulation_exception(f"The field: '{field_name}' was not found in the class: '{cls.name}'")
 
                 # COMPARE
                 elif action == 'COMPARE':
@@ -157,6 +179,10 @@ class state_machine():
                     val = current.mutate(store=False)
                     self.stack.append(val)
 
+                # USED to determine the index within a jump table
+                elif action == 'INDEX':
+                    current.compute_index()
+
                 # CREATE
                 elif action == 'CREATE':
                     if current.name == 'newobj':
@@ -167,7 +193,7 @@ class state_machine():
                     elif current.name == 'newarr':
                         current.value = current.create_array()
                     else:
-                        raise Exception(f"The action create should not be used with other instructions than 'newobj' or 'newarr'")
+                        raise simulation_exception(f"The action create should not be used with other instructions than 'newobj' or 'newarr'")
 
                 # CALL
                 elif action == 'CALL':
@@ -178,12 +204,12 @@ class state_machine():
                     
                     current.add_values(self.stack)
                     if self.temp:
-                        stack, return_val = current.call(self.methods, self.temp)
+                        stack, return_val = current.call(self, self.temp)
                     else:
-                        stack, return_val = current.call(self.methods, self.active_class)
+                        stack, return_val = current.call(self, self.active_class)
 
                     self.stack = stack
-                    if return_val:
+                    if return_val or return_val == 0:
                         self.stack.append(return_val)
 
                 # CALLVIRT
@@ -191,10 +217,10 @@ class state_machine():
                     class_name, method = current.create_name()
                     cls = self.stack.pop()
                     current.value = f'{cls.name}::{method}'
-                    stack, return_val = current.call(self.methods, cls)
+                    stack, return_val = current.call(self, cls)
                     
                     self.stack = stack
-                    if return_val:
+                    if return_val or return_val == 0:
                         self.stack.append(return_val)
 
                 # RETURN
@@ -206,9 +232,9 @@ class state_machine():
                         return Actions.RETURN, None
 
                 else:
-                    raise Exception(f"The action '{action}' has not been implemented with the extra variables: '{current.location}'")
+                    raise simulation_exception(f"The action '{action}' has not been implemented with the extra variables: '{current.location}'")
 
             self.executed.append(current)
             return Actions.NOP, None
         else:
-            raise Exception(f'The instruction "{step.name}" does not exist in the current configuration file')
+            raise simulation_exception(f'The instruction "{step.name}" does not exist in the current configuration file')

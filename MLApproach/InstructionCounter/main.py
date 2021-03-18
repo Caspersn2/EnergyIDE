@@ -1,4 +1,5 @@
 import argparse
+from simulation_exception import simulation_exception
 from statemachine import state_machine
 import yamlclass
 import utilities
@@ -6,54 +7,61 @@ import subprocess
 import result
 
 
+def execute(counting_type, method, state_machine):
+    res = None
+
+    if counting_type == 'Simple':
+        res = utilities.simple_count(method.text)
+    elif counting_type == 'Simulation' and method.arguments:
+        raise simulation_exception(f"The chosen method requires arguments, and can therefore not be counted by itself")
+    else:
+        res, _ = state_machine.simulate(method, None)
+    
+    result.add_results(res, method.name)
+
+
 def count_instructions(args, text):
     ## Split all code into methods
     instructionset = yamlclass.load(args.instruction_set)
     classes = utilities.get_all_classes(text)
+    methods = get_methods_from_classes(classes)
+    state = state_machine(instructionset, classes, methods)
+
+    if args.list:
+        print_methods(methods)
+        exit()
+
+    if args.method:
+        if args.method in methods:
+            method = methods[args.method]
+            execute(args.counting_method, method, state)
+        else:
+            raise simulation_exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
+    else:
+        if args.entry not in methods.keys() and args.counting_method == 'Simulation':
+            raise simulation_exception(f"The default method: '{args.entry}' does not exist in the .il file, please specify another method using `-e` or `--entry`")
+
+        for k, method in methods.items():
+            if args.counting_method == 'Simple' or args.entry in k:
+                execute(args.counting_method, method, state)
+    
+    result.output(args.output)
+    return result.get_results()
+
+
+def get_methods_from_classes(classes):
     methods = {}
     for _, cls in classes.items():
         for m in cls.methods:
             methods[m.name] = m
+    return methods
 
-    state_machine.available_instructions = instructionset
-    state_machine.available_classes = classes
 
-    if args.list:
-        print(f'The available methods are as follows:')
-        keys = [f'{x}' for x in methods.keys()]
-        for key in keys:
-            print(key)
-    else:
-        if args.method:
-            if args.method in methods:
-                method = methods[args.method]
-                if method.arguments and args.counting_method == 'Simulation':
-                    raise Exception(f"The chosen method requires arguments, and can therefore not be counted by itself")
-                
-                if args.counting_method == 'Simple':
-                    res = utilities.simple_count(method.text)
-                    result.add_results(res, method.name)
-                else:
-                    res, _ = method.get_instructions(methods, None)
-                    result.add_results(res, method.name)
-            else:
-                raise Exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
-        else:
-            found = False
-            for k, method in methods.items():
-                if args.counting_method == 'Simple':
-                    res = utilities.simple_count(method.text)
-                    result.add_results(res, method.name)
-                else:
-                    if args.entry in k:
-                        found = True
-                        res, _ = method.get_instructions(methods, None)
-                        result.add_results(res, args.entry)
-            if args.counting_method == 'Simulation' and not found:
-                raise Exception(f"The default method: '{args.entry}' does not exist in the .il file, please specify another method using `-e` or `--entry`")
-        
-        result.output(args.output)
-        return result.get_results()
+def print_methods(methods):
+    print(f'The available methods are as follows:')
+    keys = [f'{x}' for x in methods.keys()]
+    for key in keys:
+        print(key)
 
 
 if __name__ == '__main__':
@@ -81,8 +89,8 @@ if __name__ == '__main__':
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL)
             text = open(f'{name}.il').read()
-        except:
-            raise Exception("Could not dissamble file")
+        except subprocess.CalledProcessError as e:
+            raise simulation_exception("Could not dissamble file").with_traceback(e.__traceback__)
     else:
         text = args.file.read()
 

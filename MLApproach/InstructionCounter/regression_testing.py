@@ -68,6 +68,11 @@ class TestCounting(unittest.TestCase):
                             'testSets/100DoorsSimulation.csv', False)
         self.assertEqual(res, truth)
 
+    def test_conditionalTest_simple(self):
+        res, truth = helper('testSets/conditional_test.il',
+                            'testSets/conditional_testSimple.csv', True)
+        self.assertEqual(res, truth)
+
 
 if __name__ == '__main__':
     unittest.main()
