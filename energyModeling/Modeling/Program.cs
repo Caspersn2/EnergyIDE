@@ -7,20 +7,73 @@ using System.Linq;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Xml;
 
 namespace Modeling
 {
     class Program
     {
+
+
         static void Main(string[] args)
         {
             var output = Manager.Test(typeof(measureClass));
             System.IO.File.WriteAllText("output.xml", output);
+            UpdateXMLWithSubtractedCost("output.xml");
         }
+        static void UpdateXMLWithSubtractedCost(string path)
+        {
+            // instantiate XmlDocument and load XML from file
+            XmlDocument doc = new XmlDocument();
+            doc.Load(path);
+
+            // get a list of  all method nodes
+            XmlNodeList methodNodes = doc.SelectNodes("/class/method");
+            Dictionary<string,double> allMeans = new Dictionary<string, double>();
+
+            // loop through all method nodes to get the mean of that method.
+            foreach (XmlNode methodNode in methodNodes)
+            {
+                double mean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
+                string name = methodNode.SelectSingleNode("name").InnerText;
+                allMeans.Add(name,mean);
+            }
+
+            // Loop through all method nodes, to compute their mean, but with dependencies subtracted
+            foreach (XmlNode methodNode in methodNodes)
+            {
+                // grab the "instruction" nodes
+                XmlNodeList instructionNodes = methodNode.SelectNodes("dependencies/instruction");
+                Dictionary<string,int> dependencies = new Dictionary<string, int>();
+                
+                // check if the method actually has dependencies
+                if (instructionNodes.Count > 0)
+                {
+                    foreach (XmlNode instruction in instructionNodes)
+                    {
+                        string name = instruction.InnerText;
+                        if(dependencies.ContainsKey(name))
+                            dependencies[name]++;
+                        else dependencies.Add(name,1);
+                    }
+                }
+
+                double newMean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
+                foreach (var dependency in dependencies)
+                    newMean -= allMeans[dependency.Key] * dependency.Value;
+                XmlNode newMeanNode = doc.CreateElement("mean-subtracted");
+                newMeanNode.InnerText = newMean.ToString();
+                methodNode.SelectSingleNode("measurement").AppendChild(newMeanNode);
+            }
+
+            // save the XmlDocument back to disk
+            doc.Save(path);
+        }
+
     }
 
     [MeasureClass(false, MeasurementType.Timer)]
-    class measureClass 
+    class measureClass
     {
         private (DynamicMethod, ILGenerator) newMethod()
         {
@@ -73,7 +126,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
-        
+
         [Measure(1000)] // 0x18
         public void LoadTwo()
         {
@@ -155,7 +208,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
-        
+
         [Measure(1000)] // 0x22
         public void LoadFloat32(float value)
         {
@@ -184,33 +237,6 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x20 - many times
-        public void LoadInt32MANYTIMES(int value)
-        {
-            var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
-            runMethod(method, ilg);
-        }
-
         [Measure(1000)]
         public void LoadString(string value)
         {
@@ -220,7 +246,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
         #endregion
-        
+
         #region Operations (Add, Mul, Sub)
         [Measure(1000)] // 0x58
         public void Add(int value1, int value2)
@@ -254,7 +280,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
-        
+
 
         [Measure(1000)] // 0x65
         public void Neg(int value)
@@ -378,13 +404,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
-            
+
             ilg.Emit(OpCodes.Ldc_I4, value);
             ilg.Emit(OpCodes.Ldc_I4, value);
             ilg.Emit(OpCodes.Beq, end);
-            
+
             ilg.MarkLabel(end);
-            
+
             runMethod(method, ilg);
         }
 
@@ -393,14 +419,14 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
-            
+
             // Ved godt at det ikke er med garenti at de ikke er ens.
             // Men tænker ikke at vi når ind i en situration hvor de faktisk er ens
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Beq, end);
             ilg.MarkLabel(end);
-            
+
             runMethod(method, ilg);
         }
 
@@ -409,13 +435,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
-            
+
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Bge, end);
-            
+
             ilg.MarkLabel(end);
-            
+
             runMethod(method, ilg);
         }
 
@@ -424,13 +450,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
-            
+
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Bgt, end);
-            
+
             ilg.MarkLabel(end);
-            
+
             runMethod(method, ilg);
         }
 
@@ -439,13 +465,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
-            
+
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Ble, end);
-            
+
             ilg.MarkLabel(end);
-            
+
             runMethod(method, ilg);
         }
 
@@ -454,13 +480,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
-            
+
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Blt, end);
-            
+
             ilg.MarkLabel(end);
-            
+
             runMethod(method, ilg);
         }
 
