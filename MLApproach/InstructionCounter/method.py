@@ -3,6 +3,7 @@ import utilities
 import instruction
 import copy
 from statemachine import state_machine
+from collections import Counter
 
 # Represents an entire method
 class method():
@@ -19,7 +20,6 @@ class method():
     
     def get_instructions(self):
         return self.data
-
     
     def get_class(self):
         return copy.deepcopy(self.cls)

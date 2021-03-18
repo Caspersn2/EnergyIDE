@@ -137,4 +137,3 @@ if __name__ == '__main__':
     
     pool = Pool(processes=4)
     pool.map(scrape_benchmark, benchmark_links)
-
