@@ -100,7 +100,7 @@ namespace Modeling
         #region Loads
         #region Load (INT, FLOAT): Codes: 0x20 - 0x22
         [Measure(1000)] // ox20
-        public void LoadInt32(int value)
+        public void Ldc_I4(int value)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4, value);
@@ -110,7 +110,7 @@ namespace Modeling
 
         #region LoadINT32 0 - 8
         [Measure(1000)] // 0x16
-        public void LoadZero()
+        public void Ldc_I4_0()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_0);
@@ -119,7 +119,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x17
-        public void LoadOne()
+        public void Ldc_I4_1()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_1);
@@ -128,7 +128,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x18
-        public void LoadTwo()
+        public void Ldc_I4_2()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_2);
@@ -137,7 +137,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x19
-        public void LoadThree()
+        public void Ldc_I4_3()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_3);
@@ -146,7 +146,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x1A
-        public void LoadFour()
+        public void Ldc_I4_4()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_4);
@@ -155,7 +155,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x1B
-        public void LoadFive()
+        public void Ldc_I4_5()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_5);
@@ -164,7 +164,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x1C
-        public void LoadSix()
+        public void Ldc_I4_6()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_6);
@@ -173,7 +173,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x1D
-        public void LoadSeven()
+        public void Ldc_I4_7()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_7);
@@ -182,7 +182,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x1E
-        public void LoadEight()
+        public void Ldc_I4_8()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_8);
@@ -192,7 +192,7 @@ namespace Modeling
         #endregion
 
         [Measure(1000)] // 0x1f
-        public void LoadInt32Shotform(int value)
+        public void Ldc_I4_S(int value)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_S, value);
@@ -201,7 +201,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x21
-        public void LoadInt64(long value)
+        public void Ldc_I8(long value)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I8, value);
@@ -210,7 +210,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x22
-        public void LoadFloat32(float value)
+        public void Ldc_R4(float value)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_R4, value);
@@ -219,7 +219,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x23
-        public void LoadFloat64(double value)
+        public void Ldc_R8(double value)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_R8, value);
@@ -229,7 +229,7 @@ namespace Modeling
         #endregion
 
         [Measure(1000)] // 0x14
-        public void LoadNull()
+        public void Ldnull()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldnull);
@@ -238,7 +238,7 @@ namespace Modeling
         }
 
         [Measure(1000)]
-        public void LoadString(string value)
+        public void Ldstr(string value)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldstr, value);
@@ -303,7 +303,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x60
-        public void OrBitwise(int value1, int value2)
+        public void Or(int value1, int value2)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4, value1);
@@ -338,7 +338,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x38
-        public void BranchToTarget()
+        public void Br()
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -350,7 +350,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x39
-        public void BranchIfFalseTrue()
+        public void BrfalseTrue()
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -362,7 +362,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
         [Measure(1000)] // 0x39
-        public void BranchIfFalseFalse()
+        public void BrfalseFalse()
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -375,7 +375,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x3A
-        public void BranchIfTrueFalse()
+        public void BrtrueFalse()
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -387,7 +387,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
         [Measure(1000)] // 0x3A
-        public void BranchIfTrueTrue()
+        public void BrtrueTrue()
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -400,7 +400,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x3B
-        public void BranchInt32EqTrue(int value)
+        public void BeqTrue(int value)
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -415,7 +415,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x3B
-        public void BranchInt32EqFalse(int value1, int value2)
+        public void BeqFalse(int value1, int value2)
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -431,7 +431,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x3C
-        public void BranchInt32GE(int value1, int value2) // Greater than or equal to
+        public void Bge(int value1, int value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -446,7 +446,7 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x3D
-        public void BranchInt32G(int value1, int value2) // Greater than
+        public void Bgt(int value1, int value2) // Greater than
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
@@ -461,22 +461,21 @@ namespace Modeling
         }
 
         [Measure(1000)] // 0x3E
-        public void BranchInt32LE(int value1, int value2) // Less than or equal
+        public void Bgt(int value1, int value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
 
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Ble, end);
-
+            ilg.Emit(OpCodes.Bgt, end);
             ilg.MarkLabel(end);
 
             runMethod(method, ilg);
         }
 
         [Measure(1000)] // 0x3E
-        public void BranchInt32L(int value1, int value2) // Less than
+        public void Blt(int value1, int value2) // Less than
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
