@@ -15,14 +15,14 @@ namespace MeasurementTesting.Attributes
         public int SampleIterations;
         public int PlannedIterations;
         public int IterationsDone;
-        public string[] InputList;
+        public string[] Dependencies;
         
-        public MeasureAttribute(int sampleIterations = 100)
+        public MeasureAttribute(int sampleIterations = 100, string[] dependencies = null)
         {
             SampleIterations = sampleIterations;
+            Dependencies = dependencies;
             PlannedIterations = sampleIterations;
             Measurements = new List<Measurement>();
-            //this.InputList = Directory.GetDirectories(@"C:\Users\Caspe\Documents\GitHub\EnergyIDE\energyModeling\Benchmarks");
         }
 
         public void AddMeasure(Measure measure)

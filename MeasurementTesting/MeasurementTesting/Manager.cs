@@ -141,16 +141,18 @@ namespace MeasurementTesting
 
             var classAtt = (MeasureClassAttribute) tempAtt.First();
             
+            // Gets the setup and cleanup methods
             var setup = classAtt.GetSetupMethod(type);
             var cleanUp = classAtt.GetCleanupMethod(type);
-            // Getting the methods and checking for measure attributes 
-            
+
+            // Getting all methods in the class and checking for measure attributes 
             var methods = type.GetMethods();
             if (methodHashCodes != null)
             {
                 methods = methods.Where(m => methodHashCodes.Contains(m.GetHashCode())).ToArray();
             }
 
+            // Iterates all methods. Only considers those that have the "measure" attribute
             foreach(var method in methods)
             {
                 var methodProgress = Progress.PlannedMethods.FirstOrDefault(m => m.Id.Equals(method.GetHashCode()));
@@ -169,40 +171,35 @@ namespace MeasurementTesting
                     // Cast to measure attribute and create class
                     var attribute = (MeasureAttribute)tempAttribute;
                     
-                    //If there are an input for the methods. Then it should run the method with each input
+                    methodProgress.PlannedRuns = attribute.SampleIterations;
+                    methodProgress.Stage = "Sample";
                     
-                    if (attribute.InputList == null || attribute.InputList.Count() == 0)
+                    var measureClass = type.Assembly.CreateInstance(type.FullName);
+                    try
                     {
-                        attribute.InputList = new string[1]{ null };
-                    }
-                    foreach(var inputString in attribute.InputList)
-                    {
-                        methodProgress.PlannedRuns = attribute.SampleIterations;
-                        methodProgress.Stage = "Sample";
+                        // Running setup
+                        if (setup != null)
+                            setup.Invoke(measureClass, Type.EmptyTypes);
                         
-                        var measureClass = type.Assembly.CreateInstance(type.FullName);
-                        try
-                        {
-                            // Running setup
-                            if (setup != null)
-                                setup.Invoke(measureClass, Type.EmptyTypes);
-                            
-                            PerformBenchmark(measureClass, method, classAtt, attribute, methodProgress, inputString);
-            
-                            // Cleanup
-                            if (cleanUp != null)
-                                cleanUp.Invoke(measureClass, Type.EmptyTypes);
-                            
-                            // Save results to output class
+                        PerformBenchmark(measureClass, method, classAtt, attribute, methodProgress);
+        
+                        // Cleanup
+                        if (cleanUp != null)
+                            cleanUp.Invoke(measureClass, Type.EmptyTypes);
+                        
+                        // Save results to output class
+                        if(attribute.Dependencies != null)
+                            output.MethodCalled(method, attribute.Measurements, attribute.Dependencies);
+                        else
                             output.MethodCalled(method, attribute.Measurements);
-                        }
-                        catch(Exception e)
-                        {
-                            Progress.ExceptionThrown = true;
-                            Progress.ExceptionString = e.ToString();
-                            output.MethodCalled(method, attribute.Measurements, e.InnerException ?? e);
-                        }
                     }
+                    catch(Exception e)
+                    {
+                        Progress.ExceptionThrown = true;
+                        Progress.ExceptionString = e.ToString();
+                        output.MethodCalled(method, attribute.Measurements, e.InnerException ?? e);
+                    }
+                    
                 }
 
             }
@@ -217,19 +214,19 @@ namespace MeasurementTesting
             }
         }
 
-        private static void PerformBenchmark(Object measureClass, MethodInfo method, MeasureClassAttribute classAtt, MeasureAttribute attribute, MethodProgress methodProgress, string stringInput)
+        private static void PerformBenchmark(Object measureClass, MethodInfo method, MeasureClassAttribute classAtt, MeasureAttribute attribute, MethodProgress methodProgress)
         {
             Console.WriteLine("Starting to perform benchmark: " + method.Name);
             // Checking for dependency (JIT)
             var itterationsPrRun = classAtt.Dependent ?  attribute.SampleIterations : 1;
             var itterationsTotal = classAtt.Dependent ? 1 : attribute.SampleIterations;
-            var methodName = stringInput == null ? method.Name : method.Name + "-" + stringInput;
+            var methodName = method.Name;
             
             bm = new Benchmark(itterationsPrRun, classAtt.Types, true, methodName);
             bm.stop_running = stop_running;
             bm.SingleRunComplete += measure => ProcessMeasure(measure, attribute, methodProgress);
             // Running sample iterations
-            runBenchmark(method, measureClass, bm, itterationsTotal, stringInput);
+            runBenchmark(method, measureClass, bm, itterationsTotal);
             var numRuns = (int) Math.Ceiling(ComputeSampleSize(attribute.Measurements));
             
             Console.WriteLine(numRuns);
@@ -246,12 +243,12 @@ namespace MeasurementTesting
                     bm.SingleRunComplete += measure => ProcessMeasure(measure, attribute, methodProgress);                    
                 }
                 var exstraPrRuns = classAtt.Dependent ? 1 : (numRuns - attribute.SampleIterations);
-                runBenchmark(method, measureClass, bm, exstraPrRuns, stringInput);
+                runBenchmark(method, measureClass, bm, exstraPrRuns);
             }
             methodProgress.Stage = "Done: " + attribute.ToString();
         }
 
-        private static void runBenchmark(MethodInfo method, object measureClass, Benchmark bm, int iterations, string stringInput = null)
+        private static void runBenchmark(MethodInfo method, object measureClass, Benchmark bm, int iterations)
         {
             for (int i = 0; i < iterations; i++)
             {
@@ -287,7 +284,6 @@ namespace MeasurementTesting
                     return Type.EmptyTypes;
                 }).ToArray();
                 
-                // object[] input = stringInput == null ? Type.EmptyTypes : new string[1]{stringInput};
                 object[] input = randomInputs == null ? Type.EmptyTypes : randomInputs;
                 bm.Run(() =>
                 {
