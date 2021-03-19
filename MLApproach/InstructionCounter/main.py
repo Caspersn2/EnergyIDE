@@ -4,6 +4,7 @@ from statemachine import state_machine
 import utilities
 import subprocess
 import result
+import os
 
 
 def execute(counting_type, method, state_machine):
@@ -69,7 +70,6 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
     parser.add_argument('-o', '--output', type=str, help='The name of the output file')
     parser.add_argument('-d', '--debug', action='store_true', help='Prints all of the args and their name after parsing')
-    parser.add_argument('-i', '--instruction-set', type=str, default='instructions.yaml', help='Path to the file containing all of the behavior of CIL instructions')
     args = parser.parse_args()
 
     if args.debug:
@@ -77,15 +77,11 @@ if __name__ == '__main__':
 
     ## Read the il file
     if args.assembly:
-        name = args.file.name.split('/')[-1].split('.')[0]
-        try:
-            subprocess.call(
-            f'dotnet-ildasm {args.file.name} -o {name}.il', shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
-            text = open(f'{name}.il').read()
-        except subprocess.CalledProcessError as e:
-            raise simulation_exception("Could not dissamble file").with_traceback(e.__traceback__)
+        file_location = os.path.abspath(args.file.name)
+        subprocess.call(f'ilspycmd {file_location} --ilcode -o cil/', shell=True, 
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        file_name = os.path.splitext(os.path.basename(file_location))[0]
+        text = open(f'cil/{file_name}.il', 'r').read()
     else:
         text = args.file.read()
 
