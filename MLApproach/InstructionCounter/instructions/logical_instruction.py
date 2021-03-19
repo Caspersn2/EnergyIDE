@@ -28,3 +28,23 @@ class logical_instruction(instruction):
         res = self.get_operator(self.name)(first, second)
         storage.push_stack(res)
         return Actions.NOP, None
+
+
+
+class single_logical_instruction(instruction):
+    def __init__(self, name):
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, _):
+        return single_logical_instruction(name)
+
+    @classmethod
+    def keys(cls):
+        return ['not']
+
+    def execute(self, storage):
+        value = storage.pop_stack()
+        res = not bool(value)
+        storage.push_stack(res)
+        return Actions.NOP, None

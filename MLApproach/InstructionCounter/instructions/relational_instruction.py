@@ -13,7 +13,7 @@ class relational_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['ceq', 'cgt', 'clt']
+        return ['ceq', 'cgt', 'cgt.un', 'clt', 'clt.un']
 
     def get_operator(_, name):
         return {
