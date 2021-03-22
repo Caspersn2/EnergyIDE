@@ -1,10 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using CsharpRAPL;
 using CsharpRAPL.Devices;
 
-struct Measure
+public struct Measure
 {
     public double duration;
     public List<(string apiName, double apiValue)> apis;
@@ -15,10 +16,19 @@ struct Measure
     }
 }
 
+public enum MeasureTypes {
+    Timer,
+    Package,
+    DRAM,
+    Temp
+}
+
 namespace benchmark
 {
+    public delegate void SingleRun(Measure measure);
     public class Benchmark
     {
+        public bool stop_running { get; set; }
         static readonly int maxExecutionTime = 2700; //In seconds
         static readonly string outputFilePath = "tempResults.csv";
         int iterations { get; }
@@ -27,9 +37,9 @@ namespace benchmark
         RAPL _rapl;
         TextWriter stdout;
         TextWriter benchmarkOutputStream = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
+        public event SingleRun SingleRunComplete;
 
-
-        public Benchmark(int iterations, bool silenceBenchmarkOutput = true) 
+        public Benchmark(int iterations, List<MeasureTypes> types, bool silenceBenchmarkOutput = true) 
         {
             this.stdout = System.Console.Out;
 
@@ -38,14 +48,24 @@ namespace benchmark
 
             this.iterations = iterations;
 
-            this._rapl = new RAPL(
-                new List<Sensor>() {
-                    new Sensor("timer", new TimerAPI(), CollectionApproach.DIFFERENCE),
-                    new Sensor("package", new PackageAPI(), CollectionApproach.DIFFERENCE),
-                    new Sensor("dram", new DramAPI(), CollectionApproach.DIFFERENCE),
-                    new Sensor("temp", new TempAPI(), CollectionApproach.AVERAGE)
+            List<Sensor> sensors = types.Select(x =>
+            {
+                switch (x)
+                {
+                    case MeasureTypes.Timer:
+                        return new Sensor("timer", new TimerAPI(), CollectionApproach.DIFFERENCE);
+                    case MeasureTypes.Package:
+                        return new Sensor("package", new PackageAPI(), CollectionApproach.DIFFERENCE);
+                    case MeasureTypes.DRAM:
+                        return new Sensor("dram", new DramAPI(), CollectionApproach.DIFFERENCE);
+                    case MeasureTypes.Temp:
+                        return new Sensor("temp", new TempAPI(), CollectionApproach.AVERAGE); 
+                    default:
+                        return null;
                 }
-            );
+            }).ToList();
+            
+            this._rapl = new RAPL(sensors);
         }
 
         private void start() => _rapl.Start();
@@ -59,6 +79,7 @@ namespace benchmark
             if (_rapl.IsValid()) {
                 Measure mes = new Measure(_rapl.GetResults());
                 _resultBuffer.Add(mes);
+                SingleRunComplete?.Invoke(mes);
                 elapsedTime += mes.duration / 1_000;
             } 
         }
@@ -81,6 +102,7 @@ namespace benchmark
             R res = default(R);
             for (int i = 0; i < iterations; i++)
             {
+                if (stop_running) break;
                 if(iterations != 1)
                     print(System.Console.Write, $"\r{i + 1} of {iterations}");
                 
