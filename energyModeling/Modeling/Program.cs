@@ -13,16 +13,102 @@ namespace Modeling
 {
     class Program
     {
-
-
         static void Main(string[] args)
         {
             var output = Manager.Test(typeof(measureClass));
+            //var output = Manager.Test(typeof(testing));
+
             System.IO.File.WriteAllText("output.xml", output);
-            UpdateXMLWithSubtractedCost("output.xml");
+            //UpdateXMLWithSubtractedCost("output.xml");
+            UpdateNew("output.xml");
         }
+
+        static void UpdateNew(string path)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(path);
+
+            // get a list of  all method nodes
+            XmlNodeList allMethods = doc.SelectNodes("/class/method");
+            XmlNodeList remainingMethods = allMethods;
+
+            Dictionary<string,double> allMeans = new Dictionary<string, double>();
+
+            var current = 0;
+            var change = false;
+            var running = true;
+            while (running) 
+            {
+                XmlNode methodNode = remainingMethods.Item(current);
+                if (current >= remainingMethods.Count) {
+                    if (change) {
+                        Console.WriteLine("Again");
+                        current = 0;
+                        change = false;
+                        continue;
+                    }
+                    else {
+                        running = false;
+                        break;
+                    }
+                }
+
+                Console.WriteLine($"current: {current}\tChange: {change}");
+                
+                if (allMeans.ContainsKey(methodNode.SelectSingleNode("name").InnerText)){
+                    current++;
+                    Console.WriteLine("Skip");
+                    continue;
+                }
+
+                Console.WriteLine($"index: {current}\tname: {methodNode.SelectSingleNode("name").InnerText}\tRemain: {remainingMethods.Count}");
+
+                // Check for dependencies
+                XmlNodeList instructionNodes = methodNode.SelectNodes("dependencies/instruction");
+                Dictionary<string,int> dependencies = new Dictionary<string, int>();
+                
+                // check if the method actually has dependencies
+                if (instructionNodes.Count > 0)
+                {
+                    foreach (XmlNode instruction in instructionNodes)
+                    {
+                        string name = instruction.InnerText;
+                        if(dependencies.ContainsKey(name))
+                            dependencies[name]++;
+                        else dependencies.Add(name,1);
+                    }
+                }
+
+                // Checks if all dependencies is in allMeans
+                var hasAll = dependencies.All(dep => allMeans.ContainsKey(dep.Key));
+                if (hasAll) {
+                    double newMean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
+                    foreach (var dependency in dependencies)
+                        newMean -= allMeans[dependency.Key] * dependency.Value;
+                
+                    XmlNode newMeanNode = doc.CreateElement("mean-subtracted");
+                    newMeanNode.InnerText = newMean.ToString();
+                    methodNode.SelectSingleNode("measurement").AppendChild(newMeanNode);
+                    
+                    // Update all means with this mean
+                    allMeans.Add(methodNode.SelectSingleNode("name").InnerText, newMean);
+
+                    // There has been a change since last run
+                    change = true;
+                }
+                current++;
+            }
+
+            // save the XmlDocument back to disk
+            doc.Save(path);
+        }
+
         static void UpdateXMLWithSubtractedCost(string path)
         {
+            // TODO:: Undersøg om der er en fejl i denne.
+            // Hvis en method afhænger af flere forskellige instructions, så skal den jo kun tage de instructions
+            // Altså, skal den trække deres dependencies fra også
+            
             // instantiate XmlDocument and load XML from file
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
@@ -38,7 +124,6 @@ namespace Modeling
                 string name = methodNode.SelectSingleNode("name").InnerText;
                 allMeans.Add(name,mean);
             }
-
             // Loop through all method nodes, to compute their mean, but with dependencies subtracted
             foreach (XmlNode methodNode in methodNodes)
             {
@@ -57,19 +142,52 @@ namespace Modeling
                         else dependencies.Add(name,1);
                     }
                 }
-
+            
                 double newMean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
                 foreach (var dependency in dependencies)
                     newMean -= allMeans[dependency.Key] * dependency.Value;
+            
                 XmlNode newMeanNode = doc.CreateElement("mean-subtracted");
                 newMeanNode.InnerText = newMean.ToString();
                 methodNode.SelectSingleNode("measurement").AppendChild(newMeanNode);
             }
-
+            
             // save the XmlDocument back to disk
             doc.Save(path);
         }
+    }
 
+    [MeasureClass(false, MeasurementType.Timer)]
+    class testing
+    {
+        private (DynamicMethod, ILGenerator) newMethod()
+        {
+            DynamicMethod method = new DynamicMethod("MyMethod", typeof(void), new Type[] { });
+            var ilg = method.GetILGenerator();
+            return (method, ilg);
+        }
+
+        private void runMethod(DynamicMethod method, ILGenerator ilg)
+        {
+            ilg.Emit(OpCodes.Ret);
+            method.Invoke(null, Type.EmptyTypes);
+        }
+
+        [Measure(1000)]
+        public void Empty()
+        {
+            var (method, ilg) = newMethod();
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty" })] // ox20
+        public void Ldc_I4(int value)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
     }
 
     [MeasureClass(false, MeasurementType.Timer)]
@@ -99,7 +217,7 @@ namespace Modeling
 
         #region Loads
         #region Load (INT, FLOAT): Codes: 0x20 - 0x22
-        [Measure(1000)] // ox20
+        [Measure(1000, new []{ "Empty" })] // ox20
         public void Ldc_I4(int value)
         {
             var (method, ilg) = newMethod();
@@ -109,7 +227,7 @@ namespace Modeling
         }
 
         #region LoadINT32 0 - 8
-        [Measure(1000)] // 0x16
+        [Measure(1000, new []{ "Empty" })] // 0x16
         public void Ldc_I4_0()
         {
             var (method, ilg) = newMethod();
@@ -118,7 +236,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x17
+        [Measure(1000, new []{ "Empty" })] // 0x17
         public void Ldc_I4_1()
         {
             var (method, ilg) = newMethod();
@@ -127,7 +245,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x18
+        [Measure(1000, new []{ "Empty" })] // 0x18
         public void Ldc_I4_2()
         {
             var (method, ilg) = newMethod();
@@ -136,7 +254,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x19
+        [Measure(1000, new []{ "Empty" })] // 0x19
         public void Ldc_I4_3()
         {
             var (method, ilg) = newMethod();
@@ -145,7 +263,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x1A
+        [Measure(1000, new []{ "Empty" })] // 0x1A
         public void Ldc_I4_4()
         {
             var (method, ilg) = newMethod();
@@ -154,7 +272,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x1B
+        [Measure(1000, new []{ "Empty" })] // 0x1B
         public void Ldc_I4_5()
         {
             var (method, ilg) = newMethod();
@@ -163,7 +281,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x1C
+        [Measure(1000, new []{ "Empty" })] // 0x1C
         public void Ldc_I4_6()
         {
             var (method, ilg) = newMethod();
@@ -172,7 +290,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x1D
+        [Measure(1000, new []{ "Empty" })] // 0x1D
         public void Ldc_I4_7()
         {
             var (method, ilg) = newMethod();
@@ -181,7 +299,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x1E
+        [Measure(1000, new []{ "Empty" })] // 0x1E
         public void Ldc_I4_8()
         {
             var (method, ilg) = newMethod();
@@ -191,8 +309,8 @@ namespace Modeling
         }
         #endregion
 
-        [Measure(1000)] // 0x1f
-        public void Ldc_I4_S(int value)
+        [Measure(1000, new []{ "Empty" })] // 0x1f
+        public void Ldc_I4_S(sbyte value)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4_S, value);
@@ -200,7 +318,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x21
+        [Measure(1000, new []{ "Empty" })] // 0x21
         public void Ldc_I8(long value)
         {
             var (method, ilg) = newMethod();
@@ -209,7 +327,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x22
+        [Measure(1000, new []{ "Empty" })] // 0x22
         public void Ldc_R4(float value)
         {
             var (method, ilg) = newMethod();
@@ -218,7 +336,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x23
+        [Measure(1000, new []{ "Empty" })] // 0x23
         public void Ldc_R8(double value)
         {
             var (method, ilg) = newMethod();
@@ -228,7 +346,7 @@ namespace Modeling
         }
         #endregion
 
-        [Measure(1000)] // 0x14
+        [Measure(1000, new []{ "Empty" })] // 0x14
         public void Ldnull()
         {
             var (method, ilg) = newMethod();
@@ -237,7 +355,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)]
+        [Measure(1000, new []{ "Empty" })]
         public void Ldstr(string value)
         {
             var (method, ilg) = newMethod();
@@ -248,7 +366,7 @@ namespace Modeling
         #endregion
 
         #region Operations (Add, Mul, Sub)
-        [Measure(1000)] // 0x58
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x58
         public void Add(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -258,8 +376,28 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
+        
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD6
+        public void Add_ovf(int value1, int value2) {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Add_Ovf);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
 
-        [Measure(1000)] // 0x59
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD7
+        public void Add_Ovf_Un(uint value1, uint value2) {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Add_Ovf_Un);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x59
         public void Sub(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -270,7 +408,29 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x5A
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xDA
+        public void Sub_Ovf(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Sub_Ovf);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xDB
+        public void Sub_Ovf_Un(uint value1, uint value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Sub_Ovf_Un);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
         public void Mul(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -281,8 +441,63 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
+        /* [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD8
+        public void Mul_Ovf(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Mul_Ovf);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
 
-        [Measure(1000)] // 0x65
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD9
+        public void Mul_Ovf_Un(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Mul_Ovf_Un);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        } */
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
+        public void Div(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Div);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
+        public void Div_Un(uint value1, uint value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Div_Un);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })] // 0x5A
+        public void Dup(int value)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Dup);
+            ilg.Emit(OpCodes.Pop);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })] // 0x65
         public void Neg(int value)
         {
             var (method, ilg) = newMethod();
@@ -292,7 +507,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x66
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })] // 0x66
         public void Not(int value)
         {
             var (method, ilg) = newMethod();
@@ -302,7 +517,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x60
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x60
         public void Or(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -313,7 +528,18 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x5D
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x60
+        public void Xor(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Xor);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
         public void Rem(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -328,7 +554,7 @@ namespace Modeling
 
         #region Branches
 
-        [Measure(1000)]
+        [Measure(1000, new []{ "Empty" })]
         public void BranchDefineLabelEmpty()
         {
             var (method, ilg) = newMethod();
@@ -337,7 +563,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x38
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty" })] // 0x38
         public void Br()
         {
             var (method, ilg) = newMethod();
@@ -349,64 +575,78 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x39
-        public void BrfalseTrue()
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty" })] // 0x2B
+        public void Br_S()
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, 0);
+            ilg.Emit(OpCodes.Br_S, end);
+
+            ilg.MarkLabel(end);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4" })] // 0x39
+        public void Brfalse(int boolValue)
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4, boolValue);
             ilg.Emit(OpCodes.Brfalse, end);
 
             ilg.MarkLabel(end);
             runMethod(method, ilg);
         }
-        [Measure(1000)] // 0x39
-        public void BrfalseFalse()
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S" })] // 0x2C
+        public void Brfalse_S(byte boolValue)
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, 1);
-            ilg.Emit(OpCodes.Brfalse, end);
+            ilg.Emit(OpCodes.Ldc_I4_S, boolValue);
+            ilg.Emit(OpCodes.Brfalse_S, end);
 
             ilg.MarkLabel(end);
             runMethod(method, ilg);
         }
-
-        [Measure(1000)] // 0x3A
-        public void BrtrueFalse()
+        
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4" })] // 0x3A
+        public void Brtrue(int boolValue) // if 'bool' is in the parameter name, then it is either 1 or 0
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, 0);
-            ilg.Emit(OpCodes.Brtrue, end);
-
-            ilg.MarkLabel(end);
-            runMethod(method, ilg);
-        }
-        [Measure(1000)] // 0x3A
-        public void BrtrueTrue()
-        {
-            var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
-
-            ilg.Emit(OpCodes.Ldc_I4, 1);
+            ilg.Emit(OpCodes.Ldc_I4, boolValue);
             ilg.Emit(OpCodes.Brtrue, end);
 
             ilg.MarkLabel(end);
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x3B
-        public void BeqTrue(int value)
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S" })] // 0x2D
+        public void Brtrue_S(byte boolValue)
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Ldc_I4_S, boolValue);
+            ilg.Emit(OpCodes.Brtrue_S, end);
+
+            ilg.MarkLabel(end);
+            runMethod(method, ilg);
+        }
+        
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3B
+        public void Beq(int boolValue1, int boolValue2)
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
             ilg.Emit(OpCodes.Beq, end);
 
             ilg.MarkLabel(end);
@@ -414,23 +654,22 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x3B
-        public void BeqFalse(int value1, int value2)
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x2E
+        public void Beq_S(sbyte boolValue1, sbyte boolValue2)
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
 
-            // Ved godt at det ikke er med garenti at de ikke er ens.
-            // Men tænker ikke at vi når ind i en situration hvor de faktisk er ens
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Beq, end);
+            ilg.Emit(OpCodes.Ldc_I4_S, boolValue1);
+            ilg.Emit(OpCodes.Ldc_I4_S, boolValue2);
+            ilg.Emit(OpCodes.Beq_S, end);
+
             ilg.MarkLabel(end);
 
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x3C
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3C
         public void Bge(int value1, int value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
@@ -445,7 +684,52 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x3D
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x3C
+        public void Bge_S(sbyte value1, sbyte value2) // Greater than or equal to
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Bge_S, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x41
+        public void Bge_Un(uint value1, uint value2) // Greater than or equal to
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Bge_Un, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x34
+        public void Bge_Un_S(byte value1, byte value2) // Greater than or equal to
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Bge_Un_S, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3D
         public void Bgt(int value1, int value2) // Greater than
         {
             var (method, ilg) = newMethod();
@@ -460,21 +744,108 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x3E
-        public void Bgt(int value1, int value2) // Less than or equal
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x30
+        public void Bgt_S(sbyte value1, sbyte value2) // Greater than
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Bgt_S, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x42
+        public void Bgt_Un(uint value1, uint value2) // Greater than
         {
             var (method, ilg) = newMethod();
             var end = ilg.DefineLabel();
 
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Bgt, end);
+            ilg.Emit(OpCodes.Bgt_Un, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+        
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x35
+        public void Bgt_Un_S(byte value1, byte value2) // Greater than
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Bgt_Un_S, end);
+
             ilg.MarkLabel(end);
 
             runMethod(method, ilg);
         }
 
-        [Measure(1000)] // 0x3E
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3E
+        public void Ble(int value1, int value2) // Less than or equal
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Ble, end);
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x31
+        public void Ble_S(sbyte value1, sbyte value2) // Less than or equal
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Ble_S, end);
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x43
+        public void Ble_Un(uint value1, uint value2) // Less than or equal
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Ble_Un, end);
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x36
+        public void Ble_Un_S(byte value1, byte value2) // Less than or equal
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Ble_Un_S, end);
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3F
         public void Blt(int value1, int value2) // Less than
         {
             var (method, ilg) = newMethod();
@@ -489,7 +860,519 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x32
+        public void Blt_S(byte value1, byte value2) // Less than
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Blt_S, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x44
+        public void Blt_Un(uint value1, uint value2) // Less than
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Blt_Un, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x37
+        public void Blt_Un_S(byte value1, byte value2) // Less than
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Blt_Un_S, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x40
+        public void Bne_Un(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Bne_Un, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x33
+        public void Bne_Un_S(sbyte value1, sbyte value2)
+        {
+            var (method, ilg) = newMethod();
+            var end = ilg.DefineLabel();
+
+            ilg.Emit(OpCodes.Ldc_I4_S, value1);
+            ilg.Emit(OpCodes.Ldc_I4_S, value2);
+            ilg.Emit(OpCodes.Bne_Un_S, end);
+
+            ilg.MarkLabel(end);
+
+            runMethod(method, ilg);
+        }
+
         #endregion
+
+        [Measure(1000, new []{ "Empty" })] // 0x38
+        public void Break()
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Break);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        public void Ceq(int boolValue1, int boolValue2)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+            ilg.Emit(OpCodes.Ceq);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        public void Cgt(int boolValue1, int boolValue2)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+            ilg.Emit(OpCodes.Cgt);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        public void Cgt_Un(uint boolValue1, uint boolValue2)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+            ilg.Emit(OpCodes.Cgt_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_R4" })]
+        public void Ckfinite(float value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_R4, value);
+            ilg.Emit(OpCodes.Ckfinite);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        public void Clt(int boolValue1, int boolValue2)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+            ilg.Emit(OpCodes.Clt);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        public void Clt_Un(uint boolValue1, uint boolValue2)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+            ilg.Emit(OpCodes.Clt_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        #region Conv
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_I(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_I);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_I1(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_I1);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_I2(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_I2);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_I4(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_I4);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_I8(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_I8);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I1(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I1);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I2(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I2);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I4(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I4);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I8(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I8);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I_Un(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I1_Un(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I1_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I2_Un(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I2_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I4_Un(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I4_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_Ovf_I8_Un(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_Ovf_I8_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        public void Conv_R_Un(uint value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Conv_R_Un);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_R4(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_R4);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        public void Conv_R8(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Conv_R8);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        public void Conv_U(uint value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Conv_U);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        public void Conv_U1(uint value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Conv_U1);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        public void Conv_U2(uint value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Conv_U2);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        public void Conv_U4(uint value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Conv_U4);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        public void Conv_U8(uint value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldc_I8, value);
+            ilg.Emit(OpCodes.Conv_U1);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        #endregion
+
+        /* // This fails. Dunno why, jeg kigger på det senere
+        [Measure(1000, new []{ "Empty" })]
+        public void Ldarg(int boolValue)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldarg, boolValue);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty" })]
+        public void Ldarg_0()
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldarg_0);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty" })]
+        public void Ldarg_1()
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldarg_1);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty" })]
+        public void Ldarg_2()
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldarg_2);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty" })]
+        public void Ldarg_3()
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldarg_3);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty" })]
+        public void Ldarg_S(byte value)
+        {
+            var (method, ilg) = newMethod();
+            
+            ilg.Emit(OpCodes.Ldarg_S, value);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        } */
+
+
 
         #endregion
     }

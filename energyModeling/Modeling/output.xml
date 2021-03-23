@@ -2,238 +2,397 @@
   <name>measureClass</name>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_R8</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06249112058937349</mean>
+      <completed-runs>5158</completed-runs>
+      <deviation>0,05684718230138214</deviation>
+      <ErrorMargin>0,0007915316302927458</ErrorMargin>
+      <ErrorPercent>0,012666305593939763</ErrorPercent>
+      <mean-subtracted>0,0038911205893744152</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_U</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,061241299999996904</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,04085097362800967</deviation>
+      <ErrorMargin>0,001291821212999826</ErrorMargin>
+      <ErrorPercent>0,021093954782146873</ErrorPercent>
+      <mean-subtracted>0,001795200000000087</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_U1</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,060084100000000605</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,015232243381339904</deviation>
+      <ErrorMargin>0,0004816858295905883</ErrorMargin>
+      <ErrorPercent>0,008016860194137608</ErrorPercent>
+      <mean-subtracted>0,0006380000000037883</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_U2</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,062418499999998926</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,021531668316470666</deviation>
+      <ErrorMargin>0,0006808911370333048</ErrorMargin>
+      <ErrorPercent>0,010908482854174908</ErrorPercent>
+      <mean-subtracted>0,0029724000000021095</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_U4</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,059198499999997406</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,013253625403502277</deviation>
+      <ErrorMargin>0,00041911643529735375</ErrorMargin>
+      <ErrorPercent>0,007079848903221739</ErrorPercent>
+      <mean-subtracted>-0,0002475999999994108</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_U8</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05920770000000134</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,022282539403582203</deviation>
+      <ErrorMargin>0,0007046357656776965</ErrorMargin>
+      <ErrorPercent>0,011901083232040435</ErrorPercent>
+      <mean-subtracted>-0,00023839999999547556</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
     <name>Empty</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12894832011198484</mean>
-      <completed-runs>4286</completed-runs>
-      <deviation>0,11404560352460817</deviation>
-      <ErrorMargin>0,0017420173031524485</ErrorMargin>
-      <ErrorPercent>0,013509422237060536</ErrorPercent>
+      <mean>0,06055099999999953</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,025067416986884132</deviation>
+      <ErrorMargin>0,0007927013273574904</ErrorMargin>
+      <ErrorPercent>0,013091465497803448</ErrorPercent>
+      <mean-subtracted>0,06055099999999953</mean-subtracted>
     </measurement>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadInt32</name>
+    <name>Ldc_I4</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12496699999999322</mean>
+      <mean>0,05944609999999682</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04585603872214818</deviation>
-      <ErrorMargin>0,0014500952683486536</ErrorMargin>
-      <ErrorPercent>0,011603825556736837</ErrorPercent>
+      <deviation>0,027554536782306117</deviation>
+      <ErrorMargin>0,0008713509610297454</ErrorMargin>
+      <ErrorPercent>0,01465783223844444</ErrorPercent>
+      <mean-subtracted>-0,001104900000002712</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadZero</name>
+    <name>Ldc_I4_0</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12977369999999905</mean>
+      <mean>0,06215019999999898</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,055769426635529994</deviation>
-      <ErrorMargin>0,0017635841196993588</ErrorMargin>
-      <ErrorPercent>0,01358968820107134</ErrorPercent>
+      <deviation>0,03133416649521778</deviation>
+      <ErrorMargin>0,0009908733470782372</ErrorMargin>
+      <ErrorPercent>0,015943204480086202</ErrorPercent>
+      <mean-subtracted>0,0015991999999994538</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadOne</name>
+    <name>Ldc_I4_1</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13208050000000637</mean>
+      <mean>0,05960710000000367</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04960671442321039</deviation>
-      <ErrorMargin>0,0015687020481487074</ErrorMargin>
-      <ErrorPercent>0,011876863338256834</ErrorPercent>
+      <deviation>0,02786288930082993</deviation>
+      <ErrorMargin>0,0008811019238375904</ErrorMargin>
+      <ErrorPercent>0,014781828403621989</ErrorPercent>
+      <mean-subtracted>-0,0009438999999958619</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadTwo</name>
+    <name>Ldc_I4_2</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,128257599999997</mean>
+      <mean>0,05812310000000011</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04823647872844189</deviation>
-      <ErrorMargin>0,0015253713908813902</ErrorMargin>
-      <ErrorPercent>0,011893029269855556</ErrorPercent>
+      <deviation>0,022380919148505082</deviation>
+      <ErrorMargin>0,0007077468063735233</ErrorMargin>
+      <ErrorPercent>0,012176687175555364</ErrorPercent>
+      <mean-subtracted>-0,002427899999999421</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadThree</name>
+    <name>Ldc_I4_3</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1297628999999995</mean>
+      <mean>0,05956890000000085</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,05122580987341377</deviation>
-      <ErrorMargin>0,0016199023418672915</ErrorMargin>
-      <ErrorPercent>0,012483555329507108</ErrorPercent>
+      <deviation>0,025367718145587012</deviation>
+      <ErrorMargin>0,0008021976838123784</ErrorMargin>
+      <ErrorPercent>0,01346671977848117</ErrorPercent>
+      <mean-subtracted>-0,0009820999999986813</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadFour</name>
+    <name>Ldc_I4_4</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13442179999999737</mean>
+      <mean>0,05887949999999868</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,0878889694769233</deviation>
-      <ErrorMargin>0,0027792932475209516</ErrorMargin>
-      <ErrorPercent>0,020675911552449126</ErrorPercent>
+      <deviation>0,014493157052599723</deviation>
+      <ErrorMargin>0,00045831386772747897</ErrorMargin>
+      <ErrorPercent>0,007783929342597835</ErrorPercent>
+      <mean-subtracted>-0,001671500000000846</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadFive</name>
+    <name>Ldc_I4_5</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12932539999999912</mean>
+      <mean>0,06065959999999719</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,028580801196556243</deviation>
-      <ErrorMargin>0,0009038042913358349</ErrorMargin>
-      <ErrorPercent>0,0069886061928734885</ErrorPercent>
+      <deviation>0,035414434486661366</deviation>
+      <ErrorMargin>0,0011199027502466587</ErrorMargin>
+      <ErrorPercent>0,018462085972322774</ErrorPercent>
+      <mean-subtracted>0,00010859999999766196</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadSix</name>
+    <name>Ldc_I4_6</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13659070000000195</mean>
+      <mean>0,06152839999999713</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,06581571021588321</deviation>
-      <ErrorMargin>0,0020812755010380327</ErrorMargin>
-      <ErrorPercent>0,015237314846750203</ErrorPercent>
+      <deviation>0,03164307566715726</deviation>
+      <ErrorMargin>0,0010006419128126905</ErrorMargin>
+      <ErrorPercent>0,016263090098438075</ErrorPercent>
+      <mean-subtracted>0,0009773999999976024</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadSeven</name>
+    <name>Ldc_I4_7</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13258000000000028</mean>
+      <mean>0,06012999999999521</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,049361035360012066</deviation>
-      <ErrorMargin>0,0015609329940174759</ErrorMargin>
-      <ErrorPercent>0,01177351783087549</ErrorPercent>
+      <deviation>0,022662298201194073</deviation>
+      <ErrorMargin>0,0007166447932971006</ErrorMargin>
+      <ErrorPercent>0,011918256998123362</ErrorPercent>
+      <mean-subtracted>-0,0004210000000043207</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadEight</name>
+    <name>Ldc_I4_8</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13142140000000335</mean>
+      <mean>0,05942519999999719</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,056419063203253045</deviation>
-      <ErrorMargin>0,0017841274317527496</ErrorMargin>
-      <ErrorPercent>0,013575623389742494</ErrorPercent>
+      <deviation>0,015368961902158092</deviation>
+      <ErrorMargin>0,00048600924883173454</ErrorMargin>
+      <ErrorPercent>0,008178504217600573</ErrorPercent>
+      <mean-subtracted>-0,0011258000000023416</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadInt32Shotform</name>
-    <result>Failed</result>
-    <error-message>System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
- ---> System.InvalidProgramException: Common Language Runtime detected an invalid program.
-   at MyMethod()
-   --- End of inner exception stack trace ---
-   at System.RuntimeMethodHandle.InvokeMethod(Object target, Object[] arguments, Signature sig, Boolean constructor, Boolean wrapExceptions)
-   at System.Reflection.Emit.DynamicMethod.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
-   at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)
-   at Modeling.measureClass.runMethod(DynamicMethod method, ILGenerator ilg) in C:\Users\Caspe\Documents\GitHub\EnergyIDE\energyModeling\Modeling\Program.cs:line 35
-   at Modeling.measureClass.LoadInt32Shotform(Int32 value) in C:\Users\Caspe\Documents\GitHub\EnergyIDE\energyModeling\Modeling\Program.cs:line 147</error-message>
-  </method>
-  <method>
-    <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadInt64</name>
+    <name>Ldc_I4_S</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12407809999999615</mean>
+      <mean>0,058599999999999076</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,031735735808661215</deviation>
-      <ErrorMargin>0,0010035720837673504</ErrorMargin>
-      <ErrorPercent>0,008088228976486435</ErrorPercent>
+      <deviation>0,031033335429951923</deviation>
+      <ErrorMargin>0,0009813602335064884</ErrorMargin>
+      <ErrorPercent>0,01674676166393351</ErrorPercent>
+      <mean-subtracted>-0,0019510000000004524</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadFloat32</name>
+    <name>Ldc_I8</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12469390000000281</mean>
+      <mean>0,06107809999999856</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,025860366419316726</deviation>
-      <ErrorMargin>0,0008177765901157383</ErrorMargin>
-      <ErrorPercent>0,006558272618914958</ErrorPercent>
+      <deviation>0,02223676604531815</deviation>
+      <ErrorMargin>0,0007031882849950035</ErrorMargin>
+      <ErrorPercent>0,01151293646978246</ErrorPercent>
+      <mean-subtracted>0,0005270999999990311</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadFloat64</name>
+    <name>Ldc_R4</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1276507000000073</mean>
+      <mean>0,05814080000000091</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,03880717532063239</deviation>
-      <ErrorMargin>0,0012271906357067346</ErrorMargin>
-      <ErrorPercent>0,009613661622746012</ErrorPercent>
+      <deviation>0,014865239678884989</deviation>
+      <ErrorMargin>0,00047008015349586576</ErrorMargin>
+      <ErrorPercent>0,008085202706117879</ErrorPercent>
+      <mean-subtracted>-0,0024101999999986204</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadNull</name>
+    <name>Ldc_R8</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1319325000000059</mean>
+      <mean>0,05824729999999983</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,03275799627678045</deviation>
-      <ErrorMargin>0,0010358987981794177</ErrorMargin>
-      <ErrorPercent>0,007851733258896567</ErrorPercent>
+      <deviation>0,026559392953603243</deviation>
+      <ErrorMargin>0,0008398817500481301</ErrorMargin>
+      <ErrorPercent>0,01441923917586107</ErrorPercent>
+      <mean-subtracted>-0,0023036999999997004</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadInt32MANYTIMES</name>
+    <name>Ldnull</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1266350999999965</mean>
+      <mean>0,06157609999999748</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,03301881433501706</deviation>
-      <ErrorMargin>0,0010441465893687191</ErrorMargin>
-      <ErrorPercent>0,008245317367528813</ErrorPercent>
+      <deviation>0,04108660862371525</deviation>
+      <ErrorMargin>0,0012992726458285623</ErrorMargin>
+      <ErrorPercent>0,021100275038994275</ErrorPercent>
+      <mean-subtracted>0,001025099999997954</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>LoadString</name>
+    <name>Ldstr</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12368309999999919</mean>
+      <mean>0,057936700000000584</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,0457103859508296</deviation>
-      <ErrorMargin>0,00144548932329983</ErrorMargin>
-      <ErrorPercent>0,011687039889037706</ErrorPercent>
+      <deviation>0,015474819971915873</deviation>
+      <ErrorMargin>0,0004893567749231704</ErrorMargin>
+      <ErrorPercent>0,008446404005115331</ErrorPercent>
+      <mean-subtracted>-0,0026142999999989452</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
@@ -241,12 +400,56 @@
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12377130000000247</mean>
+      <mean>0,05921849999999938</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04125624466712519</deviation>
-      <ErrorMargin>0,0013046370085329083</ErrorMargin>
-      <ErrorPercent>0,010540707001808031</ErrorPercent>
+      <deviation>0,018167086469238276</deviation>
+      <ErrorMargin>0,0005744937169201944</ErrorMargin>
+      <ErrorPercent>0,009701254116875644</ErrorPercent>
+      <mean-subtracted>0,000877300000005278</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Add_ovf</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06815279999999532</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,02445650164337499</deviation>
+      <ErrorMargin>0,0007733824879271599</ErrorMargin>
+      <ErrorPercent>0,011347772768356003</ErrorPercent>
+      <mean-subtracted>0,009811600000001218</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Add_Ovf_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06433749999999808</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,03629094289607333</deviation>
+      <ErrorMargin>0,0011476203798669905</ErrorMargin>
+      <ErrorPercent>0,017837503475687196</ErrorPercent>
+      <mean-subtracted>0,005996300000003972</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
@@ -254,12 +457,56 @@
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12419919999999679</mean>
+      <mean>0,05858739999999906</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,025361798441360873</deviation>
-      <ErrorMargin>0,0008020104863280871</ErrorMargin>
-      <ErrorPercent>0,006457452916992282</ErrorPercent>
+      <deviation>0,01434831890834453</deviation>
+      <ErrorMargin>0,0004537336834482946</ErrorMargin>
+      <ErrorPercent>0,0077445608347238805</ErrorPercent>
+      <mean-subtracted>0,00024620000000495634</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Sub_Ovf</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06964439999999811</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,023009998014965182</deviation>
+      <ErrorMargin>0,0007276400268324316</ErrorMargin>
+      <ErrorPercent>0,0104479330259497</ErrorPercent>
+      <mean-subtracted>0,011303200000004003</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Sub_Ovf_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06339039999999983</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,03097160939358372</deviation>
+      <ErrorMargin>0,0009794082848479091</ErrorMargin>
+      <ErrorPercent>0,015450419698375649</ErrorPercent>
+      <mean-subtracted>0,005049200000005728</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
@@ -267,12 +514,74 @@
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12611310000000117</mean>
+      <mean>0,05902839999999837</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,029114009753961032</deviation>
-      <ErrorMargin>0,0009206658264287527</ErrorMargin>
-      <ErrorPercent>0,007300318733174778</ErrorPercent>
+      <deviation>0,013732041450651563</deviation>
+      <ErrorMargin>0,00043424527907901623</ErrorMargin>
+      <ErrorPercent>0,007356548357723201</ErrorPercent>
+      <mean-subtracted>0,0006872000000042663</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Div</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06057050000000093</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,01622015947281127</deviation>
+      <ErrorMargin>0,000512926479452396</ErrorMargin>
+      <ErrorPercent>0,008468255659972893</ErrorPercent>
+      <mean-subtracted>0,0022293000000068244</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Div_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05871770000000154</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,012686387237157358</deviation>
+      <ErrorMargin>0,00040117878948307963</ErrorMargin>
+      <ErrorPercent>0,006832331468757617</ErrorPercent>
+      <mean-subtracted>0,0003765000000074334</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Dup</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06381149999999604</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,024424322411792702</deviation>
+      <ErrorMargin>0,0007723648912756194</ErrorMargin>
+      <ErrorPercent>0,01210385104997794</ErrorPercent>
+      <mean-subtracted>0,004365399999999221</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
@@ -280,12 +589,17 @@
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12668920000000194</mean>
+      <mean>0,06103830000000245</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,03081988495547767</deviation>
-      <ErrorMargin>0,0009746103368366657</ErrorMargin>
-      <ErrorPercent>0,007692923602301149</ErrorPercent>
+      <deviation>0,016556372688078934</deviation>
+      <ErrorMargin>0,0005235584748493391</ErrorMargin>
+      <ErrorPercent>0,008577540246850226</ErrorPercent>
+      <mean-subtracted>0,0015922000000056363</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
@@ -293,25 +607,55 @@
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12985340000000972</mean>
+      <mean>0,06064270000000516</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,02982600944275006</deviation>
-      <ErrorMargin>0,0009431812335277965</ErrorMargin>
-      <ErrorPercent>0,007263431173367242</ErrorPercent>
+      <deviation>0,014281446229860984</deviation>
+      <ErrorMargin>0,00045161898367585316</ErrorMargin>
+      <ErrorPercent>0,007447211019229268</ErrorPercent>
+      <mean-subtracted>0,0011966000000083465</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>OrBitwise</name>
+    <name>Or</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12325099999999342</mean>
+      <mean>0,05963670000000134</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,023514933363530496</deviation>
-      <ErrorMargin>0,0007436074845584057</ErrorMargin>
-      <ErrorPercent>0,0060332774951801236</ErrorPercent>
+      <deviation>0,01438198959583635</deviation>
+      <ErrorMargin>0,0004547984440768735</ErrorMargin>
+      <ErrorPercent>0,007626150408672231</ErrorPercent>
+      <mean-subtracted>0,0012955000000072353</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Xor</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05991159999999998</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,03003710493894102</deviation>
+      <ErrorMargin>0,0009498566592454649</ErrorMargin>
+      <ErrorPercent>0,015854302993835338</ErrorPercent>
+      <mean-subtracted>0,0015704000000058768</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
@@ -319,12 +663,18 @@
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12360779999999827</mean>
+      <mean>0,059195200000002474</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,03849307854999472</deviation>
-      <ErrorMargin>0,0012172580236975495</ErrorMargin>
-      <ErrorPercent>0,009847744427920944</ErrorPercent>
+      <deviation>0,013903255643102587</deviation>
+      <ErrorMargin>0,00043965954723793266</ErrorMargin>
+      <ErrorPercent>0,007427283753377204</ErrorPercent>
+      <mean-subtracted>0,0008540000000083689</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
@@ -332,154 +682,963 @@
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13380110000000162</mean>
+      <mean>0,060777400000000384</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04506684934294162</deviation>
-      <ErrorMargin>0,001425138908913583</ErrorMargin>
-      <ErrorPercent>0,010651174832744767</ErrorPercent>
+      <deviation>0,017863487157142595</deviation>
+      <ErrorMargin>0,0005648930636973678</ErrorMargin>
+      <ErrorPercent>0,009294459185443343</ErrorPercent>
+      <mean-subtracted>0,00022640000000085508</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchToTarget</name>
+    <name>Br</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1399617000000057</mean>
+      <mean>0,06178049999999973</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,09419141673260986</deviation>
-      <ErrorMargin>0,0029785941291314223</ErrorMargin>
-      <ErrorPercent>0,021281494359751994</ErrorPercent>
+      <deviation>0,01722892526002817</deviation>
+      <ErrorMargin>0,0005448264545849777</ErrorMargin>
+      <ErrorPercent>0,008818744661907562</ErrorPercent>
+      <mean-subtracted>0,0010030999999993476</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchIfFalseTrue</name>
+    <name>Br_S</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1358544000000006</mean>
+      <mean>0,06041979999999972</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,047960547481810535</deviation>
-      <ErrorMargin>0,001516645678711743</ErrorMargin>
-      <ErrorPercent>0,011163758249359139</ErrorPercent>
+      <deviation>0,014564679118942533</deviation>
+      <ErrorMargin>0,0004605755940535285</ErrorMargin>
+      <ErrorPercent>0,007622924836784144</ErrorPercent>
+      <mean-subtracted>-0,0003576000000006657</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchIfFalseFalse</name>
+    <name>Brfalse</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1340650000000035</mean>
+      <mean>0,06189630000000021</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04668159429846302</deviation>
-      <ErrorMargin>0,001476201627910732</ErrorMargin>
-      <ErrorPercent>0,011011088859215258</ErrorPercent>
+      <deviation>0,029564833429018115</deviation>
+      <ErrorMargin>0,0009349221227918329</ErrorMargin>
+      <ErrorPercent>0,01510465282725833</ErrorPercent>
+      <mean-subtracted>0,0022238000000025376</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchIfTrueFalse</name>
+    <name>Brfalse_S</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13559500000000543</mean>
+      <mean>0,0592334999999993</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04899708143337452</deviation>
-      <ErrorMargin>0,0015494237603021113</ErrorMargin>
-      <ErrorPercent>0,011426850254818018</ErrorPercent>
+      <deviation>0,01609196940182565</deviation>
+      <ErrorMargin>0,0005088727534750638</ErrorMargin>
+      <ErrorPercent>0,008590962098729093</ErrorPercent>
+      <mean-subtracted>0,0004070999999993691</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchIfTrueTrue</name>
+    <name>Brtrue</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1399220999999973</mean>
+      <mean>0,061903899999997215</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,07232975470028964</deviation>
-      <ErrorMargin>0,0022872676745418477</ErrorMargin>
-      <ErrorPercent>0,016346722029914443</ErrorPercent>
+      <deviation>0,01623240172173128</deviation>
+      <ErrorMargin>0,0005133136133550956</ErrorMargin>
+      <ErrorPercent>0,008292104590423522</ErrorPercent>
+      <mean-subtracted>0,0022313999999995435</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchInt32EqTrue</name>
+    <name>Brtrue_S</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13584850000000248</mean>
+      <mean>0,060983199999999786</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,0590043124410103</deviation>
-      <ErrorMargin>0,0018658801908580205</ErrorMargin>
-      <ErrorPercent>0,013735007680305535</ErrorPercent>
+      <deviation>0,02862457237941029</deviation>
+      <ErrorMargin>0,0009051884576728199</ErrorMargin>
+      <ErrorPercent>0,0148432430189433</ErrorPercent>
+      <mean-subtracted>0,0021567999999998547</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchInt32EqFalse</name>
+    <name>Beq</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13548210000000027</mean>
+      <mean>0,06110660000000021</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,03049159272352077</deviation>
-      <ErrorMargin>0,0009642288249254244</ErrorMargin>
-      <ErrorPercent>0,00711702007073571</ErrorPercent>
+      <deviation>0,01610337775794917</deviation>
+      <ErrorMargin>0,0005092335173721503</ErrorMargin>
+      <ErrorPercent>0,008333527268284418</ErrorPercent>
+      <mean-subtracted>0,0025390000000052523</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchInt32GE</name>
+    <name>Beq_S</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,13200630000000718</mean>
+      <mean>0,059121399999998554</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,04557069736979105</deviation>
-      <ErrorMargin>0,0014410719825078417</ErrorMargin>
-      <ErrorPercent>0,01091669096480822</ErrorPercent>
+      <deviation>0,014580553301387978</deviation>
+      <ErrorMargin>0,00046107757977873517</ErrorMargin>
+      <ErrorPercent>0,007798827155289734</ErrorPercent>
+      <mean-subtracted>0,002245999999999075</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchInt32G</name>
+    <name>Bge</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,1266892999999955</mean>
+      <mean>0,05923900000000226</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,0267228761105045</deviation>
-      <ErrorMargin>0,0008450515413969565</ErrorMargin>
-      <ErrorPercent>0,006670267665832762</ErrorPercent>
+      <deviation>0,013757227202465817</deviation>
+      <ErrorMargin>0,00043504172248218383</ErrorMargin>
+      <ErrorPercent>0,007343839742098401</ErrorPercent>
+      <mean-subtracted>0,0006714000000073023</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchInt32LE</name>
+    <name>Bge_S</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12852639999999688</mean>
+      <mean>0,0632015000000006</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,03013046810370512</deviation>
-      <ErrorMargin>0,0009528090617476262</ErrorMargin>
-      <ErrorPercent>0,007413333461044963</ErrorPercent>
+      <deviation>0,02646771368323489</deviation>
+      <ErrorMargin>0,0008369825969622663</ErrorMargin>
+      <ErrorPercent>0,013243081207918455</ErrorPercent>
+      <mean-subtracted>0,006326100000001125</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
-    <name>BranchInt32L</name>
+    <name>Bge_Un</name>
     <result>Passed</result>
     <measurement>
       <name>timer</name>
-      <mean>0,12647460000000374</mean>
+      <mean>0,062360000000003794</mean>
       <completed-runs>1000</completed-runs>
-      <deviation>0,027360920211037764</deviation>
-      <ErrorMargin>0,0008652282674501422</ErrorMargin>
-      <ErrorPercent>0,006841122782361966</ErrorPercent>
+      <deviation>0,02109991674122214</deviation>
+      <ErrorMargin>0,0006672379534217956</ErrorMargin>
+      <ErrorPercent>0,010699774750188502</ErrorPercent>
+      <mean-subtracted>0,0037924000000088345</mean-subtracted>
     </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Bge_Un_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05968359999999852</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,015772663311817897</deviation>
+      <ErrorMargin>0,0004987754083231915</ErrorMargin>
+      <ErrorPercent>0,008356992680119897</ErrorPercent>
+      <mean-subtracted>0,0028081999999990392</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Bgt</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06176549999999915</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,025705033524554513</deviation>
+      <ErrorMargin>0,00081286453268578</ErrorMargin>
+      <ErrorPercent>0,013160494656171992</ErrorPercent>
+      <mean-subtracted>0,0031979000000041877</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Bgt_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0607231000000006</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,0195314160419194</deviation>
+      <ErrorMargin>0,0006176376062081604</ErrorMargin>
+      <ErrorPercent>0,01017137804572155</ErrorPercent>
+      <mean-subtracted>0,0038477000000011197</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Bgt_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06292589999999915</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,01978112615959812</deviation>
+      <ErrorMargin>0,0006255341334746946</ErrorMargin>
+      <ErrorPercent>0,009940805510524332</ErrorPercent>
+      <mean-subtracted>0,004358300000004187</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Bgt_Un_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0641358000000011</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,016767506900183995</deviation>
+      <ErrorMargin>0,00053023512487171</ErrorMargin>
+      <ErrorPercent>0,00826738147605083</ErrorPercent>
+      <mean-subtracted>0,005568200000006143</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Ble</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05933610000000153</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,019043760963149997</deviation>
+      <ErrorMargin>0,000602216598593559</ErrorMargin>
+      <ErrorPercent>0,01014924470252584</ErrorPercent>
+      <mean-subtracted>0,0007685000000065695</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Ble_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06040380000000204</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,014985409839845542</deviation>
+      <ErrorMargin>0,0004738802676501097</ErrorMargin>
+      <ErrorPercent>0,007845206222954412</ErrorPercent>
+      <mean-subtracted>0,0035284000000025614</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Ble_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06029650000000069</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,014095232290506805</deviation>
+      <ErrorMargin>0,0004457303818715365</ErrorMargin>
+      <ErrorPercent>0,007392309369060084</ErrorPercent>
+      <mean-subtracted>0,00172890000000573</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Ble_Un_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,058692900000002025</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,013843698479004208</deviation>
+      <ErrorMargin>0,0004377761843426198</ErrorMargin>
+      <ErrorPercent>0,0074587587994903075</ErrorPercent>
+      <mean-subtracted>0,0018175000000025462</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Blt</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06059609999999889</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,019514247119233163</deviation>
+      <ErrorMargin>0,0006170946772015619</ErrorMargin>
+      <ErrorPercent>0,010183735870816326</ErrorPercent>
+      <mean-subtracted>0,00202850000000393</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Blt_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05998270000000056</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,015121877591486617</deviation>
+      <ErrorMargin>0,00047819575687358946</ErrorMargin>
+      <ErrorPercent>0,00797222794028253</ErrorPercent>
+      <mean-subtracted>0,003107300000001083</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Blt_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05928180000000313</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,014117951172363818</deviation>
+      <ErrorMargin>0,00044644881599714085</ErrorMargin>
+      <ErrorPercent>0,0075309591813527465</ErrorPercent>
+      <mean-subtracted>0,0007142000000081722</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Blt_Un_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,059144299999998706</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,019542881868898344</deviation>
+      <ErrorMargin>0,000618000187493269</ErrorMargin>
+      <ErrorPercent>0,010449023616701568</ErrorPercent>
+      <mean-subtracted>0,002268899999999227</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Bne_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06149200000000037</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,02570464831397102</deviation>
+      <ErrorMargin>0,0008128523512575535</ErrorMargin>
+      <ErrorPercent>0,013218830925283753</ErrorPercent>
+      <mean-subtracted>0,002924400000005413</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Bne_Un_S</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06015400000000305</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,018415395482876722</deviation>
+      <ErrorMargin>0,0005823459373866675</ErrorMargin>
+      <ErrorPercent>0,009680917933747347</ErrorPercent>
+      <mean-subtracted>0,003278600000003573</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>BranchDefineLabelEmpty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Break</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,07171159999999939</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,03645320976185757</deviation>
+      <ErrorMargin>0,0011527517087135408</ErrorMargin>
+      <ErrorPercent>0,01607482901948291</ErrorPercent>
+      <mean-subtracted>0,011160599999999861</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Ceq</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06068930000000045</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,015643910874761194</deviation>
+      <ErrorMargin>0,0004947038987692249</ErrorMargin>
+      <ErrorPercent>0,008151418763591297</ErrorPercent>
+      <mean-subtracted>0,002348100000006348</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Cgt</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06063760000000101</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,018795283155860633</deviation>
+      <ErrorMargin>0,0005943590404031712</ErrorMargin>
+      <ErrorPercent>0,00980182329780798</ErrorPercent>
+      <mean-subtracted>0,002296400000006908</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Cgt_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05866759999999683</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,013125432076970915</deviation>
+      <ErrorMargin>0,00041506260637062575</ErrorMargin>
+      <ErrorPercent>0,007074818236482286</ErrorPercent>
+      <mean-subtracted>0,0003264000000027245</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Ckfinite</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,08054679999999989</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,015847758238979746</deviation>
+      <ErrorMargin>0,0005011501184287503</ErrorMargin>
+      <ErrorPercent>0,00622185013468879</ErrorPercent>
+      <mean-subtracted>0,022405999999998982</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_R4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Clt</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,059395999999998124</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,014025994885659138</deviation>
+      <ErrorMargin>0,00044354090288555834</ErrorMargin>
+      <ErrorPercent>0,00746752143049317</ErrorPercent>
+      <mean-subtracted>0,0010548000000040192</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Clt_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06070810000000062</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,018626308914376062</deviation>
+      <ErrorMargin>0,0005890156057132656</ErrorMargin>
+      <ErrorPercent>0,009702422011449207</ErrorPercent>
+      <mean-subtracted>0,002366900000006514</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_I</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0591667000000007</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,0211050212753505</deviation>
+      <ErrorMargin>0,0006673993729641925</ErrorMargin>
+      <ErrorPercent>0,011279983047291543</ErrorPercent>
+      <mean-subtracted>0,000566700000001627</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_I1</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06149650000000047</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,023691497732622222</deviation>
+      <ErrorMargin>0,0007491909401580106</ErrorMargin>
+      <ErrorPercent>0,0121826598287383</ErrorPercent>
+      <mean-subtracted>0,002896500000001391</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_I2</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,060668900000002114</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,021175210798061197</deviation>
+      <ErrorMargin>0,0006696189605606516</ErrorMargin>
+      <ErrorPercent>0,011037268857035949</ErrorPercent>
+      <mean-subtracted>0,0020689000000030378</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_I4</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0623396999999988</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,021051290001344942</deviation>
+      <ErrorMargin>0,0006657002408897908</ErrorMargin>
+      <ErrorPercent>0,010678592307787874</ErrorPercent>
+      <mean-subtracted>0,003739699999999721</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_I8</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,061747099999997175</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,031935263152549576</deviation>
+      <ErrorMargin>0,0010098816923890593</ErrorMargin>
+      <ErrorPercent>0,01635512748597271</ErrorPercent>
+      <mean-subtracted>0,0031470999999980986</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0612806999999971</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,014247728776377167</deviation>
+      <ErrorMargin>0,00045055274417675674</ErrorMargin>
+      <ErrorPercent>0,0073522780284294735</ErrorPercent>
+      <mean-subtracted>0,0026806999999980236</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I1</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06166780000000398</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,013892248836589207</deviation>
+      <ErrorMargin>0,0004393114814544621</ErrorMargin>
+      <ErrorPercent>0,007123839044921884</ErrorPercent>
+      <mean-subtracted>0,0030678000000049013</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I2</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06224489999999882</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,025767021430180614</deviation>
+      <ErrorMargin>0,0008148247623774004</ErrorMargin>
+      <ErrorPercent>0,013090626900796947</ErrorPercent>
+      <mean-subtracted>0,003644899999999743</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I4</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06350909999999602</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,027281432215585384</deviation>
+      <ErrorMargin>0,0008627146363274359</ErrorMargin>
+      <ErrorPercent>0,01358411056569043</ErrorPercent>
+      <mean-subtracted>0,0049090999999969395</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I8</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0627006999999986</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,02294581966611832</deviation>
+      <ErrorMargin>0,0007256105292441822</ErrorMargin>
+      <ErrorPercent>0,011572606513869836</ErrorPercent>
+      <mean-subtracted>0,00410069999999952</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0619119999999991</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,022691504144951604</deviation>
+      <ErrorMargin>0,0007175683663319864</ErrorMargin>
+      <ErrorPercent>0,011590133840483215</ErrorPercent>
+      <mean-subtracted>0,0033120000000000233</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I1_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06382189999999992</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,02725119296303007</deviation>
+      <ErrorMargin>0,0008617583871992773</ErrorMargin>
+      <ErrorPercent>0,013502549864533623</ErrorPercent>
+      <mean-subtracted>0,005221900000000841</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I2_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06297499999999684</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,032434214855509874</deviation>
+      <ErrorMargin>0,0010256599306268026</ErrorMargin>
+      <ErrorPercent>0,01628677936684167</ErrorPercent>
+      <mean-subtracted>0,004374999999997763</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I4_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0632429999999984</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,04422421341360672</deviation>
+      <ErrorMargin>0,001398492421163673</ErrorMargin>
+      <ErrorPercent>0,022112999401731552</ErrorPercent>
+      <mean-subtracted>0,004642999999999321</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_Ovf_I8_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,05998810000000044</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,014971675907175682</deviation>
+      <ErrorMargin>0,00047344596256542815</ErrorMargin>
+      <ErrorPercent>0,007892331355142515</ErrorPercent>
+      <mean-subtracted>0,0013881000000013632</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_R_Un</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,0580590999999979</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,014013178310303276</deviation>
+      <ErrorMargin>0,0004431356071862813</ErrorMargin>
+      <ErrorPercent>0,007632491843419848</ErrorPercent>
+      <mean-subtracted>-0,0013869999999989169</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4</instruction>
+    </dependencies>
+  </method>
+  <method>
+    <declaring-type>Modeling.measureClass</declaring-type>
+    <name>Conv_R4</name>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,06667340000000163</mean>
+      <completed-runs>1000</completed-runs>
+      <deviation>0,02149259556461551</deviation>
+      <ErrorMargin>0,0006796555481301763</ErrorMargin>
+      <ErrorPercent>0,010193803647783968</ErrorPercent>
+      <mean-subtracted>0,008073400000002555</mean-subtracted>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>Ldc_I4_S</instruction>
+    </dependencies>
   </method>
 </class>

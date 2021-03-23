@@ -250,6 +250,7 @@ namespace MeasurementTesting
 
         private static void runBenchmark(MethodInfo method, object measureClass, Benchmark bm, int iterations)
         {
+            var overflowExceptions = 0;
             for (int i = 0; i < iterations; i++)
             {
                 if (stop_running) 
@@ -266,6 +267,11 @@ namespace MeasurementTesting
                     var rnd = new Random();
                     var typeSwitch = new Dictionary<Type, Object> {
                         { typeof(int), rnd.Next(int.MinValue, int.MaxValue) },
+                        { typeof(uint), ((uint)rnd.Next(int.MinValue, int.MaxValue) + (uint)int.MaxValue) },
+                        { typeof(short), (short)rnd.Next(short.MinValue, short.MaxValue) },
+                        { typeof(ushort), ((ushort)rnd.Next(ushort.MinValue, ushort.MaxValue) + (ushort)ushort.MaxValue) },
+                        { typeof(sbyte), (sbyte)rnd.Next(-128, 127) },
+                        { typeof(byte), (byte)rnd.Next(0, 255) },
                         { typeof(long), (long)rnd.Next(int.MinValue, int.MaxValue) },
                         { typeof(float), (float)rnd.NextDouble() },
                         { typeof(double), rnd.NextDouble() },
@@ -275,7 +281,20 @@ namespace MeasurementTesting
 
                         { typeof(bool), rnd.Next(0, 1) }
                     };
-
+                    
+                    if (parameter.Name.Contains("bool")) {
+                        if (parameter.ParameterType == typeof(byte)){
+                            return (byte)rnd.Next(0, 1);
+                        }
+                        else if (parameter.ParameterType == typeof(sbyte)){
+                            return (sbyte)rnd.Next(0, 1);
+                        }
+                        else if (parameter.ParameterType == typeof(uint)) {
+                            return (uint)rnd.Next(0, 1);
+                        }
+                        return rnd.Next(0, 1);
+                    }
+                    
                     var type = parameter.ParameterType;
                     if (typeSwitch.ContainsKey(type))
                     {
@@ -285,11 +304,59 @@ namespace MeasurementTesting
                 }).ToArray();
                 
                 object[] input = randomInputs == null ? Type.EmptyTypes : randomInputs;
-                bm.Run(() =>
-                {
-                    method.Invoke(measureClass, input);
-                    return true;
-                });
+                
+                try {
+                    bm.Run(() =>
+                    {
+                        method.Invoke(measureClass, input);
+                        return true;
+                    });
+                    Console.SetOut(bm.stdout);
+                } catch(OverflowException e) {
+                    // If there is an overflow exception, then run it again.
+                    Console.SetOut(bm.stdout);
+                    if (overflowExceptions < 1000000) {
+                        i--;
+                        overflowExceptions++;
+                        Console.Write(".");
+                    }
+                    else {
+                        // If an overflow exception has occurred 1 million times, then just skip this method
+                        throw new Exception("Overflow one million times", e);
+                    }
+                } catch(Exception e) {
+                    Console.SetOut(bm.stdout);
+                    var isOverflow = false;
+                    var excep = e;
+                    while (excep != null) {
+                        if (excep.GetType() == typeof(OverflowException)){
+                            isOverflow = true;
+                            break;
+                        }
+                        excep = excep.InnerException;
+                    }
+
+                    if (isOverflow) {
+                        // If there is an overflow exception, then run it again.
+                        if (overflowExceptions < 10000) {
+                            i--;
+                            overflowExceptions++;
+                            Console.Write(".");
+                        }
+                        else {
+                            // If an overflow exception has occurred too much, then just skip this method
+                            throw new Exception("Too many overflows", e);
+                        }
+                    }
+                    else {
+                        Console.WriteLine($"Other error ocurred {e.GetType()}");
+                        throw new Exception($"An error ocurred running method {method.Name}", e);
+                    }
+                }
+            }
+
+            if (overflowExceptions > 0) {
+                Console.WriteLine($"Overflows: {overflowExceptions}. Method name: {method.Name}");
             }
         }
 

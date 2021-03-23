@@ -35,7 +35,7 @@ namespace benchmark
         double elapsedTime = 0;
         List<Measure> _resultBuffer = new List<Measure>();
         RAPL _rapl;
-        TextWriter stdout;
+        public TextWriter stdout;
         TextWriter benchmarkOutputStream = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
         public event SingleRun SingleRunComplete;
         string name;
