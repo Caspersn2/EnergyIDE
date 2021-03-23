@@ -1,4 +1,5 @@
 import argparse
+from storage import storage
 from simulation_exception import simulation_exception
 from statemachine import state_machine
 import utilities
@@ -11,46 +12,52 @@ def execute(counting_type, method, state_machine):
     if counting_type == 'Simple':
         res = utilities.simple_count(method.text)
         result.add_results(res, method.name)
-    elif counting_type == 'Simulation' and method.arguments:
-        raise simulation_exception(f"The chosen method requires arguments, and can therefore not be counted by itself")
     else:
-        state_machine.simulate(method, None)
+        if method.is_entry:
+            state_machine.simulate(method, None)
+        else:
+            raise NotImplementedError('The simulation of a method with randomized input parameters is not implemented yet')
 
 
 def count_instructions(args, text):
     ## Split all code into methods
     classes = utilities.get_all_classes(text)
-    methods = get_methods_from_classes(classes)
-    state = state_machine(classes, methods)
+    entry, methods = get_methods_from_classes(classes)
+    storage_unit = storage(classes, methods)
+    state = state_machine(storage_unit)
 
     if args.list:
         print_methods(methods)
         exit()
+        
+    if entry and not args.method:
+        args.method = entry.name
+    elif not entry and not args.method:
+        raise simulation_exception('No entry was found in the program, please specify one using the "-m" or "--method" command line argument')
 
-    if args.method:
+    if args.method == entry.name and args.counting_method == 'Simple':
+        for method in methods.values():
+            execute(args.counting_method, method, state)
+    else:
         if args.method in methods:
             method = methods[args.method]
             execute(args.counting_method, method, state)
         else:
             raise simulation_exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
-    else:
-        if args.entry not in methods.keys() and args.counting_method == 'Simulation':
-            raise simulation_exception(f"The default method: '{args.entry}' does not exist in the .il file, please specify another method using `-e` or `--entry`")
 
-        for k, method in methods.items():
-            if args.counting_method == 'Simple' or args.entry in k:
-                execute(args.counting_method, method, state)
-    
     result.output(args.output)
     return result.get_results()
 
 
 def get_methods_from_classes(classes):
     methods = {}
+    entry = None
     for _, cls in classes.items():
         for m in cls.methods:
+            if m.is_entry:
+                entry = m
             methods[m.name] = m
-    return methods
+    return entry, methods
 
 
 def print_methods(methods):
@@ -63,9 +70,8 @@ def print_methods(methods):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=argparse.FileType('r'), help='Counts all of the instructions used', required=True)
-    parser.add_argument('-c', '--counting-method', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
+    parser.add_argument('-c', '--counting-method', default='Simulation', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
     parser.add_argument('-m', '--method', type=str, help='Countes the instructions for the specific method')
-    parser.add_argument('-e', '--entry', default='Main(string[])', help='If "Main(string[])" is not the default entry method please specify with this command')
     parser.add_argument('-l', '--list', action='store_true', help='Will print a list of available methods')
     parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
     parser.add_argument('-o', '--output', type=str, help='The name of the output file')

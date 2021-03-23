@@ -1,17 +1,14 @@
-import copy
 from collections import Counter
 import result
 from storage import storage
-from simulation_exception import simulation_exception
 from action_enum import Actions
 from variable import variable
 
 
 # An object representing a state machine to evaluate instructions
 class state_machine():
-    def __init__(self, classes, methods):
-        self.storage = storage(classes)
-        self.methods = methods
+    def __init__(self, storage_class):
+        self.storage = storage.copy(storage_class)
         self.executed = []
         self.temp = None
 
@@ -46,7 +43,7 @@ class state_machine():
 
 
     def get_method(self, value):
-        method = self.methods[value]
+        method = self.storage.get_method(value)
         parameter_list = {}
         args = []
         for _ in range(len(method.arguments)):
@@ -76,7 +73,7 @@ class state_machine():
 
             elif action == Actions.CALL:
                 method = self.get_method(value)
-                machine = state_machine(self.storage.classes, self.methods)
+                machine = state_machine(self.storage)
                 return_val = machine.simulate(method, self.storage.get_active_class())
                 if return_val or return_val == 0:
                     self.storage.push_stack(return_val)

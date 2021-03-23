@@ -19,7 +19,9 @@ class relational_instruction(instruction):
         return {
             'ceq': lambda x, y: y == x,
             'cgt': lambda x, y: y > x,
-            'clt': lambda x, y: y < x
+            'cgt.un': lambda x, y: y > x,
+            'clt': lambda x, y: y < x,
+            'clt.un': lambda x, y: y < x
         }.get(name, simulation_exception(name))
 
     def execute(self, storage):

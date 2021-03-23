@@ -1,13 +1,14 @@
-from instruction import instruction, is_library_call
+from instruction import instruction
 from action_enum import Actions
 from random_arguments import create_random_argument
+from utilities import is_library_call
 
 
 class call_instruction(instruction):
     def __init__(self, name, return_type, invocation_target):
         self.return_type = return_type
         self.invocation_target = invocation_target
-        self.is_library = is_library_call(invocation_target)
+        self.is_library = is_library_call(invocation_target.split('::')[0])
         super().__init__(name)
 
     @classmethod
@@ -17,7 +18,7 @@ class call_instruction(instruction):
             target = ' '.join(elements[2:])
         else:
             ret_type = elements[0]
-            target = ' '.join(elements[1:])
+            target = ' '.join(elements[1:]).replace('class ', '')
         return call_instruction(name, ret_type, target)
 
     @classmethod

@@ -12,13 +12,6 @@ NOT_IMPLEMENTED = 'The operator is not implemented'
 classes = []
 
 
-def is_library_call(value):
-    if re.search(r'\[|\]', value):
-        return True
-    else:
-        return False
-
-
 # Returns all instructions from a (List) of text. (Split at newlines)
 def get_all_instructions(text):
     instructions = {}

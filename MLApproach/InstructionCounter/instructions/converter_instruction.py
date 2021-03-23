@@ -13,12 +13,13 @@ class convert_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['conv.r4', 'conv.r8']
+        return ['conv.r4', 'conv.r8', 'conv.r.un']
 
     def convert(self, name):
         return {
             'conv.r4': lambda x: float(x),
-            'conv.r8': lambda x: float(x)
+            'conv.r8': lambda x: float(x),
+            'conv.r.un': lambda x: float(x)
         }.get(name, simulation_exception(name))
 
     def execute(self, storage):
