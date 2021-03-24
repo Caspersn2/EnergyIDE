@@ -44,7 +44,16 @@ python regression_testing.py
 - [x] Fix stack popping properly when calling another method
 - [x] Implement array mutation
 - [x] Add functionality to randomize the random values from system calls
-- [ ] Add functionality to randomize input parameters for specificed method
-- [ ] Find out how to call third part libraries / system libraries
-- [ ] Fix unimplemented instructions (ongoing)
 - [x] Add option to decompile existing DLL files and count
+- [x] Add smarter entrypoint detection by using '.entrypoint'
+- [x] Implement Generics and getting generic variables
+  - [x] Find generic classes, when initially creating classes (Class generics)
+  - [x] Find generic classes, when calling 'newobj'
+  - [x] Enable identical function names, different generics
+  - [x] Create generic methods, when reading the CIL code (Standalone generics)
+  - [x] Call correct version of generic method
+  - [x] Update results to show the concrete values for generic calls
+- [ ] Implement Delegates and create a custom type for them
+- [ ] Find out how to call third part libraries / system libraries
+- [ ] Add functionality to randomize input parameters for specificed method
+- [ ] Fix unimplemented instructions (ongoing)

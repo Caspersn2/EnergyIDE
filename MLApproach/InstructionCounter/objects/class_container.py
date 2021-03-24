@@ -17,6 +17,10 @@ class class_container():
         self.state = {}
         self.init_state()
 
+    
+    def get_name(self):
+        return self.name
+
 
     def init_state(self):
         if self.fields:

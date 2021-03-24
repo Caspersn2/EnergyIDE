@@ -8,6 +8,8 @@ class call_instruction(instruction):
     def __init__(self, name, return_type, invocation_target):
         self.return_type = return_type
         self.invocation_target = invocation_target
+        args_list = self.invocation_target.split('(')[-1].replace(')','').split(',')
+        self.num_args = len(args_list) if args_list and args_list != [''] else 0
         self.is_library = is_library_call(invocation_target.split('::')[0])
         super().__init__(name)
 
@@ -25,8 +27,12 @@ class call_instruction(instruction):
     def keys(cls):
         return ['call']
 
-    def execute(self, _):
+    def execute(self, storage):
         if self.is_library:
             return Actions.NOP, create_random_argument(self.return_type)
         else:
-            return Actions.CALL, self.invocation_target
+            args = []
+            for _ in range(self.num_args):
+                args.append(storage.pop_stack())
+
+            return Actions.CALL, (self.invocation_target, args)

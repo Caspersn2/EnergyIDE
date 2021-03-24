@@ -11,7 +11,7 @@ import os
 def execute(counting_type, method, state_machine):
     if counting_type == 'Simple':
         res = utilities.simple_count(method.text)
-        result.add_results(res, method.name)
+        result.add_results(res, method)
     else:
         if method.is_entry:
             state_machine.simulate(method, None)

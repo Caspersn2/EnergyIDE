@@ -1,7 +1,7 @@
 from simulation_exception import simulation_exception
 from variable import variable
 from objects.dummy_class import dummy_class
-from utilities import is_library_call, is_generic
+from utilities import is_library_call, is_generic, get_args_between
 
 
 class storage():
@@ -27,10 +27,22 @@ class storage():
 
     # METHODS
     def get_method(self, key):
+        method = key.split('::')[-1]
+        if '<' in method and '>' in method:
+            return self.find_generic(method)
         if key in self.methods:
             return self.methods[key]
         else:
             raise simulation_exception(f"The desired method '{key}' was not found in the list of methods")
+
+    def find_generic(self, method_name):
+        num_args = len(get_args_between(method_name, '(', ')'))
+        generic_methods = [v for v in self.methods.values() if v.is_generic]
+        for candidate in generic_methods:
+            candidate_name = candidate.get_simple_name()
+            if method_name.split('<')[0] == candidate_name.split('<')[0] and num_args == len(candidate.arguments):
+                return candidate
+        raise simulation_exception(f'No generic method matched the following string: "{method_name}"')
 
 
     # STATIC FIELDS

@@ -1,3 +1,4 @@
+from method_factory import create_method
 import re
 from collections import Counter
 from method import method
@@ -64,7 +65,8 @@ def get_by_method(text, cls):
         name = f'{cls.name}::{name}'
         end = count_by_set({'{': 0, '}': 0}, text[start:])
         prototype = text[start:start + method_match.end()]
-        methods.append(method(name, cls, prototype, return_type, text[start:start + end]))
+        new_method = create_method(name, cls, prototype, return_type, text[start:start + end])
+        methods.append(new_method)
     return methods
 
 
@@ -158,3 +160,10 @@ def is_generic(value):
         return True
     else:
         return False
+
+
+def get_args_between(value, start_delimiter, stop_delimiter):
+    from_start = value.split(start_delimiter)[-1]
+    to_end = from_start.split(stop_delimiter)[0]
+    args_list = to_end.split(',')
+    return [x.strip() for x in args_list] if args_list and args_list != [''] else []

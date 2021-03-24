@@ -1,10 +1,11 @@
 result_store = []
 
 
-def add_results(results, method_name, method_args = None):
+def add_results(results, method):
+    name = method.get_name()
     single_result = {
-        'name': method_name,
-        'args': method_args,
+        'name': name,
+        'args': method.arguments,
         'res': results
     }
 

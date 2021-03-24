@@ -1,5 +1,6 @@
 from collections import Counter
 import result
+import copy
 from storage import storage
 from action_enum import Actions
 from variable import variable
@@ -38,18 +39,20 @@ class state_machine():
         return_val = self.execute_method(method)
 
         res = [res.name for res in self.executed]
-        result.add_results(Counter(res), method.name, method.arguments)
+        result.add_results(Counter(res), method)
         return return_val
 
 
-    def get_method(self, value):
-        method = self.storage.get_method(value)
+    def get_method(self, tuple):
+        method_name, args = tuple
+        method = self.storage.get_method(method_name)
+        method.cls = self.storage.get_active_class()
+        if method.is_generic:
+            method.set_concrete(method_name)
         parameter_list = {}
-        args = []
-        for _ in range(len(method.arguments)):
-            args.append(self.storage.pop_stack())
 
         for key, value in method.arguments.items():
+            value = method.get_concrete_type(value)
             var = variable(key, value)
             var.value = args.pop()
             parameter_list[key] = var
@@ -75,6 +78,7 @@ class state_machine():
                 method = self.get_method(value)
                 machine = state_machine(self.storage)
                 return_val = machine.simulate(method, self.storage.get_active_class())
+                method.clear()
                 if return_val or return_val == 0:
                     self.storage.push_stack(return_val)
                 index += 1

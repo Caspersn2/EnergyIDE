@@ -1,3 +1,4 @@
+from objects.class_container import class_container
 from random_arguments import create_random_argument
 from instruction import instruction
 from action_enum import Actions
@@ -9,6 +10,8 @@ class object_instruction(instruction):
     def __init__(self, name, class_name, constructor):
         self.constructor = constructor
         self.class_name = class_name
+        args_list = self.constructor.split('(')[-1].replace(')','').split(',')
+        self.num_args = len(args_list) if args_list and args_list != [''] else 0
         super().__init__(name)
 
     @classmethod
@@ -31,11 +34,15 @@ class object_instruction(instruction):
             return Actions.NOP, None
         else:
             cls = copy.deepcopy(storage.get_class(self.class_name))
+            args = []
+            for _ in range(self.num_args):
+                args.append(storage.pop_stack())
+
             if cls.is_generic:
                 cls.set_types(self.class_name)
                 self.constructor = cls.get_generic_method(self.constructor)
             storage.set_active_class(cls)
-            return Actions.CALL, self.constructor
+            return Actions.CALL, (self.constructor, args)
 
 
 
@@ -61,8 +68,17 @@ class callvirt_instruction(instruction):
             result = create_random_argument()
             storage.push_stack(result)
         else:
-            cls = storage.pop_stack()
+            cls = None
+            args = []
+            while(True):
+                value = storage.pop_stack()
+                if isinstance(value, class_container):
+                    cls = value
+                    break
+                else:
+                    args.append(value)
+
             if cls.is_generic:
                 self.method_name = cls.get_generic_method(self.method_name)
             storage.set_active_class(cls)
-            return Actions.CALL, self.method_name
+            return Actions.CALL, (self.method_name, args)

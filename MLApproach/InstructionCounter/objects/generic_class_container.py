@@ -1,6 +1,7 @@
 import re
 from objects.class_container import class_container
 from simulation_exception import simulation_exception
+import utilities
 
 
 class generic_class_container(class_container):
@@ -11,17 +12,19 @@ class generic_class_container(class_container):
         super().__init__(name, text, start)
         self.is_generic = True
         self.number_of_parameters = int(self.get_parameter_count())
-        self.type_names = self.get_types(self.name)
+        self.type_names = ['!' + x for x in utilities.get_args_between(self.name, '<', '>')]
         self.types = {}
+
+
+    def get_name(self):
+        name = self.name
+        for k, v in self.types.items():
+            name = name.replace(k.replace('!', ''), v)
+        return name
 
 
     def get_parameter_count(self):
         return re.search(generic_class_container.parameter_amount, self.name).groups()[0]
-
-    
-    def get_types(self, name):
-        text = name.split('<')[1].replace('>','')
-        return text.split(', ')
 
 
     def replace_generics(self, method_name):
@@ -30,8 +33,7 @@ class generic_class_container(class_container):
         for gen in generics:
             type_name = self.get_generic(int(gen))
             index = '!' + gen
-            new_type = '!' + type_name
-            new_name = new_name.replace(index, new_type)
+            new_name = new_name.replace(index, type_name)
         return new_name
 
 
@@ -60,6 +62,6 @@ class generic_class_container(class_container):
 
 
     def set_types(self, concrete):
-        concrete_types = self.get_types(concrete)
+        concrete_types = utilities.get_args_between(concrete, '<', '>')
         for idx in range(len(concrete_types)):
             self.types[self.type_names[idx]] = concrete_types[idx]
