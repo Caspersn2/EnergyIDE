@@ -31,6 +31,9 @@ class object_instruction(instruction):
             return Actions.NOP, None
         else:
             cls = copy.deepcopy(storage.get_class(self.class_name))
+            if cls.is_generic:
+                cls.set_types(self.class_name)
+                self.constructor = cls.get_generic_method(self.constructor)
             storage.set_active_class(cls)
             return Actions.CALL, self.constructor
 
@@ -59,5 +62,7 @@ class callvirt_instruction(instruction):
             storage.push_stack(result)
         else:
             cls = storage.pop_stack()
+            if cls.is_generic:
+                self.method_name = cls.get_generic_method(self.method_name)
             storage.set_active_class(cls)
             return Actions.CALL, self.method_name

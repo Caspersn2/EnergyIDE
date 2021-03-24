@@ -1,7 +1,7 @@
 from simulation_exception import simulation_exception
 from variable import variable
 from dummy_class import dummy_class
-from utilities import is_library_call
+from utilities import is_library_call, is_generic
 
 
 class storage():
@@ -58,6 +58,11 @@ class storage():
     def get_class(self, key):
         if is_library_call(key):
             return self.dummy_class
+        elif is_generic(key):
+            new_key = key.split('<')[0]
+            for elem in self.classes:
+                if new_key in elem:
+                    return self.classes[elem]
         elif key in self.classes:
             return self.classes[key]
         else:

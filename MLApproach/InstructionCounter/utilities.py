@@ -1,7 +1,7 @@
 import re
 from collections import Counter
 from method import method
-from class_obj import class_obj
+import container_factory
 
 class_keywords = '(?:private|auto|ansi|beforefieldinit)'
 method_instruction = r'\.method'
@@ -9,14 +9,14 @@ class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+extends'
 locals_instruction = r'\.locals init'
 locals_index = r'\[[0-9]+\]'
 variable_name = r'\.?\'?[a-zA-Z<>\[][_0-9a-zA-Z<>/\.\[\]`]*\'?'
-primitive_type = r'(object|float32|float64|bool|int16|int32|uint32|uint16|uint64|int64|int|string|char|void)\[?\]?'
+primitive_type = r'((?:object|float32|float64|bool|int16|int32|uint32|uint16|uint64|int64|int|string|char|void)\[?\]?)'
 library_returntype = fr'\[{variable_name}\]{variable_name}'
-generic_returntype = '![_a-zA-Z<>0-9]+'
-class_type = r'(class)\s(\S+)'
+generic_type = '(![_a-zA-Z<>0-9]+)'
+class_type = r'(?:class\s)((?:\S+\s?)+)'
 primitive_method_name = fr'{primitive_type}\s({variable_name})\s\((.|\s)*?\)'
 library_method_name = fr'{library_returntype}\s({variable_name})\s\((.|\s)*?\)'
-generic_method_name = fr'{generic_returntype}\s({variable_name})\s\((.|\s)*?\)'
-method_name = fr'{primitive_method_name}|{library_method_name}|{generic_method_name}'
+generic_method_name = fr'{generic_type}\s({variable_name})\s\((.|\s)*?\)'
+method_name = fr'{generic_method_name}|{primitive_method_name}|{library_method_name}'
 variable_type = rf'{variable_name}\[?\]?'
 instance_keyword = r'instance'
 
@@ -41,7 +41,7 @@ def remove_parameter_names(name):
     parameters = []
     start = re.match(variable_name, name)
     if start:
-        matches = re.finditer(f'({variable_type}|{library_returntype})\s{variable_name},?', name[start.end(0)+1:-1])
+        matches = re.finditer(f'({variable_type}|{library_returntype}|{generic_type})\s{variable_name},?', name[start.end(0)+1:-1])
         method_result += start.group() + "("
         for m in matches:
             parameters.append(m.groups()[0])
@@ -89,7 +89,7 @@ def get_all_classes(text):
             parent = get_parent_class(classes, start)
             name = parent.name + "/" + name
         end = count_by_set({'{': 0, '}': 0}, text[start:])
-        classes[name] = class_obj(name, text[start:start + end], start)
+        classes[name] = container_factory.create_class_container(name, text[start:start + end], start)
     return classes
 
 
@@ -99,26 +99,25 @@ def get_local_stack(text):
     if match:
         start = match.end()
         end = count_by_set({'(': 0, ')': 0}, text[start:]) + start
-        matches = re.finditer(rf'({locals_index})\s({primitive_type}|{class_type})', text[start:end])
+        matches = re.finditer(rf'(?:{locals_index})\s(?:{generic_type}|{primitive_type}|{class_type})', text[start:end])
         for m in matches:
-            put_variable_in_set(local_stack, m, flip=True)
+            put_variable_in_set(local_stack, m)
         return local_stack
 
 
-def put_variable_in_set(locals, m, flip = False):
+def put_variable_in_set(locals, m):
     name = len(locals.keys())
-    datatype = None
-    data = m.group().split(' ')
-    cleaned = list(filter(lambda x: x != 'class', data))
-    elements = list(filter(None, cleaned))
-    if len(elements) == 2:
-        if flip:
-            name, datatype = elements
-            name = name.replace('[', '').replace(']', '')
-        else:
-            datatype, name = elements
-    else:
-        datatype = elements[0]
+    datatype = ''
+    elements = list(filter(None, m.groups()))
+
+    data = m.group().strip()
+    if elements:
+        data = ' '.join(elements).strip()
+
+    datatype = data;
+    if data[-1] in [',']:
+        datatype = data[:-1]
+
     locals[name] = datatype
 
 
@@ -126,7 +125,7 @@ def get_arguments(text):
     arguments = {}
     arg_list = re.match(r'.+\((.+)\)', text)
     if arg_list:
-        matches = re.finditer(rf'{variable_type}|{library_returntype}|{primitive_type}', arg_list.groups()[0])
+        matches = re.finditer(rf'{generic_type}|{variable_type}|{library_returntype}|{primitive_type}', arg_list.groups()[0])
         for m in matches:
             put_variable_in_set(arguments, m)
     return arguments
@@ -150,6 +149,13 @@ def remove_library_names(text):
 
 def is_library_call(value):
     if re.search(r'\[|\]', value):
+        return True
+    else:
+        return False
+
+
+def is_generic(value):
+    if re.search(r'`[0-9]+<', value):
         return True
     else:
         return False
