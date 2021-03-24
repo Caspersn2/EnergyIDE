@@ -3,17 +3,20 @@ from collections import Counter
 from method import method
 from class_obj import class_obj
 
+class_keywords = '(?:private|auto|ansi|beforefieldinit)'
 method_instruction = r'\.method'
-class_name = r'\.class.+\s(\S+)\s+extends'
+class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+extends'
 locals_instruction = r'\.locals init'
 locals_index = r'\[[0-9]+\]'
 variable_name = r'\.?\'?[a-zA-Z<>\[][_0-9a-zA-Z<>/\.\[\]`]*\'?'
 primitive_type = r'(object|float32|float64|bool|int16|int32|uint32|uint16|uint64|int64|int|string|char|void)\[?\]?'
 library_returntype = fr'\[{variable_name}\]{variable_name}'
+generic_returntype = '![_a-zA-Z<>0-9]+'
 class_type = r'(class)\s(\S+)'
 primitive_method_name = fr'{primitive_type}\s({variable_name})\s\((.|\s)*?\)'
 library_method_name = fr'{library_returntype}\s({variable_name})\s\((.|\s)*?\)'
-method_name = fr'{primitive_method_name}|{library_method_name}'
+generic_method_name = fr'{generic_returntype}\s({variable_name})\s\((.|\s)*?\)'
+method_name = fr'{primitive_method_name}|{library_method_name}|{generic_method_name}'
 variable_type = rf'{variable_name}\[?\]?'
 instance_keyword = r'instance'
 
