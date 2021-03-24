@@ -1,9 +1,10 @@
 import re
 from collections import Counter
 from method import method
-import container_factory
+from objects.container_factory import create_class_container
 
-class_keywords = '(?:private|auto|ansi|beforefieldinit)'
+
+class_keywords = '(?:private|public|assembly|protected|auto|ansi|beforefieldinit)'
 method_instruction = r'\.method'
 class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+extends'
 locals_instruction = r'\.locals init'
@@ -11,7 +12,7 @@ locals_index = r'\[[0-9]+\]'
 variable_name = r'\.?\'?[a-zA-Z<>\[][_0-9a-zA-Z<>/\.\[\]`]*\'?'
 primitive_type = r'((?:object|float32|float64|bool|int16|int32|uint32|uint16|uint64|int64|int|string|char|void)\[?\]?)'
 library_returntype = fr'\[{variable_name}\]{variable_name}'
-generic_type = '(![_a-zA-Z<>0-9]+)'
+generic_type = '(!!?[_a-zA-Z<>0-9]+)'
 class_type = r'(?:class\s)((?:\S+\s?)+)'
 primitive_method_name = fr'{primitive_type}\s({variable_name})\s\((.|\s)*?\)'
 library_method_name = fr'{library_returntype}\s({variable_name})\s\((.|\s)*?\)'
@@ -62,8 +63,6 @@ def get_by_method(text, cls):
         name = remove_parameter_names(tmp_name)
         name = f'{cls.name}::{name}'
         end = count_by_set({'{': 0, '}': 0}, text[start:])
-
-        # This is quite hardcoded
         prototype = text[start:start + method_match.end()]
         methods.append(method(name, cls, prototype, return_type, text[start:start + end]))
     return methods
@@ -89,7 +88,7 @@ def get_all_classes(text):
             parent = get_parent_class(classes, start)
             name = parent.name + "/" + name
         end = count_by_set({'{': 0, '}': 0}, text[start:])
-        classes[name] = container_factory.create_class_container(name, text[start:start + end], start)
+        classes[name] = create_class_container(name, text[start:start + end], start)
     return classes
 
 

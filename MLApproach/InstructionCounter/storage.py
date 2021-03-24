@@ -1,6 +1,6 @@
 from simulation_exception import simulation_exception
 from variable import variable
-from dummy_class import dummy_class
+from objects.dummy_class import dummy_class
 from utilities import is_library_call, is_generic
 
 
