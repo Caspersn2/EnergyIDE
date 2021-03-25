@@ -39,7 +39,7 @@ class state_machine():
         return_val = self.execute_method(method)
 
         res = [res.name for res in self.executed]
-        result.add_results(Counter(res), method)
+        result.add_results(Counter(res), method, 'Simulation')
         return return_val
 
 

@@ -1,11 +1,16 @@
 result_store = []
 
 
-def add_results(results, method):
-    name = method.get_name()
+def add_results(results, method, counting_type='Simple'):
+    name = method.name
+    args = None
+    if counting_type == 'Simulation':
+        name = method.get_name()
+        args = method.arguments
+
     single_result = {
         'name': name,
-        'args': method.arguments,
+        'args': args,
         'res': results
     }
 
