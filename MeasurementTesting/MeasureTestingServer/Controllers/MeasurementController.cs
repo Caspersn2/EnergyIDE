@@ -71,6 +71,7 @@ namespace MeasureTestingServer.Controllers
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string StringRepresentation { get; set; }
     }
 
     public class FilesViewModel 

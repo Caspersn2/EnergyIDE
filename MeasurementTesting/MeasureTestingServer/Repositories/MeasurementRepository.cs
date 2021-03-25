@@ -69,9 +69,9 @@ namespace Measurement.Repositories
                         foreach (var currentClass in classes)
                         {
                             if (type == "static")
-                                result.AddRange(getAllMethods(currentClass, file));
+                                result.AddRange(getAllMethods(currentClass, file, false));
                             else if (type == "dynamic" && currentClass.GetCustomAttributes().Any(a => a is MeasureClassAttribute))
-                                result.AddRange(getMethodsWithAttribute(currentClass, file));
+                                result.AddRange(getAllMethods(currentClass, file, true));
                         }
                     }
                 }
@@ -91,7 +91,7 @@ namespace Measurement.Repositories
             foreach (string file in files)
             {
                 string temp = file.Split('/')[^1];
-                if(alreadySeen.Contains(temp))
+                if (alreadySeen.Contains(temp))
                     continue;
                 alreadySeen.Add(temp);
                 distinctFilse.Add(file);
@@ -99,30 +99,18 @@ namespace Measurement.Repositories
             return distinctFilse.ToArray();
         }
 
-        private List<ClassMethods> getAllMethods(Type currentClass, string file)
+        private List<ClassMethods> getAllMethods(Type currentClass, string file, bool getWithAttributes)
         {
-            var result = new List<ClassMethods>();
-            var allMethods = currentClass.GetMethods();
+            List<ClassMethods> result = new List<ClassMethods>();
+            MethodInfo[] allMethods = currentClass.GetMethods().Where(mi => mi.DeclaringType == currentClass).ToArray();
+            System.Console.WriteLine(allMethods.Length);
+
+            if (getWithAttributes)
+                allMethods = allMethods.Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute)).ToArray();
+
             if (allMethods.Any())
             {
-                var methodViewModels = allMethods.Select(m => new MethodViewModel() { Id = m.GetHashCode(), Name = m.Name }).ToArray();
-                result.Add(new ClassMethods
-                {
-                    CurrentClass = currentClass,
-                    AssemblyPath = file,
-                    Methods = methodViewModels,
-                });
-            }
-            return result;
-        }
-
-        private List<ClassMethods> getMethodsWithAttribute(Type currentClass, string file)
-        {
-            var result = new List<ClassMethods>();
-            var methods = currentClass.GetMethods().Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute));
-            if (methods.Any())
-            {
-                var methodViewModels = methods.Select(m => new MethodViewModel() { Id = m.GetHashCode(), Name = m.Name }).ToArray();
+                MethodViewModel[] methodViewModels = allMethods.Select(m => new MethodViewModel() { Id = m.GetHashCode(), StringRepresentation = m.ToString(), Name = m.Name }).ToArray();
                 ClassMethods cm = new ClassMethods
                 {
                     CurrentClass = currentClass,
@@ -130,7 +118,8 @@ namespace Measurement.Repositories
                     Methods = methodViewModels,
                 };
                 result.Add(cm);
-                Methods.Add(cm);
+                if (getWithAttributes)
+                    Methods.Add(cm);
             }
             return result;
         }

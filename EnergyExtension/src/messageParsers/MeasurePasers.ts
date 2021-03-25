@@ -50,7 +50,7 @@ export class Measure {
         if (type === "rapl") {
             var ids: number[] = [];
             activeClasses.forEach(c => {
-                c.Methods?.forEach(m => ids.push(m.Id as number));
+                c.Methods.forEach(m => ids.push(m.Id));
             });
 
             MeasureTestingService.startRAPL(ids).then(response => {
@@ -62,6 +62,7 @@ export class Measure {
             });
         }
         else if (type === "ml") {
+            //TODO: What to do with results???
             MeasureTestingService.startML(activeClasses);
         }
         //else if (type === "energy_model")
@@ -76,14 +77,15 @@ export class Measure {
 }
 
 export interface ActivateClass {
-    ClassName: string | undefined;
-    AssemblyPath: string | undefined;
-    Methods: Method[] | undefined;
+    ClassName: string;
+    AssemblyPath: string;
+    Methods: Method[];
 }
 
 export interface Method {
-    Id: number | undefined;
-    Name: string | undefined;
+    Id: number;
+    Name: string;
+    StringRepresentation: string
 }
 
 export interface MeasureProgess {

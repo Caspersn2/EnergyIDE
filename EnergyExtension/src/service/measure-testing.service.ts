@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { pathToFileURL } from 'url';
 import { MeasureProgess, ActivateClass } from '../messageParsers/MeasurePasers';
 
 export class MeasureTestingService {

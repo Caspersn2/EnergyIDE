@@ -26,8 +26,8 @@ async def get_estimate(request):
     active_classes = json_data['activeClasses']
     all_predictions = {}
     for current_class in active_classes:
-        print(current_class)
         path_to_assembly = current_class['AssemblyPath']
+        className = current_class['ClassName']
         methods = current_class['Methods']
         name = path_to_assembly.split('/')[-1].split('.')[0]
 
@@ -41,7 +41,7 @@ async def get_estimate(request):
         # count instructions
         counts = {}  # maps method/program name to IL instruction Counter
         if methods:
-            for method_name in [m['Name'] for m in methods]:
+            for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
                 args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
                                         counting_method='Simple', entry='Main(string[])', output=None)
                 counts[method_name] = main.count_instructions(args, text)
@@ -62,9 +62,10 @@ async def get_estimate(request):
             for instruction in CIL_INSTRUCTIONS:
                 temp.append(count[instruction]) if instruction in count else temp.append(0)
             predictions[name] = model.predict([temp])[0][0] / 1000000 # µj to j
+        all_predictions[className] = predictions
 
     # return result
-    return web.Response(text=json.dumps(predictions), status=200)
+    return web.Response(text=json.dumps(all_predictions), status=200)
 
 
 app = web.Application()

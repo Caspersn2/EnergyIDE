@@ -132,7 +132,7 @@
           methodGroup.Methods.forEach((method) => {
             let option = document.createElement("label");
             option.for = method.Id;
-            option.textContent = method.Name;
+            option.textContent = method.StringRepresentation;
             option.classList.add("inRow");
             option.classList.add("option");
             option.value = JSON.stringify(method);
@@ -240,7 +240,6 @@
         }
       });
       if (selectedMethods.length > 0) {
-
         selected.push({ ClassName: c.ClassName, AssemblyPath: c.AssemblyPath, Methods: selectedMethods })
       }
     });
