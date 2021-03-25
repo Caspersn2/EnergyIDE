@@ -39,12 +39,12 @@ class double_conditional_instruction(instruction):
 
     def get_comparison(self, key):
         return {
-            'beq': lambda x, y: x == y,
-            'bge': lambda x, y: x >= y,
-            'bgt': lambda x, y: x > y,
-            'ble': lambda x, y: x <= y,
-            'blt': lambda x, y: x < y,
-            'bne': lambda x, y: x != y
+            'beq': lambda x, y: y == x,
+            'bge': lambda x, y: y >= x,
+            'bgt': lambda x, y: y > x,
+            'ble': lambda x, y: y <= x,
+            'blt': lambda x, y: y < x,
+            'bne': lambda x, y: y != x
         }.get(key, simulation_exception(key))
 
     def execute(self, storage):

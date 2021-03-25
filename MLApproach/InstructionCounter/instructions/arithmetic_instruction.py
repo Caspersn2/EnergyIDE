@@ -17,11 +17,11 @@ class arithmetic_instruction(instruction):
 
     def get_operator(_, name):
         return {
-            'add': lambda x, y: x + y,
-            'mul': lambda x, y: x * y,
-            'div': lambda x, y: x / y,
-            'sub': lambda x, y: x - y,
-            'rem': lambda x, y: x % y
+            'add': lambda x, y: y + x,
+            'mul': lambda x, y: y * x,
+            'div': lambda x, y: y / x,
+            'sub': lambda x, y: y - x,
+            'rem': lambda x, y: y % x
         }.get(name, simulation_exception(name))
 
     def execute(self, storage):
