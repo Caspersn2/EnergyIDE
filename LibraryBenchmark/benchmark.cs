@@ -101,6 +101,7 @@ namespace benchmark
 
             elapsedTime = 0;
             _resultBuffer = new List<Measure>();
+            R res = default(R);
             for (int i = 0; i < iterations; i++)
             {
                 if (stop_running) break;
@@ -109,7 +110,7 @@ namespace benchmark
                 
                 //Actually performing benchmark and resulting IO
                 start();
-                R res = benchmark();
+                res = benchmark();
                 end();
 
                 if (benchmarkOutputStream.Equals(stdout))
@@ -126,7 +127,7 @@ namespace benchmark
             if (iterations != 1)
                 print(System.Console.WriteLine);
                 
-            saveResults();
+            saveResults(res);
 
             //Resets console output
             System.Console.SetOut(stdout);
@@ -144,10 +145,10 @@ namespace benchmark
 
         //Saves result to temporary file
         //This is overwritten each time SaveResults is run
-        private void saveResults()
+        private void saveResults(dynamic name)
         {
-            var header = "name;duration(ms);pkg(µj);dram(µj);temp(C)" + "\n";
-            string result = header;
+            //var header = "name;duration(ms);pkg(µj);dram(µj);temp(C)" + "\n";
+            string result = name + ";";
             
             foreach (Measure m in _resultBuffer)
             {
@@ -166,7 +167,7 @@ namespace benchmark
                 result += "\n";
             }
 
-            File.WriteAllText(outputFilePath, result);
+            File.AppendAllText(outputFilePath, result);
         }
     }
 }
