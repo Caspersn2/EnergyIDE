@@ -5,13 +5,15 @@ import copy
 
 # Represents an entire method
 class method():
-    def __init__(self, name, cls, prototype, return_type, text):
+    def __init__(self, name, cls, prototype, return_type, parameter_names, text):
         self.name = name
-        self.cls = cls
+        self.__cls = cls
+        self.cls = self.__cls
         self.is_instance = 'instance' in prototype
         self.is_entry = '.entry' in text
         self.return_type = return_type
         self.text = text.split('\n')
+        self.parameter_names = {x: i for i, x in enumerate(parameter_names)}
         self.__arguments = utilities.get_arguments(name)
         self.arguments = self.__arguments
         self.locals = utilities.get_local_stack(text)
@@ -21,6 +23,11 @@ class method():
     
     def clear(self):
         self.arguments = self.__arguments
+        self.cls = self.__cls
+
+
+    def set_class(self, cls):
+        self.cls = cls
 
     
     def get_name(self):
@@ -50,8 +57,8 @@ class method():
 
 
 class generic_method(method):
-    def __init__(self, name, cls, prototype, return_type, text):
-        super().__init__(name, cls, prototype, return_type, text)
+    def __init__(self, name, cls, prototype, return_type, parameter_names, text):
+        super().__init__(name, cls, prototype, return_type, parameter_names, text)
         self.is_generic = True
         self.type_names = ['!!' + x for x in utilities.get_args_between(prototype, '<', '>')]
         self.types = {}

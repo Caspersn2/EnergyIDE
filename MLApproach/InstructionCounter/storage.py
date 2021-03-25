@@ -9,6 +9,7 @@ class storage():
         self.stack = []
         self.locals = {}
         self.arguments = {}
+        self.arg_conversion = None
         self.classes = classes
         self.methods = methods
         self.active_class = None

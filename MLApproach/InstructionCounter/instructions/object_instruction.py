@@ -1,3 +1,5 @@
+from objects.delegate import delegate
+from objects.delegate_class_container import delegate_class_container
 from objects.class_container import class_container
 from random_arguments import create_random_argument
 from instruction import instruction
@@ -41,32 +43,41 @@ class object_instruction(instruction):
             if cls.is_generic:
                 cls.set_types(self.class_name)
                 self.constructor = cls.get_generic_method(self.constructor)
+
             storage.set_active_class(cls)
-            return Actions.CALL, (self.constructor, args)
+            if isinstance(cls, delegate):
+                cls.add_method(args)
+                storage.push_stack(cls)
+                return Actions.NOP, None
+            else:
+                return Actions.CALL, (self.constructor, args)
 
 
 
 class callvirt_instruction(instruction):
-    def __init__(self, name, method_name):
+    def __init__(self, name, method_name, return_type):
         self.method_name = method_name
+        self.return_type = return_type
         super().__init__(name)
 
     @classmethod
     def create(cls, name, elements):
+        return_type = elements[1]
         method_name = ' '.join(elements[2:])
-        return callvirt_instruction(name, method_name)
+        return callvirt_instruction(name, method_name, return_type)
 
     @classmethod
     def keys(cls):
         return ['callvirt']
 
     def execute(self, storage):
-        if storage.active_class == storage.dummy_class:
+        if is_library_call(self.method_name) or storage.active_class == storage.dummy_class:
             temp_args = get_arguments(self.method_name)
             for _ in temp_args:
                 storage.pop_stack()
-            result = create_random_argument()
+            result = create_random_argument(self.return_type)
             storage.push_stack(result)
+            return Actions.NOP, None
         else:
             cls = None
             args = []
@@ -80,5 +91,11 @@ class callvirt_instruction(instruction):
 
             if cls.is_generic:
                 self.method_name = cls.get_generic_method(self.method_name)
-            storage.set_active_class(cls)
-            return Actions.CALL, (self.method_name, args)
+
+            if isinstance(cls, delegate):
+                method = cls.get_method()
+                method.set_class(cls)
+                return  Actions.CALL, (method, args)
+            else:
+                storage.set_active_class(cls)
+                return Actions.CALL, (self.method_name, args)

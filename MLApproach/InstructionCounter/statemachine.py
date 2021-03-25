@@ -1,6 +1,6 @@
 from collections import Counter
 import result
-import copy
+from method import method
 from storage import storage
 from action_enum import Actions
 from variable import variable
@@ -25,6 +25,11 @@ class state_machine():
             for (k, v) in variables.items():
                 self.storage.add_argument(k, v)
 
+    
+    def load_arg_conversion(self, parameters):
+        if parameters:
+            self.storage.arg_conversion = parameters
+
 
     # Entry method for the state_machine
     def simulate(self, method, active_class):
@@ -34,6 +39,7 @@ class state_machine():
             self.storage.set_active_class(method.get_class())
 
         self.load_arguments(method.arguments)
+        self.load_arg_conversion(method.parameter_names)
         self.load_locals(method.locals)
         self.storage.is_instance = method.is_instance
         return_val = self.execute_method(method)
@@ -45,20 +51,24 @@ class state_machine():
 
     def get_method(self, tuple):
         method_name, args = tuple
-        method = self.storage.get_method(method_name)
-        method.cls = self.storage.get_active_class()
-        if method.is_generic:
-            method.set_concrete(method_name)
-        parameter_list = {}
 
-        for key, value in method.arguments.items():
-            value = method.get_concrete_type(value)
+        if isinstance(method_name, method):
+            curr_method = method_name
+        else:
+            curr_method = self.storage.get_method(method_name)
+            curr_method.cls = self.storage.get_active_class()
+            if curr_method.is_generic:
+                curr_method.set_concrete(method_name)
+        
+        parameter_list = {}
+        for key, value in curr_method.arguments.items():
+            value = curr_method.get_concrete_type(value)
             var = variable(key, value)
             var.value = args.pop()
             parameter_list[key] = var
         
-        method.arguments = parameter_list
-        return method
+        curr_method.arguments = parameter_list
+        return curr_method
 
 
     def execute_method(self, method):

@@ -10,7 +10,7 @@ method_instruction = r'\.method'
 class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+extends'
 locals_instruction = r'\.locals init'
 locals_index = r'\[[0-9]+\]'
-variable_name = r'\.?\'?[a-zA-Z<>\[][_0-9a-zA-Z<>/\.\[\]`]*\'?'
+variable_name = r'\.?\'?[a-zA-Z<>\[][ _0-9a-zA-Z<>/\.\[\]`]*\'?'
 primitive_type = r'((?:object|float32|float64|bool|int16|int32|uint32|uint16|uint64|int64|int|string|char|void)\[?\]?)'
 library_returntype = fr'\[{variable_name}\]{variable_name}'
 generic_type = '(!!?[_a-zA-Z<>0-9]+)'
@@ -41,14 +41,21 @@ def count_by_set(search_set, text):
 def remove_parameter_names(name):
     method_result = ''
     parameters = []
+    parameter_names = []
     start = re.match(variable_name, name)
     if start:
-        matches = re.finditer(f'({variable_type}|{library_returntype}|{generic_type})\s{variable_name},?', name[start.end(0)+1:-1])
-        method_result += start.group() + "("
+        matches = re.finditer(f'(?P<parameter>{variable_type}|{library_returntype}|{generic_type})\s(?P<var>{variable_name}),?', name[start.end(0)+1:-1])
+        
+        if "'" in start.group():
+            method_result += start.group() + "("
+        else:
+            method_result += start.group()[:-1] + "("
+
         for m in matches:
-            parameters.append(m.groups()[0])
+            parameters.append(m.group('parameter'))
+            parameter_names.append(m.group('var'))
         method_result += ', '.join(parameters) + ')'
-    return method_result
+    return method_result, parameter_names
 
 
 # Returns method objects based
@@ -61,11 +68,11 @@ def get_by_method(text, cls):
         tmp_name = method_match.group().strip().replace('class ', '')
         return_type, tmp_name = tmp_name.split(' ', 1)
         tmp_name = tmp_name.replace('\n','').replace('\t', '')
-        name = remove_parameter_names(tmp_name)
+        name, parameter_names = remove_parameter_names(tmp_name)
         name = f'{cls.name}::{name}'
         end = count_by_set({'{': 0, '}': 0}, text[start:])
         prototype = text[start:start + method_match.end()]
-        new_method = create_method(name, cls, prototype, return_type, text[start:start + end])
+        new_method = create_method(name, cls, prototype, return_type, parameter_names, text[start:start + end])
         methods.append(new_method)
     return methods
 
@@ -78,6 +85,13 @@ def get_parent_class(classes, start_index):
     return best_candidate
 
 
+
+def get_superclass(text, start):
+    end_declaration = str.find(text, '{')
+    declaration = text[:end_declaration] 
+    return declaration.split('extends')[-1].strip()
+
+
 def get_all_classes(text):
     classes = {}
     matches = re.finditer(class_name, text)
@@ -88,7 +102,9 @@ def get_all_classes(text):
             parent = get_parent_class(classes, start)
             name = parent.name + "/" + name
         end = count_by_set({'{': 0, '}': 0}, text[start:])
-        classes[name] = create_class_container(name, text[start:start + end], position(start, end))
+        class_text = text[start:start + end]
+        super_class = get_superclass(class_text, start)
+        classes[name] = create_class_container(name, class_text, position(start, end), super_class)
     return classes
 
 

@@ -72,3 +72,20 @@ class pop_instruction(instruction):
     def execute(self, storage):
         storage.pop_stack()
         return Actions.NOP, None
+
+
+
+class constrained_instruction(instruction):
+    def __init__(self, name):
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, _):
+        return constrained_instruction(name)
+
+    @classmethod
+    def keys(cls):
+        return ['constrained.']
+
+    def execute(self, storage):
+        return Actions.NOP, None
