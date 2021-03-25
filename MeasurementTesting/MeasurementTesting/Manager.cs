@@ -227,10 +227,10 @@ namespace MeasurementTesting
             bm.SingleRunComplete += measure => ProcessMeasure(measure, attribute, methodProgress);
             // Running sample iterations
             runBenchmark(method, measureClass, bm, itterationsTotal);
-            var numRuns = (int) Math.Ceiling(ComputeSampleSize(attribute.Measurements));
+            var numRuns = (int) Math.Ceiling(ComputeSampleSize(attribute.Measurements, classAtt.errorPercent));
             
             Console.WriteLine(numRuns);
-            if (!IsEnough(numRuns, attribute.Measurements, attribute.SampleIterations))
+            if (!IsEnough(numRuns, attribute.Measurements, attribute.SampleIterations, classAtt.errorPercent))
             {
                 Console.WriteLine("not enough");
                 methodProgress.Stage = "Extra: " + (classAtt.Dependent ? "dependent" : "not dependent");
@@ -275,6 +275,7 @@ namespace MeasurementTesting
                         { typeof(long), (long)rnd.Next(int.MinValue, int.MaxValue) },
                         { typeof(float), (float)rnd.NextDouble() },
                         { typeof(double), rnd.NextDouble() },
+                        { typeof(string[]), new string[]{ "one", "two", "three" } },
                         
                         { typeof(string), new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", rnd.Next(1, 1000) )
                                                                     .Select(s => s[rnd.Next(s.Length)]).ToArray())},
@@ -360,7 +361,7 @@ namespace MeasurementTesting
             }
         }
 
-        private static double ComputeSampleSize(List<Measurement> measurements)
+        private static double ComputeSampleSize(List<Measurement> measurements, float errorPercent)
         {
             var numRuns = new double[measurements.Count];
             var zScore = 1.96; // For 95% confidence
@@ -369,15 +370,15 @@ namespace MeasurementTesting
             {
                 mes.ComputeResults();
                 var top = zScore * mes.Deviation;
-                var err = mes.Mean * 0.05;
+                var err = mes.Mean * errorPercent;
                 numRuns[i++] = (top / err) * (top / err);
             }
             return numRuns.Max();
         }
 
-        private static bool IsEnough(double numRuns, List<Measurement> measurements, int iterations)
+        private static bool IsEnough(double numRuns, List<Measurement> measurements, int iterations, float errorPerdent)
         {
-            return iterations >= numRuns || measurements.All(m => m.ErrorPercent <= 0.05);
+            return iterations >= numRuns || measurements.All(m => m.ErrorPercent <= errorPerdent);
         }
 
         private static void ProcessMeasure(Measure measure, MeasureAttribute attribute, MethodProgress methodProgress)

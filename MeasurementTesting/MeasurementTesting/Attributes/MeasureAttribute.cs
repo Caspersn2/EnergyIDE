@@ -16,7 +16,7 @@ namespace MeasurementTesting.Attributes
         public int PlannedIterations;
         public int IterationsDone;
         public string[] Dependencies;
-        
+
         public MeasureAttribute(int sampleIterations = 100, string[] dependencies = null)
         {
             SampleIterations = sampleIterations;
@@ -60,8 +60,10 @@ namespace MeasurementTesting.Attributes
     {
         public List<MeasureTypes> Types;
         public bool Dependent;
-        public MeasureClassAttribute(bool dependent = false, params MeasurementType[] types)
+        public float errorPercent;
+        public MeasureClassAttribute(bool dependent = false, float ErrorPercent = 0.005F, params MeasurementType[] types)
         {
+            this.errorPercent = ErrorPercent;
             // If any types are specified then use them. Otherwise, use all types.
             Types = types != null && types.Length > 0 ? new List<MeasureTypes>() : new List<MeasureTypes>(){ MeasureTypes.Timer, MeasureTypes.Temp, MeasureTypes.Package, MeasureTypes.DRAM };
             foreach(var type in types){

@@ -40,9 +40,9 @@ namespace Modeling
             while (running) 
             {
                 XmlNode methodNode = remainingMethods.Item(current);
+
                 if (current >= remainingMethods.Count) {
                     if (change) {
-                        Console.WriteLine("Again");
                         current = 0;
                         change = false;
                         continue;
@@ -53,11 +53,9 @@ namespace Modeling
                     }
                 }
 
-                Console.WriteLine($"current: {current}\tChange: {change}");
-                
-                if (allMeans.ContainsKey(methodNode.SelectSingleNode("name").InnerText)){
+                if (allMeans.ContainsKey(methodNode.SelectSingleNode("name").InnerText) 
+                    || methodNode.SelectSingleNode("result").InnerText.Equals("Failed")){
                     current++;
-                    Console.WriteLine("Skip");
                     continue;
                 }
 
@@ -102,62 +100,9 @@ namespace Modeling
             // save the XmlDocument back to disk
             doc.Save(path);
         }
-
-        static void UpdateXMLWithSubtractedCost(string path)
-        {
-            // TODO:: Undersøg om der er en fejl i denne.
-            // Hvis en method afhænger af flere forskellige instructions, så skal den jo kun tage de instructions
-            // Altså, skal den trække deres dependencies fra også
-            
-            // instantiate XmlDocument and load XML from file
-            XmlDocument doc = new XmlDocument();
-            doc.Load(path);
-
-            // get a list of  all method nodes
-            XmlNodeList methodNodes = doc.SelectNodes("/class/method");
-            Dictionary<string,double> allMeans = new Dictionary<string, double>();
-
-            // loop through all method nodes to get the mean of that method.
-            foreach (XmlNode methodNode in methodNodes)
-            {
-                double mean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
-                string name = methodNode.SelectSingleNode("name").InnerText;
-                allMeans.Add(name,mean);
-            }
-            // Loop through all method nodes, to compute their mean, but with dependencies subtracted
-            foreach (XmlNode methodNode in methodNodes)
-            {
-                // grab the "instruction" nodes
-                XmlNodeList instructionNodes = methodNode.SelectNodes("dependencies/instruction");
-                Dictionary<string,int> dependencies = new Dictionary<string, int>();
-                
-                // check if the method actually has dependencies
-                if (instructionNodes.Count > 0)
-                {
-                    foreach (XmlNode instruction in instructionNodes)
-                    {
-                        string name = instruction.InnerText;
-                        if(dependencies.ContainsKey(name))
-                            dependencies[name]++;
-                        else dependencies.Add(name,1);
-                    }
-                }
-            
-                double newMean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
-                foreach (var dependency in dependencies)
-                    newMean -= allMeans[dependency.Key] * dependency.Value;
-            
-                XmlNode newMeanNode = doc.CreateElement("mean-subtracted");
-                newMeanNode.InnerText = newMean.ToString();
-                methodNode.SelectSingleNode("measurement").AppendChild(newMeanNode);
-            }
-            
-            // save the XmlDocument back to disk
-            doc.Save(path);
-        }
     }
 
-    [MeasureClass(false, MeasurementType.Timer)]
+    [MeasureClass(false, 0.005F, MeasurementType.Timer)]
     class testing
     {
         private (DynamicMethod, ILGenerator) newMethod()
@@ -173,24 +118,26 @@ namespace Modeling
             method.Invoke(null, Type.EmptyTypes);
         }
 
-        [Measure(1000)]
+        [Measure(10000)]
         public void Empty()
         {
             var (method, ilg) = newMethod();
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // ox20
-        public void Ldc_I4(int value)
+        [Measure(10000)]
+        public void something(int value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value);
+
+            ilg.Emit(OpCodes.Isinst, this.GetType());
             ilg.Emit(OpCodes.Pop);
+
             runMethod(method, ilg);
         }
     }
 
-    [MeasureClass(false, MeasurementType.Timer)]
+    [MeasureClass(false, 0.005F, MeasurementType.Timer)]
     class measureClass
     {
         private (DynamicMethod, ILGenerator) newMethod()
@@ -208,7 +155,7 @@ namespace Modeling
 
         #region All IL-code tests
 
-        [Measure(1000)]
+        [Measure(10000)]
         public void Empty()
         {
             var (method, ilg) = newMethod();
@@ -217,7 +164,7 @@ namespace Modeling
 
         #region Loads
         #region Load (INT, FLOAT): Codes: 0x20 - 0x22
-        [Measure(1000, new []{ "Empty" })] // ox20
+        [Measure(10000, new []{ "Empty" })] // ox20
         public void Ldc_I4(int value)
         {
             var (method, ilg) = newMethod();
@@ -227,7 +174,7 @@ namespace Modeling
         }
 
         #region LoadINT32 0 - 8
-        [Measure(1000, new []{ "Empty" })] // 0x16
+        [Measure(10000, new []{ "Empty" })] // 0x16
         public void Ldc_I4_0()
         {
             var (method, ilg) = newMethod();
@@ -236,7 +183,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x17
+        [Measure(10000, new []{ "Empty" })] // 0x17
         public void Ldc_I4_1()
         {
             var (method, ilg) = newMethod();
@@ -245,7 +192,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x18
+        [Measure(10000, new []{ "Empty" })] // 0x18
         public void Ldc_I4_2()
         {
             var (method, ilg) = newMethod();
@@ -254,7 +201,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x19
+        [Measure(10000, new []{ "Empty" })] // 0x19
         public void Ldc_I4_3()
         {
             var (method, ilg) = newMethod();
@@ -263,7 +210,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x1A
+        [Measure(10000, new []{ "Empty" })] // 0x1A
         public void Ldc_I4_4()
         {
             var (method, ilg) = newMethod();
@@ -272,7 +219,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x1B
+        [Measure(10000, new []{ "Empty" })] // 0x1B
         public void Ldc_I4_5()
         {
             var (method, ilg) = newMethod();
@@ -281,7 +228,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x1C
+        [Measure(10000, new []{ "Empty" })] // 0x1C
         public void Ldc_I4_6()
         {
             var (method, ilg) = newMethod();
@@ -290,7 +237,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x1D
+        [Measure(10000, new []{ "Empty" })] // 0x1D
         public void Ldc_I4_7()
         {
             var (method, ilg) = newMethod();
@@ -299,7 +246,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x1E
+        [Measure(10000, new []{ "Empty" })] // 0x1E
         public void Ldc_I4_8()
         {
             var (method, ilg) = newMethod();
@@ -309,7 +256,7 @@ namespace Modeling
         }
         #endregion
 
-        [Measure(1000, new []{ "Empty" })] // 0x1f
+        [Measure(10000, new []{ "Empty" })] // 0x1f
         public void Ldc_I4_S(sbyte value)
         {
             var (method, ilg) = newMethod();
@@ -318,7 +265,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x21
+        [Measure(10000, new []{ "Empty" })] // 0x21
         public void Ldc_I8(long value)
         {
             var (method, ilg) = newMethod();
@@ -327,7 +274,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x22
+        [Measure(10000, new []{ "Empty" })] // 0x22
         public void Ldc_R4(float value)
         {
             var (method, ilg) = newMethod();
@@ -336,7 +283,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })] // 0x23
+        [Measure(10000, new []{ "Empty" })] // 0x23
         public void Ldc_R8(double value)
         {
             var (method, ilg) = newMethod();
@@ -346,7 +293,7 @@ namespace Modeling
         }
         #endregion
 
-        [Measure(1000, new []{ "Empty" })] // 0x14
+        [Measure(10000, new []{ "Empty" })] // 0x14
         public void Ldnull()
         {
             var (method, ilg) = newMethod();
@@ -355,7 +302,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })]
+        [Measure(10000, new []{ "Empty" })]
         public void Ldstr(string value)
         {
             var (method, ilg) = newMethod();
@@ -366,7 +313,7 @@ namespace Modeling
         #endregion
 
         #region Operations (Add, Mul, Sub)
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x58
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x58
         public void Add(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -377,7 +324,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
         
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD6
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD6
         public void Add_ovf(int value1, int value2) {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4, value1);
@@ -387,7 +334,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD7
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD7
         public void Add_Ovf_Un(uint value1, uint value2) {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4, value1);
@@ -397,7 +344,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x59
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x59
         public void Sub(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -408,7 +355,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xDA
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xDA
         public void Sub_Ovf(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -419,7 +366,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xDB
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xDB
         public void Sub_Ovf_Un(uint value1, uint value2)
         {
             var (method, ilg) = newMethod();
@@ -430,7 +377,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
         public void Mul(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -441,7 +388,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        /* [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD8
+        /* [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD8
         public void Mul_Ovf(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -452,7 +399,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD9
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD9
         public void Mul_Ovf_Un(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -463,7 +410,7 @@ namespace Modeling
             runMethod(method, ilg);
         } */
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
         public void Div(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -474,7 +421,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
         public void Div_Un(uint value1, uint value2)
         {
             var (method, ilg) = newMethod();
@@ -485,7 +432,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })] // 0x5A
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })] // 0x5A
         public void Dup(int value)
         {
             var (method, ilg) = newMethod();
@@ -497,7 +444,7 @@ namespace Modeling
         }
 
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })] // 0x65
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })] // 0x65
         public void Neg(int value)
         {
             var (method, ilg) = newMethod();
@@ -507,7 +454,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })] // 0x66
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })] // 0x66
         public void Not(int value)
         {
             var (method, ilg) = newMethod();
@@ -517,7 +464,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x60
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x60
         public void Or(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -528,7 +475,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x60
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x60
         public void Xor(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -539,7 +486,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
         public void Rem(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -554,7 +501,7 @@ namespace Modeling
 
         #region Branches
 
-        [Measure(1000, new []{ "Empty" })]
+        [Measure(10000, new []{ "Empty" })]
         public void BranchDefineLabelEmpty()
         {
             var (method, ilg) = newMethod();
@@ -563,7 +510,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty" })] // 0x38
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty" })] // 0x38
         public void Br()
         {
             var (method, ilg) = newMethod();
@@ -575,7 +522,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty" })] // 0x2B
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty" })] // 0x2B
         public void Br_S()
         {
             var (method, ilg) = newMethod();
@@ -587,7 +534,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4" })] // 0x39
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4" })] // 0x39
         public void Brfalse(int boolValue)
         {
             var (method, ilg) = newMethod();
@@ -600,7 +547,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S" })] // 0x2C
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S" })] // 0x2C
         public void Brfalse_S(byte boolValue)
         {
             var (method, ilg) = newMethod();
@@ -613,7 +560,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
         
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4" })] // 0x3A
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4" })] // 0x3A
         public void Brtrue(int boolValue) // if 'bool' is in the parameter name, then it is either 1 or 0
         {
             var (method, ilg) = newMethod();
@@ -626,7 +573,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S" })] // 0x2D
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S" })] // 0x2D
         public void Brtrue_S(byte boolValue)
         {
             var (method, ilg) = newMethod();
@@ -639,7 +586,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
         
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3B
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3B
         public void Beq(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -654,7 +601,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x2E
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x2E
         public void Beq_S(sbyte boolValue1, sbyte boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -669,7 +616,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3C
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3C
         public void Bge(int value1, int value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
@@ -684,7 +631,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x3C
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x3C
         public void Bge_S(sbyte value1, sbyte value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
@@ -699,7 +646,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x41
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x41
         public void Bge_Un(uint value1, uint value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
@@ -714,7 +661,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x34
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x34
         public void Bge_Un_S(byte value1, byte value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
@@ -729,7 +676,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3D
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3D
         public void Bgt(int value1, int value2) // Greater than
         {
             var (method, ilg) = newMethod();
@@ -744,7 +691,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x30
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x30
         public void Bgt_S(sbyte value1, sbyte value2) // Greater than
         {
             var (method, ilg) = newMethod();
@@ -759,7 +706,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x42
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x42
         public void Bgt_Un(uint value1, uint value2) // Greater than
         {
             var (method, ilg) = newMethod();
@@ -774,7 +721,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
         
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x35
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x35
         public void Bgt_Un_S(byte value1, byte value2) // Greater than
         {
             var (method, ilg) = newMethod();
@@ -789,7 +736,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3E
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3E
         public void Ble(int value1, int value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
@@ -803,7 +750,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x31
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x31
         public void Ble_S(sbyte value1, sbyte value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
@@ -817,7 +764,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x43
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x43
         public void Ble_Un(uint value1, uint value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
@@ -831,7 +778,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x36
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x36
         public void Ble_Un_S(byte value1, byte value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
@@ -845,7 +792,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3F
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x3F
         public void Blt(int value1, int value2) // Less than
         {
             var (method, ilg) = newMethod();
@@ -860,7 +807,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x32
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x32
         public void Blt_S(byte value1, byte value2) // Less than
         {
             var (method, ilg) = newMethod();
@@ -875,7 +822,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x44
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x44
         public void Blt_Un(uint value1, uint value2) // Less than
         {
             var (method, ilg) = newMethod();
@@ -890,7 +837,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x37
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x37
         public void Blt_Un_S(byte value1, byte value2) // Less than
         {
             var (method, ilg) = newMethod();
@@ -905,7 +852,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x40
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4", "Ldc_I4" })] // 0x40
         public void Bne_Un(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -920,7 +867,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x33
+        [Measure(10000, new []{ "Empty", "BranchDefineLabelEmpty", "Ldc_I4_S", "Ldc_I4_S" })] // 0x33
         public void Bne_Un_S(sbyte value1, sbyte value2)
         {
             var (method, ilg) = newMethod();
@@ -937,7 +884,7 @@ namespace Modeling
 
         #endregion
 
-        [Measure(1000, new []{ "Empty" })] // 0x38
+        [Measure(10000, new []{ "Empty" })] // 0x38
         public void Break()
         {
             var (method, ilg) = newMethod();
@@ -947,7 +894,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
         public void Ceq(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -960,7 +907,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
         public void Cgt(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -973,7 +920,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
         public void Cgt_Un(uint boolValue1, uint boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -986,7 +933,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_R4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_R4" })]
         public void Ckfinite(float value)
         {
             var (method, ilg) = newMethod();
@@ -998,7 +945,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
         public void Clt(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -1011,7 +958,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
         public void Clt_Un(uint boolValue1, uint boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -1026,7 +973,7 @@ namespace Modeling
 
         #region Conv
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_I(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1038,7 +985,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_I1(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1050,7 +997,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_I2(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1062,7 +1009,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_I4(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1074,7 +1021,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_I8(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1086,7 +1033,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1098,7 +1045,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I1(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1110,7 +1057,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I2(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1122,7 +1069,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I4(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1134,7 +1081,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I8(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1147,7 +1094,7 @@ namespace Modeling
         }
 
         
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I_Un(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1159,7 +1106,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I1_Un(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1171,7 +1118,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I2_Un(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1183,7 +1130,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I4_Un(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1195,7 +1142,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_Ovf_I8_Un(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1207,7 +1154,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })]
         public void Conv_R_Un(uint value)
         {
             var (method, ilg) = newMethod();
@@ -1219,7 +1166,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_R4(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1231,7 +1178,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4_S" })]
         public void Conv_R8(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1243,7 +1190,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })]
         public void Conv_U(uint value)
         {
             var (method, ilg) = newMethod();
@@ -1255,7 +1202,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })]
         public void Conv_U1(uint value)
         {
             var (method, ilg) = newMethod();
@@ -1267,7 +1214,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })]
         public void Conv_U2(uint value)
         {
             var (method, ilg) = newMethod();
@@ -1279,7 +1226,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })]
         public void Conv_U4(uint value)
         {
             var (method, ilg) = newMethod();
@@ -1291,7 +1238,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        [Measure(10000, new []{ "Empty", "Ldc_I4" })]
         public void Conv_U8(uint value)
         {
             var (method, ilg) = newMethod();
@@ -1305,9 +1252,8 @@ namespace Modeling
 
         #endregion
 
-        /* // This fails. Dunno why, jeg kigger på det senere
-        [Measure(1000, new []{ "Empty" })]
-        public void Ldarg(int boolValue)
+        [Measure(10000, new []{ "Empty" })]
+        public void Ldarg(int boolValue, int value1)
         {
             var (method, ilg) = newMethod();
             
@@ -1317,8 +1263,8 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })]
-        public void Ldarg_0()
+        [Measure(10000, new []{ "Empty" })]
+        public void Ldarg_0(int value0)
         {
             var (method, ilg) = newMethod();
             
@@ -1328,8 +1274,8 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })]
-        public void Ldarg_1()
+        [Measure(10000, new []{ "Empty" })]
+        public void Ldarg_1(int value0, int value1)
         {
             var (method, ilg) = newMethod();
             
@@ -1339,8 +1285,8 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })]
-        public void Ldarg_2()
+        [Measure(10000, new []{ "Empty" })]
+        public void Ldarg_2(int value0, int value1, int value2)
         {
             var (method, ilg) = newMethod();
             
@@ -1350,8 +1296,8 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })]
-        public void Ldarg_3()
+        [Measure(10000, new []{ "Empty" })]
+        public void Ldarg_3(int value0, int value1, int value2, int value3)
         {
             var (method, ilg) = newMethod();
             
@@ -1361,7 +1307,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty" })]
+        [Measure(10000, new []{ "Empty" })]
         public void Ldarg_S(byte value)
         {
             var (method, ilg) = newMethod();
@@ -1370,7 +1316,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             
             runMethod(method, ilg);
-        } */
+        }
 
 
 
