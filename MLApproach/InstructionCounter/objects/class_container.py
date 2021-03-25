@@ -5,17 +5,21 @@ from variable import variable
 
 
 class class_container():
-    def __init__(self, name, text, start):
+    def __init__(self, name, text, pos):
         self.name = name
         self.text = text
-        self.start = start
-        fields = get_fields(text, start, len(name))
+        self.position = pos
+        fields = get_fields(text, pos.start, len(name))
         self.fields = {key: fields[key] for key, value in fields.items() if not value.is_static}
         self.static_fields = {key: fields[key] for key, value in fields.items() if value.is_static}
         self.methods = utilities.get_by_method(text, self)
         self.is_generic = False
         self.state = {}
         self.init_state()
+
+    
+    def contains(self, pos):
+        return self.position.contains(pos)
 
     
     def get_name(self):

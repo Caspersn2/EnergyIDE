@@ -8,8 +8,8 @@ class generic_class_container(class_container):
     parameter_amount = r'`([0-9]+)<'
     generic_index = r'!([0-9]+)'
 
-    def __init__(self, name, text, start):
-        super().__init__(name, text, start)
+    def __init__(self, name, text, pos):
+        super().__init__(name, text, pos)
         self.is_generic = True
         self.number_of_parameters = int(self.get_parameter_count())
         self.type_names = ['!' + x for x in utilities.get_args_between(self.name, '<', '>')]

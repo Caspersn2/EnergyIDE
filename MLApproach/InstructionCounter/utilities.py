@@ -1,11 +1,11 @@
 from method_factory import create_method
 import re
 from collections import Counter
-from method import method
+from objects.position import position
 from objects.container_factory import create_class_container
 
 
-class_keywords = '(?:private|public|assembly|protected|auto|ansi|beforefieldinit)'
+class_keywords = '(?:private|public|assembly|protected|auto|ansi|nested|sealed|serializable|beforefieldinit)'
 method_instruction = r'\.method'
 class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+extends'
 locals_instruction = r'\.locals init'
@@ -72,11 +72,9 @@ def get_by_method(text, cls):
 
 def get_parent_class(classes, start_index):
     best_candidate = None
-    index = 0
     for cls in classes.values():
-        if cls.start < start_index and cls.start > index:
+        if cls.contains(start_index):
             best_candidate = cls
-            index = cls.start
     return best_candidate
 
 
@@ -90,7 +88,7 @@ def get_all_classes(text):
             parent = get_parent_class(classes, start)
             name = parent.name + "/" + name
         end = count_by_set({'{': 0, '}': 0}, text[start:])
-        classes[name] = create_class_container(name, text[start:start + end], start)
+        classes[name] = create_class_container(name, text[start:start + end], position(start, end))
     return classes
 
 

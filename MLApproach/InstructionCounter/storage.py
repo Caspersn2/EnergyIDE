@@ -47,10 +47,12 @@ class storage():
 
     # STATIC FIELDS
     def obtain_static(_, classes):
-        combined = []
+        combined = {}
         for c in classes.values():
             for static in c.static_fields:
-                combined.append(c.name + "::" + static)
+                field_name = c.name + '::' + static
+                datatype = c.static_fields[static].datatype
+                combined[field_name] = variable(field_name, datatype)
         return combined
 
     def get_static_field(self, key):
