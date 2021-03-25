@@ -22,42 +22,46 @@ async def get_estimate(request):
     if model_path not in os.listdir():
         return web.Response(text='This service is currently unavailable. No regression model is present', status=503)
 
-    fileinfo = await request.json()
-    path_to_assembly = fileinfo['path']
-    methods = fileinfo['methods']
-    name = path_to_assembly.split('/')[-1].split('.')[0]
+    json_data = await request.json()
+    active_classes = json_data['activeClasses']
+    all_predictions = {}
+    for current_class in active_classes:
+        print(current_class)
+        path_to_assembly = current_class['AssemblyPath']
+        methods = current_class['Methods']
+        name = path_to_assembly.split('/')[-1].split('.')[0]
 
-    # dissassemble
-    subprocess.call(
-        f'ilspycmd {path_to_assembly} -o . -il', shell=True)
+        # dissassemble
+        subprocess.call(
+            f'ilspycmd {path_to_assembly} -o . -il', shell=True)
 
-    # get il code
-    text = open(f'{name}.il').read()
+        # get il code
+        text = open(f'{name}.il').read()
 
-    # count instructions
-    counts = {}  # maps method/program name to IL instruction Counter
-    if methods:
-        for method_name in methods:
-            args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
-                                      counting_method='Simple', entry='Main(string[])', output=None)
-            counts[method_name] = main.count_instructions(args, text)
-    else:
-        args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
-                                  counting_method='Simple', entry='Main(string[])', output=None)
-        counts[name] = main.count_instructions(args, text)
+        # count instructions
+        counts = {}  # maps method/program name to IL instruction Counter
+        if methods:
+            for method_name in [m['Name'] for m in methods]:
+                args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                        counting_method='Simple', entry='Main(string[])', output=None)
+                counts[method_name] = main.count_instructions(args, text)
+        else:
+            args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                    counting_method='Simple', entry='Main(string[])', output=None)
+            counts[name] = main.count_instructions(args, text)
 
-    # make prediction
-    predictions = {} # maps method/program name to energy prediction
-    model = pickle.load(open(model_path, "rb"))
-    with open('CIL_Instructions.txt') as f:
-        CIL_INSTRUCTIONS = [x.strip() for x in f.readlines()]
+        # make prediction
+        predictions = {} # maps method/program name to energy prediction
+        model = pickle.load(open(model_path, "rb"))
+        with open('CIL_Instructions.txt') as f:
+            CIL_INSTRUCTIONS = [x.strip() for x in f.readlines()]
 
-    for name, count in counts.items():
-        count = reduce(lambda a, b: a+b, count, count[0])
-        temp = []
-        for instruction in CIL_INSTRUCTIONS:
-            temp.append(count[instruction]) if instruction in count else temp.append(0)
-        predictions[name] = model.predict([temp])[0][0] / 1000000 # µj to j
+        for name, count in counts.items():
+            count = reduce(lambda a, b: a+b, count, count[0])
+            temp = []
+            for instruction in CIL_INSTRUCTIONS:
+                temp.append(count[instruction]) if instruction in count else temp.append(0)
+            predictions[name] = model.predict([temp])[0][0] / 1000000 # µj to j
 
     # return result
     return web.Response(text=json.dumps(predictions), status=200)
