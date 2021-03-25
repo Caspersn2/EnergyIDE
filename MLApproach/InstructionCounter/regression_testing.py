@@ -68,9 +68,38 @@ class TestCounting(unittest.TestCase):
                             'testSets/100DoorsSimulation.csv', False)
         self.assertEqual(res, truth)
 
+    ## Conditional Test
     def test_conditionalTest_simple(self):
         res, truth = helper('testSets/conditional_test.il',
                             'testSets/conditional_testSimple.csv', True)
+        self.assertEqual(res, truth)
+
+    def test_conditionalTest_simulation(self):
+        res, truth = helper('testSets/conditional_test.il',
+                            'testSets/conditional_testSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+
+    ## Generics with standalone Method
+    def test_genericMethodExample_simple(self):
+        res, truth = helper('testSets/simpleGenericsMethodExample.il',
+                            'testSets/simpleGenericsMethodExampleSimple.csv', True)
+        self.assertEqual(res, truth)
+
+    def test_genericMethodExample_simulation(self):
+        res, truth = helper('testSets/simpleGenericsMethodExample.il',
+                            'testSets/simpleGenericsMethodExampleSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+    ## Generics with generic Class
+    def test_genericClassExample_simulation(self):
+        res, truth = helper('testSets/simpleGenericsClassExample.il',
+                            'testSets/simpleGenericsClassExampleSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+    def test_genericClassExample_simple(self):
+        res, truth = helper('testSets/simpleGenericsClassExample.il',
+                            'testSets/simpleGenericsClassExampleSimple.csv', True)
         self.assertEqual(res, truth)
 
 
