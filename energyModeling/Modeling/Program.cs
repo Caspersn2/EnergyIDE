@@ -15,8 +15,8 @@ namespace Modeling
     {
         static void Main(string[] args)
         {
-            var output = Manager.Test(typeof(measureClass));
-            //var output = Manager.Test(typeof(testing));
+            //var output = Manager.Test(typeof(measureClass));
+            var output = Manager.Test(typeof(testing));
 
             System.IO.File.WriteAllText("output.xml", output);
             //UpdateXMLWithSubtractedCost("output.xml");
@@ -59,8 +59,6 @@ namespace Modeling
                     continue;
                 }
 
-                Console.WriteLine($"index: {current}\tname: {methodNode.SelectSingleNode("name").InnerText}\tRemain: {remainingMethods.Count}");
-
                 // Check for dependencies
                 XmlNodeList instructionNodes = methodNode.SelectNodes("dependencies/instruction");
                 Dictionary<string,int> dependencies = new Dictionary<string, int>();
@@ -102,7 +100,7 @@ namespace Modeling
         }
     }
 
-    [MeasureClass(false, 0.005F, MeasurementType.Timer)]
+    [MeasureClass(false, 0.05F, MeasurementType.Timer)]
     class testing
     {
         private (DynamicMethod, ILGenerator) newMethod()
@@ -118,21 +116,21 @@ namespace Modeling
             method.Invoke(null, Type.EmptyTypes);
         }
 
-        [Measure(10000)]
+        [Measure(1000)]
         public void Empty()
         {
             var (method, ilg) = newMethod();
             runMethod(method, ilg);
         }
 
-        [Measure(10000)]
-        public void something(int value)
+        [Measure(1000, new []{ "Empty", "Ldc_I4_0" })]
+        public void Stloc_0()
         {
             var (method, ilg) = newMethod();
-
-            ilg.Emit(OpCodes.Isinst, this.GetType());
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloc_0);
             ilg.Emit(OpCodes.Pop);
-
             runMethod(method, ilg);
         }
     }
@@ -1318,7 +1316,22 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
+        [Measure(10000, new []{ "Empty" })]
+        public void Nop()
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Nop);
+            runMethod(method, ilg);
+        }
 
+        [Measure(10000, new []{ "Empty", "Ldc_I4_0" })]
+        public void Stloc()
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc, 0);
+            runMethod(method, ilg);
+        }
 
         #endregion
     }

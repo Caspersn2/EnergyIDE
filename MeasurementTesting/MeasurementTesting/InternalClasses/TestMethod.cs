@@ -47,7 +47,7 @@ namespace MeasurementTesting.InternalClasses
             else
             {
                 result.Append("<result>Failed</result>");
-                result.Append($"<error-message>{Exception.InnerException}</error-message>");
+                result.Append($"<error-message>Error Occurred</error-message>");
             }
             
             result.Append("</method>");
