@@ -247,9 +247,9 @@
   }
 
   function updateNumSelected() {
-    let selected = getSelectedMethods().map(x => x.Methods);
+    let selected = getSelectedMethods().map(x => x.Methods).flat();
     let counter = document.getElementById("selectText");
-    counter.textContent = selected.length + " methods selected";
+    counter.textContent = selected.length + " method(s) selected";
   }
 
 </script>
