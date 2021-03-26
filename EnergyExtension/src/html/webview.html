@@ -8,7 +8,7 @@
 <h2>Estimate Energy Consumption</h2>
 </br>
 <label for="types">Estimation Type:</label>
-<select class="full-width selector" name="types" id="types" onChange="reloadMethods()")>
+<select class="full-width selector" name="types" id="types" onChange="reloadMethods()" )>
   <option value="ml">Machine Learning (static)</option>
   <option value="energy_model">Energy Model (static)</option>
   <option value="rapl">RAPL (dynamic)</option>
@@ -48,7 +48,6 @@
 
 <p id="calcText">Select function and click activate.</p>
 <ul id="running-functions"></ul>
-<button id="stop-button" style="display: none;" class="full-width btn btn-stop" onclick="stop()">Stop</button>
 
 <script>
 
@@ -154,29 +153,35 @@
     }
   });
 
+  var isActive = false;
   function activate() {
     // change the color and text of activate button and disable it.
     var activateButton = document.getElementById("activate-button");
-    activateButton.classList.add("active");
-    activateButton.disabled = true;
-    var buttonText = document.getElementById("activate-button-text");
-    buttonText.textContent = "Estimating ..."
+    if (!isActive) {
+      isActive = true;
+      document.getElementById("activate-button-text").textContent = "Estimating ... Click to stop.";
 
-    // Show the stop button
-    var stopButton = document.getElementById("stop-button");
-    stopButton.style.display = "block";
+      // Call the server to activate the selected methods.
+      let selected = getSelectedMethods();
+      let type = document.getElementById("types").value;
 
-    // Call the server to activate the selected methods.
-    let selected = getSelectedMethods();
-    let type = document.getElementById("types").value;
+      vscode.postMessage({
+        type: "activate",
+        value: { selected: selected, type: type },
+      });
+    }
+      else {
+        isActive = false;
+        document.getElementById("activate-button-text").textContent = "Stopping ...";
+        vscode.postMessage({
+          type: "stop",
+          value: true
+        });
+        document.getElementById("activate-button-text").textContent = "Begin Estimation";
+      }
 
-    vscode.postMessage({
-      type: "activate",
-      value: { selected: selected, type: type },
-    });
-
-    //TODO: Fix text
-    document.getElementById("calcText").textContent = "Calculating: " + selected.map(s => s.ClassName).join(', ');
+      //TODO: Fix text
+      document.getElementById("calcText").textContent = "Calculating: " + selected.map(s => s.ClassName).join(', ');
   }
 
   function reloadMethods() {
@@ -185,13 +190,6 @@
     vscode.postMessage({
       type: "reloadMethods",
       value: { type: type }
-    });
-  }
-
-  function stop() {
-    vscode.postMessage({
-      type: "stop",
-      value: true
     });
   }
 
@@ -249,7 +247,12 @@
   function updateNumSelected() {
     let selected = getSelectedMethods().map(x => x.Methods).flat();
     let counter = document.getElementById("selectText");
-    counter.textContent = selected.length + " method(s) selected";
+    if(selected.length == 1) {
+      counter.textContent = selected[0].StringRepresentation;
+    }
+    else {
+      counter.textContent = selected.length + " method(s) selected";
+    }
   }
 
 </script>
@@ -285,10 +288,6 @@
     background: var(--vscode-editor-background);
     color: var(--vscode-editor-color);
     padding: 0.3rem;
-  }
-
-  .active {
-    background-color: green;
   }
 
   .btn {
