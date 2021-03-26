@@ -7,7 +7,24 @@ from utilities import is_library_call, get_arguments, primitive_type
 import copy
 
 
-class object_instruction(instruction):
+class object_instructions(instruction):
+    def get_method(_, target_name, storage, cls):
+        class_name, method_name = target_name.split('::')
+        class_instance = storage.get_class(class_name)
+        method = cls.get_method(class_instance, method_name)
+        return method
+
+    @classmethod
+    def create(cls, _, __):
+        raise NotImplementedError('This should not be called')
+
+    @classmethod
+    def keys(cls):
+        return []
+
+
+
+class new_object_instruction(object_instructions):
     def __init__(self, name, class_name, constructor):
         self.constructor = constructor
         self.class_name = class_name
@@ -19,7 +36,7 @@ class object_instruction(instruction):
     def create(cls, name, elements):
         constructor = ' '.join(elements[2:]).replace('class ', '')
         class_name = constructor.split('::')[0]
-        return object_instruction(name, class_name, constructor)
+        return new_object_instruction(name, class_name, constructor)
 
     @classmethod
     def keys(cls):
@@ -33,10 +50,7 @@ class object_instruction(instruction):
                 storage.pop_stack()
             return Actions.NOP, None
         else:
-            cls = copy.deepcopy(storage.get_class(self.class_name))
-            args = []
-            for _ in range(self.num_args):
-                args.append(storage.pop_stack())
+            cls, args = self.get_class_and_args(storage)
 
             if cls.is_generic:
                 cls.set_types(self.class_name)
@@ -48,15 +62,21 @@ class object_instruction(instruction):
                 storage.push_stack(cls)
                 return Actions.NOP, None
             else:
-                class_name, method_name = self.constructor.split('::')
-                class_instance = storage.get_class(class_name)
-                method = cls.get_method(class_instance, method_name)
+                method = super().get_method(self.constructor, storage, cls)
                 method.set_parameters(args)
                 return Actions.CALL, method
 
 
+    def get_class_and_args(self, storage):
+        cls = copy.deepcopy(storage.get_class(self.class_name))
+        args = []
+        for _ in range(self.num_args):
+            args.append(storage.pop_stack())
+        return cls, args
 
-class callvirt_instruction(instruction):
+
+
+class callvirt_instruction(object_instructions):
     def __init__(self, name, method_name, return_type):
         self.method_name = method_name
         self.return_type = return_type
@@ -94,9 +114,7 @@ class callvirt_instruction(instruction):
                 generic_method.set_concrete(self.method_name)
                 method = generic_method
             else:
-                class_name, method_name = self.method_name.split('::')
-                class_instance = storage.get_class(class_name)
-                method = cls.get_method(class_instance, method_name)
+                method = super().get_method(self.method_name, storage, cls)
 
             storage.set_active_class(cls)
             method.set_parameters(args)
