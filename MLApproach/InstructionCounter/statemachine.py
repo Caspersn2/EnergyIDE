@@ -49,26 +49,20 @@ class state_machine():
         return return_val
 
 
-    def get_method(self, tuple):
-        method_name, args = tuple
+    def set_params(self, tuple):
+        curr_method, args = tuple
+        curr_method.arguments = self.get_parameters(args, curr_method)
+        return curr_method
 
-        if isinstance(method_name, method):
-            curr_method = method_name
-        else:
-            curr_method = self.storage.get_method(method_name)
-            curr_method.cls = self.storage.get_active_class()
-            if curr_method.is_generic:
-                curr_method.set_concrete(method_name)
-        
+
+    def get_parameters(_, args, curr_method):
         parameter_list = {}
         for key, value in curr_method.arguments.items():
             value = curr_method.get_concrete_type(value)
             var = variable(key, value)
             var.value = args.pop()
             parameter_list[key] = var
-        
-        curr_method.arguments = parameter_list
-        return curr_method
+        return parameter_list
 
 
     def execute_method(self, method):
@@ -85,10 +79,9 @@ class state_machine():
                 index = instruction_index.index(value)
 
             elif action == Actions.CALL:
-                method = self.get_method(value)
                 machine = state_machine(self.storage)
-                return_val = machine.simulate(method, self.storage.get_active_class())
-                method.clear()
+                return_val = machine.simulate(value, self.storage.get_active_class())
+                value.clear()
                 if return_val or return_val == 0:
                     self.storage.push_stack(return_val)
                 index += 1

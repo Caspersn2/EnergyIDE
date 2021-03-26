@@ -34,5 +34,9 @@ class call_instruction(instruction):
             args = []
             for _ in range(self.num_args):
                 args.append(storage.pop_stack())
-
-            return Actions.CALL, (self.invocation_target, args)
+            
+            class_name, method_name = self.invocation_target.split('::')
+            class_instance = storage.get_class(class_name)
+            method = class_instance.get_method(class_instance, method_name)
+            method.set_parameters(args)
+            return Actions.CALL, method

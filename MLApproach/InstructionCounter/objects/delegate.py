@@ -4,5 +4,6 @@ class delegate():
         self.delegate_method = method
 
 
-    def get_method(self):
+    def get_method(self, _, __):
+        self.delegate_method.set_class(self)
         return self.delegate_method

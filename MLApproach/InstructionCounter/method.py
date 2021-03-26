@@ -1,6 +1,6 @@
-from simulation_exception import simulation_exception
 import utilities
 import instruction
+from variable import variable
 import copy
 
 # Represents an entire method
@@ -19,6 +19,16 @@ class method():
         self.locals = utilities.get_local_stack(text)
         self.data = instruction.get_all_instructions(self.text)
         self.is_generic = False
+
+
+    def set_parameters(self, args):
+        parameter_list = {}
+        for key, value in self.arguments.items():
+            value = self.get_concrete_type(value)
+            var = variable(key, value)
+            var.value = args.pop()
+            parameter_list[key] = var
+        self.arguments = parameter_list
 
     
     def clear(self):

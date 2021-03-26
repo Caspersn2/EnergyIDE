@@ -36,14 +36,16 @@ class storage():
         else:
             raise simulation_exception(f"The desired method '{key}' was not found in the list of methods")
 
-    def find_generic(self, method_name):
-        num_args = len(get_args_between(method_name, '(', ')'))
-        generic_methods = [v for v in self.methods.values() if v.is_generic]
-        for candidate in generic_methods:
-            candidate_name = candidate.get_simple_name()
-            if method_name.split('<')[0] == candidate_name.split('<')[0] and num_args == len(candidate.arguments):
-                return candidate
-        raise simulation_exception(f'No generic method matched the following string: "{method_name}"')
+    def find_generic(self, method):
+        method_name = method.split('::')[-1]
+        if '<' in method_name and '>' in method_name:
+            num_args = len(get_args_between(method_name, '(', ')'))
+            generic_methods = [v for v in self.methods.values() if v.is_generic]
+            for candidate in generic_methods:
+                candidate_name = candidate.get_simple_name()
+                if method_name.split('<')[0] == candidate_name.split('<')[0] and num_args == len(candidate.arguments):
+                    return candidate
+        return None
 
 
     # STATIC FIELDS

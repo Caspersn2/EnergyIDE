@@ -5,9 +5,9 @@ from objects.position import position
 from objects.container_factory import create_class_container
 
 
-class_keywords = '(?:private|public|assembly|protected|auto|ansi|nested|sealed|serializable|beforefieldinit)'
+class_keywords = '(?:private|public|assembly|interface|abstract|protected|auto|ansi|nested|sealed|serializable|beforefieldinit)'
 method_instruction = r'\.method'
-class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+extends'
+class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+'
 locals_instruction = r'\.locals init'
 locals_index = r'\[[0-9]+\]'
 variable_name = r'\.?\'?[a-zA-Z<>\[][ _0-9a-zA-Z<>/\.\[\]`]*\'?'
@@ -86,10 +86,16 @@ def get_parent_class(classes, start_index):
 
 
 
-def get_superclass(text, start):
+def get_superclass(text):
     end_declaration = str.find(text, '{')
     declaration = text[:end_declaration] 
     return declaration.split('extends')[-1].strip()
+
+
+def get_keywords(text, name):
+    end = str.find(text, '{')
+    keyword_space = text[:end]
+    return keyword_space.split(name)[0].split()
 
 
 def get_all_classes(text):
@@ -103,8 +109,9 @@ def get_all_classes(text):
             name = parent.name + "/" + name
         end = count_by_set({'{': 0, '}': 0}, text[start:])
         class_text = text[start:start + end]
-        super_class = get_superclass(class_text, start)
-        classes[name] = create_class_container(name, class_text, position(start, end), super_class)
+        super_class = get_superclass(class_text)
+        keywords = get_keywords(class_text, name)
+        classes[name] = create_class_container(name, class_text, position(start, end), super_class, keywords)
     return classes
 
 
