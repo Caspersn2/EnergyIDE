@@ -35,6 +35,7 @@ class TestCounting(unittest.TestCase):
         if os.path.isfile('results.csv'):
             os.remove('results.csv')
 
+
     ## Simple Add
     def test_simpleAdd_simple(self):
         res, truth = helper('testSets/simpleAdd.il',
@@ -46,6 +47,7 @@ class TestCounting(unittest.TestCase):
                             'testSets/simpleAddSimulation.csv', False)
         self.assertEqual(res, truth)
     
+
     ## Multiple Classes
     def test_multipleClasses_simple(self):
         res, truth = helper('testSets/multipleClasses.il',
@@ -57,6 +59,7 @@ class TestCounting(unittest.TestCase):
                             'testSets/multipleClassesSimulation.csv', False)
         self.assertEqual(res, truth)
 
+
     ## 100 Doors
     def test_100Doors_simple(self):
         res, truth = helper('testSets/100Doors.il',
@@ -67,6 +70,7 @@ class TestCounting(unittest.TestCase):
         res, truth = helper('testSets/100Doors.il',
                             'testSets/100DoorsSimulation.csv', False)
         self.assertEqual(res, truth)
+
 
     ## Conditional Test
     def test_conditionalTest_simple(self):
@@ -91,6 +95,7 @@ class TestCounting(unittest.TestCase):
                             'testSets/simpleGenericsMethodExampleSimulation.csv', False)
         self.assertEqual(res, truth)
 
+
     ## Generics with generic Class
     def test_genericClassExample_simulation(self):
         res, truth = helper('testSets/simpleGenericsClassExample.il',
@@ -100,6 +105,18 @@ class TestCounting(unittest.TestCase):
     def test_genericClassExample_simple(self):
         res, truth = helper('testSets/simpleGenericsClassExample.il',
                             'testSets/simpleGenericsClassExampleSimple.csv', True)
+        self.assertEqual(res, truth)
+
+
+    ## Simple Interface tests
+    def test_simpleInterface_simulation(self):
+        res, truth = helper('testSets/simple_interface.il',
+                            'testSets/simple_interfaceSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+    def test_simpleInterface_simple(self):
+        res, truth = helper('testSets/simple_interface.il',
+                            'testSets/simple_interfaceSimple.csv', True)
         self.assertEqual(res, truth)
 
 
