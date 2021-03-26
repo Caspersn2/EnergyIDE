@@ -1,6 +1,5 @@
 from simulation_exception import simulation_exception
 from variable import variable
-from objects.dummy_class import dummy_class
 from utilities import is_library_call, is_generic, get_args_between
 
 
@@ -14,7 +13,6 @@ class storage():
         self.methods = methods
         self.active_class = None
         self.is_instance = None
-        self.dummy_class = dummy_class()
         self.static_fields = static_fields or self.obtain_static(classes)
 
     
@@ -73,9 +71,7 @@ class storage():
     
     # CLASSES
     def get_class(self, key):
-        if is_library_call(key):
-            return self.dummy_class
-        elif is_generic(key):
+        if is_generic(key):
             new_key = key.split('<')[0]
             for elem in self.classes:
                 if new_key in elem:

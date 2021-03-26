@@ -1,6 +1,4 @@
-from objects.interface_class_container import interface_class_container
 from objects.delegate import delegate
-from objects.delegate_class_container import delegate_class_container
 from objects.class_container import class_container
 from random_arguments import create_random_argument
 from instruction import instruction
@@ -33,7 +31,6 @@ class object_instruction(instruction):
             argument_list = [v for _,v in temp_args.items() if v in primitive_type]
             for _ in argument_list:
                 storage.pop_stack()
-            storage.push_stack(storage.dummy_class)
             return Actions.NOP, None
         else:
             cls = copy.deepcopy(storage.get_class(self.class_name))
@@ -79,7 +76,7 @@ class callvirt_instruction(instruction):
 
 
     def execute(self, storage):
-        if is_library_call(self.method_name) or storage.active_class == storage.dummy_class:
+        if is_library_call(self.method_name):
             temp_args = get_arguments(self.method_name)
             for _ in temp_args:
                 storage.pop_stack()
