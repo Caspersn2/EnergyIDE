@@ -1,6 +1,6 @@
 from objects.delegate import delegate
 from objects.class_container import class_container
-from random_arguments import create_random_argument
+from argument_generator import create_random_argument
 from instruction import instruction
 from action_enum import Actions
 from utilities import is_library_call, get_arguments, primitive_type

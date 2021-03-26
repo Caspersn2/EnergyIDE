@@ -1,6 +1,6 @@
 from instruction import instruction
 from action_enum import Actions
-from random_arguments import create_random_argument
+from argument_generator import create_random_argument
 from utilities import is_library_call
 
 

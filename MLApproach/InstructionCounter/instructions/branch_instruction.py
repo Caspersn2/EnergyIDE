@@ -104,7 +104,7 @@ class switch_instruction(instruction):
     def create(cls, name, elements):
         table_string = ' '.join(elements)
         table_branches = table_string.replace('(','').replace(')','')
-        jump_table = table_branches.split(',')
+        jump_table = [x.strip() for x in table_branches.split(',')]
         return switch_instruction(name, jump_table)
 
     @classmethod
@@ -113,7 +113,7 @@ class switch_instruction(instruction):
 
     def execute(self, storage):
         index = storage.pop_stack()
-        if len(self.jump_table) >= index:
+        if len(self.jump_table) >= index and index >= 0:
             target = self.jump_table[index]
             return Actions.JUMP, target
         else:

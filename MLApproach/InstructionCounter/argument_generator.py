@@ -10,6 +10,10 @@ def random_int32():
     return random.randint(-2147483648, 2147483647)
 
 
+def random_char():
+    return random.randint(-127, 128)
+
+
 def random_double():
     mantissa = (random.random() * 2.0) - 1.0
     exponent = 2.0**random.randint(-126,127)
@@ -32,9 +36,20 @@ def generate_string(number):
     return string
 
 
+def convert_argument(value, datatype):
+    if datatype == 'bool' or datatype == 'int32' or datatype == 'char':
+        return int(value)
+    elif datatype == 'float32' or datatype == 'float64':
+        return float(value)
+    else:
+        return value
+
+
 def create_random_argument(datatype):
     if datatype == 'void':
         return None
+    elif datatype == 'char':
+        return random_char()
     elif datatype == 'bool':
         return random_bool()
     elif datatype == 'int32':

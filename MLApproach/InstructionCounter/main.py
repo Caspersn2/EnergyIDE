@@ -2,21 +2,31 @@ import argparse
 from storage import storage
 from simulation_exception import simulation_exception
 from statemachine import state_machine
+from argument_generator import create_random_argument, convert_argument
 import utilities
 import subprocess
 import result
 import os
 
 
-def execute(counting_type, method, state_machine):
-    if counting_type == 'Simple':
+def execute(args, method, state_machine):
+    if args.counting_method == 'Simple':
         res = utilities.simple_count(method.text)
         result.add_results(res, method)
     else:
         if method.is_entry:
             state_machine.simulate(method, None)
         else:
-            raise NotImplementedError('The simulation of a method with randomized input parameters is not implemented yet')
+            args_list = []
+            for idx, param in enumerate(method.arguments.values()):
+                if args.input and idx < len(args.input):
+                    value = convert_argument(args.input[idx], param)
+                else:
+                    value = create_random_argument(param)
+                args_list.append(value)
+            args_list.reverse()
+            method.set_parameters(args_list)
+            state_machine.simulate(method, None)
 
 
 def count_instructions(args, text):
@@ -37,11 +47,11 @@ def count_instructions(args, text):
 
     if args.method == entry.name and args.counting_method == 'Simple':
         for method in methods.values():
-            execute(args.counting_method, method, state)
+            execute(args, method, state)
     else:
         if args.method in methods:
             method = methods[args.method]
-            execute(args.counting_method, method, state)
+            execute(args, method, state)
         else:
             raise simulation_exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
 
@@ -72,6 +82,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', type=argparse.FileType('r'), help='Counts all of the instructions used', required=True)
     parser.add_argument('-c', '--counting-method', default='Simulation', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
     parser.add_argument('-m', '--method', type=str, help='Countes the instructions for the specific method')
+    parser.add_argument('-i', '--input', nargs='*', help='If a method is chosen via. --method, then input variables can be chosen using this argument (Otherwise arguments are generated randomly)')
     parser.add_argument('-l', '--list', action='store_true', help='Will print a list of available methods')
     parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
     parser.add_argument('-o', '--output', type=str, help='The name of the output file')
