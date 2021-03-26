@@ -103,7 +103,6 @@ namespace Measurement.Repositories
         {
             List<ClassMethods> result = new List<ClassMethods>();
             MethodInfo[] allMethods = currentClass.GetMethods().Where(mi => mi.DeclaringType == currentClass).ToArray();
-            System.Console.WriteLine(allMethods.Length);
 
             if (getWithAttributes)
                 allMethods = allMethods.Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute)).ToArray();

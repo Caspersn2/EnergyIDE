@@ -63,7 +63,15 @@ export class Measure {
         }
         else if (type === "ml") {
             //TODO: What to do with results???
-            MeasureTestingService.startML(activeClasses);
+            MeasureTestingService.startML(activeClasses).then(response => {
+                if(response)
+                {
+                    console.log("heyyo")
+                    webviewView.webview.postMessage({ command: 'done', value: response });
+                    this.openOutput(response as string);
+                }
+                console.log("No resp")
+            });
         }
         //else if (type === "energy_model")
 

@@ -14,15 +14,15 @@ export class MeasureTestingService {
         });
     }
 
-    public static startRAPL(ids: number[]): Promise<MeasureProgess | string> {
+    public static startRAPL(ids: number[]): Promise<any> {
         return this.callService('http://localhost:5000/', axios.put, { ids: ids });
     }
 
-    public static stopRAPL(): Promise<MeasureProgess | string> {
+    public static stopRAPL(): Promise<any> {
         return this.callService('http://localhost:5000/', axios.delete);
     }
 
-    public static startML(activeClasses: ActivateClass[]): Promise<MeasureProgess | string> {
+    public static startML(activeClasses: ActivateClass[]): Promise<any> {
         return this.callService('http://localhost:5002/post', axios.post, { activeClasses: activeClasses });
     }
 
@@ -44,17 +44,14 @@ export class MeasureTestingService {
         });
     }
 
-    static callService(url: string, httpMethod: any, data: any = null): Promise<MeasureProgess | string> {
+    static callService(url: string, httpMethod: any, data: any = null): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 let response;
-                if (data != null) {
-                    response = await httpMethod(url, data);
-                }
-                else {
-                    response = await httpMethod(url);
-                }
-                if (response.status == 200) { resolve(response.data); }
+                if (data != null) { response = await httpMethod(url, data); }
+                else { response = await httpMethod(url); }
+                
+                if (response.status == 200) {  resolve(response.data); }
                 else { reject(response.status); }
             } catch (exception) {
                 reject(exception);
