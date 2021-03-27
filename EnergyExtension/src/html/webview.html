@@ -3,6 +3,7 @@
 <head>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 </head>
 <!-- This is body -->
 <h2>Estimate Energy Consumption</h2>
@@ -17,17 +18,9 @@
 
 <label for="functions">Methods(s) for Estimation:</label>
 </br>
-</br>
 <!-- Function selector -->
-<div class="selectBox" onclick="showCheckboxes()">
-  <select class="multiSelector">
-    <option id="selectText">Select an option</option>
-  </select>
-  <div class="overSelect"></div>
-</div>
-<div id="checkboxes">
-  <label class="inRow"><input type="checkbox">No methods found in the .dll files. Try to press the reload button to
-    check for new files and methods.</label>
+<div id="selector-container">
+  <select id="function-selector" class="full-width selector" multiple size="15"></select>
 </div>
 </br>
 
@@ -99,56 +92,30 @@
       case "methods":
         let methodGroups = message.value;
         classesShown = methodGroups;
+        let type = document.getElementById("types").value;
 
-        // Clear the dropdown
-        let functionsDropdown = document.getElementById("checkboxes");
-        functionsDropdown.innerHTML = "";
+        // Get selector and clear it
+        var methodSelector = document.getElementById("selector-container").children[0];
+        methodSelector.innerHTML = '';
 
-        // Add methods to the dropdown
+        // Set size of selector
+        let numMethods = methodGroups.map(x => x.Methods).flat().length + methodGroups.length;
+        let size = 15 > numMethods ? numMethods : 15;
+        methodSelector.setAttribute("size", size)
+        //Add methods
         methodGroups.forEach((methodGroup) => {
-          // Create the surrounding element
-          let surround = document.createElement("div");
-
-          // Create the grouplabel
-          let groupLabel = document.createElement("label");
-          groupLabel.for = methodGroup.ClassName;
-          groupLabel.textContent = methodGroup.ClassName;
-          groupLabel.classList.add("groupLabel");
-          groupLabel.title = methodGroup.ClassName;
-
-          // Create the checkbox for the group
-          let groupCheck = document.createElement("input");
-          groupCheck.type = "checkbox";
-          groupCheck.id = methodGroup.ClassName;
-
-          groupCheck.addEventListener("change", (event) => {
-            this.groupSelected(methodGroup.ClassName);
-          });
-          groupLabel.insertBefore(groupCheck, groupLabel.childNodes[0]);
-          surround.appendChild(groupLabel);
-
-          // Inserts the methods as children to the group
+          var optGroup = document.createElement('optgroup')
+          optGroup.label = methodGroup.ClassName;
           methodGroup.Methods.forEach((method) => {
-            let option = document.createElement("label");
-            option.for = method.Id;
-            option.textContent = method.StringRepresentation;
-            option.classList.add("inRow");
-            option.classList.add("option");
-            option.value = JSON.stringify(method);
-
-            let checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.id = method.Id;
-            checkbox.value = JSON.stringify(method);
+            var option = new Option(method.StringRepresentation, method.Id, false)
             option.addEventListener("change", (event) => {
               this.updateNumSelected();
             });
-            option.insertBefore(checkbox, option.childNodes[0]);
-            surround.appendChild(option);
-          });
-
-          functionsDropdown.appendChild(surround);
-        });
+            option.title = method.StringRepresentation; // Tooltip
+            optGroup.appendChild(option)
+          })
+          methodSelector.appendChild(optGroup)
+        })
         break;
     }
   });
@@ -167,21 +134,21 @@
 
       vscode.postMessage({
         type: "activate",
-        value: { selected: selected, type: type },
+        value: { methods: selected, type: type },
       });
     }
-      else {
-        isActive = false;
-        document.getElementById("activate-button-text").textContent = "Stopping ...";
-        vscode.postMessage({
-          type: "stop",
-          value: true
-        });
-        document.getElementById("activate-button-text").textContent = "Begin Estimation";
-      }
+    else {
+      isActive = false;
+      document.getElementById("activate-button-text").textContent = "Stopping ...";
+      vscode.postMessage({
+        type: "stop",
+        value: true
+      });
+      document.getElementById("activate-button-text").textContent = "Begin Estimation";
+    }
 
-      //TODO: Fix text
-      document.getElementById("calcText").textContent = "Calculating: " + selected.map(s => s.ClassName).join(', ');
+    //TODO: Fix text
+    document.getElementById("calcText").textContent = "Calculating: " + selected.map(s => s.ClassName).join(', ');
   }
 
   function reloadMethods() {
@@ -193,48 +160,18 @@
     });
   }
 
-  var expanded = false;
-  function showCheckboxes() {
-    var checkboxes = document.getElementById("checkboxes");
-    if (!expanded) {
-      checkboxes.style.display = "block";
-      expanded = true;
-    } else {
-      checkboxes.style.display = "none";
-      expanded = false;
-    }
-  }
-
-  function groupSelected(group) {
-    let groupElement = document.getElementById(group);
-    let check = groupElement.checked;
-    let next = groupElement.parentNode.nextSibling;
-    while (next) {
-      let input = next.firstChild;
-      if (check) {
-        if (!input.checked) {
-          input.checked = true;
-        }
-      } else {
-        if (input.checked) {
-          input.checked = false;
-        }
-      }
-      next = next.nextSibling;
-    }
-    this.updateNumSelected();
-  }
-
   // Gets the methods selected in the dropdown.
   // Returns an ActivateClass[] representing the selected
   function getSelectedMethods() {
+    let selectElement = document.getElementById('function-selector')
+    let selectedValues = Array.from(selectElement.selectedOptions)
+      .map(option => String(option.value))
     let selected = [];
     this.classesShown.forEach((c) => {
       let selectedMethods = []
       c.Methods.forEach((m) => {
-        elm = document.getElementById(m.Id);
-        if (elm.checked || elm.getAttribute("checked")) {
-          selectedMethods.push(JSON.parse(elm.value));
+        if (selectedValues.includes(String(m.Id))) {
+          selectedMethods.push(m);
         }
       });
       if (selectedMethods.length > 0) {
@@ -247,7 +184,7 @@
   function updateNumSelected() {
     let selected = getSelectedMethods().map(x => x.Methods).flat();
     let counter = document.getElementById("selectText");
-    if(selected.length == 1) {
+    if (selected.length == 1) {
       counter.textContent = selected[0].StringRepresentation;
     }
     else {
@@ -323,22 +260,5 @@
     right: 0;
     top: 0;
     bottom: 0;
-  }
-
-  #checkboxes {
-    display: none;
-    border: 1px #dadada solid;
-  }
-
-  #checkboxes label {
-    display: block;
-  }
-
-  #checkboxes label:hover {
-    background-color: #1e90ff;
-  }
-
-  .groupLabel {
-    overflow: hidden;
   }
 </style>
