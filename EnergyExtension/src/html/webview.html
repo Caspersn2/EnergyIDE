@@ -39,7 +39,6 @@
 </button>
 </br>
 
-<p id="calcText">Select function and click activate.</p>
 <ul id="running-functions"></ul>
 
 <script>
@@ -57,36 +56,32 @@
         container.innerHTML = "";
 
         values.PlannedMethods.forEach(method => { // Method = id, runsDone, plannedRuns, methodName, className, stage
-          var methodHTML = document.createElement("li");
-          methodHTML.id = method.Id;
-
           var label = document.createElement("label");
-          label.innerText = method.MethodName;
-          methodHTML.appendChild(label);
+          label.innerText = "Method: " + method.MethodName;
+          label.id = "progress-text"
+          container.appendChild(label);
 
-          var progressText = document.createElement("p");
-          progressText.innerText = method.Stage + ": " + method.RunsDone + "/" + method.PlannedRuns + " = " + ((100 / method.PlannedRuns) * method.RunsDone).toFixed(2) + "%";
-          methodHTML.appendChild(progressText);
+          var surroundDiv = document.createElement("div");
+          surroundDiv.id = "progress";
+          var percentage = ((100 / method.PlannedRuns) * method.RunsDone).toFixed(2) + "%";
+          var percentText = document.createElement("span");
+          percentText.id = "progress-text";
+          percentText.innerText = method.RunsDone + "/" + method.PlannedRuns + " = " + percentage;
+          var progressBar = document.createElement("div");
+          progressBar.id = "bar";
+          progressBar.style = "width: " + percentage;
 
-          var progressBar = document.createElement("progress");
-          progressBar.value = method.RunsDone;
-          progressBar.max = method.PlannedRuns;
-          progressBar.style = "width: 100%";
-          methodHTML.appendChild(progressBar);
-
-          container.appendChild(methodHTML);
+          surroundDiv.appendChild(percentText);
+          surroundDiv.appendChild(progressBar);
+          container.appendChild(surroundDiv);
         });
 
         break;
 
       case "done":
-        var activateButton = document.getElementById("activate-button");
-        activateButton.classList.remove("active");
-        activateButton.disabled = false;
-
-        var stopButton = document.getElementById("stop-button");
-        stopButton.style.display = "none";
-
+        isActive = false;
+        document.getElementById("activate-button-text").textContent = "Begin Estimation";
+        document.getElementById("activate-button").classList.remove("active");
         break;
 
       case "methods":
@@ -124,9 +119,11 @@
   function activate() {
     // change the color and text of activate button and disable it.
     var activateButton = document.getElementById("activate-button");
+    var buttonText = document.getElementById("activate-button-text")
     if (!isActive) {
       isActive = true;
-      document.getElementById("activate-button-text").textContent = "Estimating ... Click to stop.";
+      buttonText.textContent = "Estimating ... Click to stop.";
+      activateButton.classList.add("active");
 
       // Call the server to activate the selected methods.
       let selected = getSelectedMethods();
@@ -139,7 +136,8 @@
     }
     else {
       isActive = false;
-      document.getElementById("activate-button-text").textContent = "Stopping ...";
+      buttonText.textContent = "Stopping ...";
+      activateButton.classList.remove("active");
       vscode.postMessage({
         type: "stop",
         value: true
@@ -200,13 +198,6 @@
     width: 100%;
   }
 
-  .progress-element {
-    background-color: hotpink;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    display: flex;
-  }
-
   .inRow {
     flex-wrap: nowrap;
     justify-content: right;
@@ -214,16 +205,11 @@
   }
 
   .selector {
-    background: var(--vscode-editor-background);
-    color: var(--vscode-editor-color);
+    background: var(--vscode-dropdown-listBackground);
+    color: var(--vscode-dropdown-foreground);
+    border-color: var(--vscode-dropdown-border);
     margin-bottom: 1rem;
     margin-top: 1rem;
-    padding: 0.3rem;
-  }
-
-  .multiSelector {
-    background: var(--vscode-editor-background);
-    color: var(--vscode-editor-color);
     padding: 0.3rem;
   }
 
@@ -232,26 +218,39 @@
     border-radius: 0.2rem;
     padding: 0.3rem;
     cursor: pointer;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
   }
 
-  .btn-stop:hover {
-    background-color: red;
+  .active {
+    background-color: var(--vscode-button-hoverBackground);
   }
 
   .option {
+    background-color: var(--vscode-dropdown-Background);
     padding-left: 1rem;
   }
 
-  .multiselect {
-    width: 200px;
+  ul {
+    margin: 1rem 0 1rem 0;
+    padding: 0;
   }
 
-  .selectBox {
+  #progress {
+    margin-bottom: 1rem;
+    width: 100%;
     position: relative;
   }
 
-  .selectBox select {
-    width: 100%;
+  #progress-text {
+    color: var(--vscode-button-foreground);
+  }
+
+  #bar {
+    height: 5px;
+    border-radius: 0.2rem;
+    border-color: var(--vscode-dropdown-border);
+    background-color: var(--vscode-button-background);
   }
 
   .overSelect {
