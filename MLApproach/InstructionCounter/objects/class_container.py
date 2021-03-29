@@ -12,11 +12,15 @@ class class_container():
         fields = get_fields(text, pos.start, len(name))
         self.fields = {key: fields[key] for key, value in fields.items() if not value.is_static}
         self.static_fields = {key: fields[key] for key, value in fields.items() if value.is_static}
-        self.methods = utilities.get_by_method(text, self)
+        self.methods = None
         self.is_generic = False
         self.is_interface = False
         self.state = {}
         self.init_state()
+
+    
+    def load_methods(self):
+        self.methods = utilities.get_by_method(self.text, self)
 
 
     def get_method(self, class_container, method_name):

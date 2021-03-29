@@ -32,6 +32,8 @@ def execute(args, method, state_machine):
 def count_instructions(args, text):
     ## Split all code into methods
     classes = utilities.get_all_classes(text)
+    for cls in classes:
+        classes[cls].load_methods()
     entry, methods = get_methods_from_classes(classes)
     storage_unit = storage(classes, methods)
     state = state_machine(storage_unit)
@@ -79,7 +81,7 @@ def print_methods(methods):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=argparse.FileType('r'), help='Counts all of the instructions used', required=True)
+    parser.add_argument('-f', '--file', type=argparse.FileType('r', encoding='utf-8'), help='Counts all of the instructions used', required=True)
     parser.add_argument('-c', '--counting-method', default='Simulation', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
     parser.add_argument('-m', '--method', type=str, help='Countes the instructions for the specific method')
     parser.add_argument('-i', '--input', nargs='*', help='If a method is chosen via. --method, then input variables can be chosen using this argument (Otherwise arguments are generated randomly)')

@@ -5,7 +5,7 @@ import utilities
 
 
 class generic_class_container(class_container):
-    parameter_amount = r'`([0-9]+)<'
+    parameter_amount = r"`([0-9]+)'?<"
     generic_index = r'!([0-9]+)'
 
     def __init__(self, name, text, pos):
