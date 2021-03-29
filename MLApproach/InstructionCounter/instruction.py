@@ -1,4 +1,5 @@
 from abc import abstractclassmethod, abstractmethod
+from instructions.dummy_instruction import dummy_instruction
 from simulation_exception import simulation_exception
 import importlib
 import inspect
@@ -77,4 +78,4 @@ class instruction():
             if name in container.keys():
                 return container.create(name, elements[1:])
 
-        raise simulation_exception(f'The instruction "{name}" has not been implemented')
+        return dummy_instruction(name)
