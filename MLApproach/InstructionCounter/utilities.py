@@ -5,7 +5,7 @@ from objects.position import position
 from objects.container_factory import create_class_container
 
 
-class_keywords = '(?:private|public|assembly|interface|abstract|protected|auto|ansi|nested|sealed|serializable|beforefieldinit)'
+class_keywords = '(?:private|public|assembly|interface|sequential|abstract|protected|auto|ansi|nested|sealed|serializable|beforefieldinit)'
 method_instruction = r'\.method'
 class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+'
 locals_instruction = r'\.locals init'
@@ -65,15 +65,16 @@ def get_by_method(text, cls):
     for match in matches:
         start = match.start()
         method_match = re.search(method_name, text[start:])
-        tmp_name = method_match.group().strip().replace('class ', '')
-        return_type, tmp_name = tmp_name.split(' ', 1)
-        tmp_name = tmp_name.replace('\n','').replace('\t', '')
-        name, parameter_names = remove_parameter_names(tmp_name)
-        name = f'{cls.name}::{name}'
-        end = count_by_set({'{': 0, '}': 0}, text[start:])
-        prototype = text[start:start + method_match.end()]
-        new_method = create_method(name, cls, prototype, return_type, parameter_names, text[start:start + end])
-        methods.append(new_method)
+        if method_match:
+            tmp_name = method_match.group().strip().replace('class ', '')
+            return_type, tmp_name = tmp_name.split(' ', 1)
+            tmp_name = tmp_name.replace('\n','').replace('\t', '')
+            name, parameter_names = remove_parameter_names(tmp_name)
+            name = f'{cls.name}::{name}'
+            end = count_by_set({'{': 0, '}': 0}, text[start:])
+            prototype = text[start:start + method_match.end()]
+            new_method = create_method(name, cls, prototype, return_type, parameter_names, text[start:start + end])
+            methods.append(new_method)
     return methods
 
 
@@ -83,7 +84,6 @@ def get_parent_class(classes, start_index):
         if cls.contains(start_index):
             best_candidate = cls
     return best_candidate
-
 
 
 def get_superclass(text):
