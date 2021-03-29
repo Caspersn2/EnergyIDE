@@ -11,9 +11,9 @@ export class Measure {
         });
     }
 
-    static async openOutput(output: string) {
+    static async openOutput(output: string, language: string) {
         const document = await vscode.workspace.openTextDocument({
-            language: "xml",
+            language: language,
             content: output,
         });
         vscode.window.showTextDocument(document);
@@ -32,7 +32,12 @@ export class Measure {
                 if (status.Done) {
                     this.stopProgress = status.Done;
                     webviewview.webview.postMessage({ command: 'done', value: status });
-                    this.openOutput(status.Output == undefined ? "Could not read the output." : status.Output);
+                    if (status.Output) {
+                        this.openOutput(status.Output, "XML");
+                    }
+                    else {
+                        this.openOutput("Could not read response", "txt");
+                    }
                 }
                 else {
                     webviewview.webview.postMessage({ command: 'progress', value: status });
@@ -66,11 +71,13 @@ export class Measure {
             MeasureTestingService.startML(activeClasses).then(response => {
                 if(response)
                 {
-                    console.log("heyyo")
+                    console.log("heyyo");
                     webviewView.webview.postMessage({ command: 'done', value: response });
-                    this.openOutput(response as string);
+                    this.openOutput(JSON.stringify(response), "JSON");
                 }
-                console.log("No resp")
+                else {
+                    console.log("No resp");
+                }
             });
         }
         //else if (type === "energy_model")
