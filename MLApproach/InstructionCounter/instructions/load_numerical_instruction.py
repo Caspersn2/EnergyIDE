@@ -1,6 +1,6 @@
 from instruction import instruction
-from simulation_exception import simulation_exception
 from action_enum import Actions
+import math
 
 
 class load_float_instruction(instruction):
@@ -10,7 +10,13 @@ class load_float_instruction(instruction):
 
     @classmethod
     def create(cls, name, elements):
-        value = float(elements[0])
+        test = ' '.join(elements)
+        if test in ['(00 00 00 00 00 00 F8 FF)', '(00 00 C0 FF)']:
+            value = math.nan
+        elif test in ['(00 00 00 00 00 00 F0 FF)', '(00 00 00 00 00 00 F0 7F)', '(00 00 80 FF)', '(00 00 80 7F)']:
+            value = math.inf
+        else:
+            value = float(elements[0])
         return load_float_instruction(name, value)
 
     @classmethod

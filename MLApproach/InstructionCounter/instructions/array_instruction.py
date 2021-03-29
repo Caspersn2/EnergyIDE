@@ -70,3 +70,24 @@ class array_retrieval_instruction(instruction):
         value = arr[index]
         storage.push_stack(value)
         return Actions.NOP, None
+
+
+
+class array_update_ref_instruction(instruction):
+    def __init__(self, name):
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, _):
+        return array_update_ref_instruction(name)
+
+    @classmethod
+    def keys(cls):
+        return ['stelem.ref']
+
+    def execute(self, storage):
+        value = storage.pop_stack()
+        index = storage.pop_stack()
+        array = storage.pop_stack()
+        array[index] = value
+        return Actions.NOP, None
