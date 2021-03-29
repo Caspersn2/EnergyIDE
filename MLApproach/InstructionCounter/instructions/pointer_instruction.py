@@ -36,7 +36,7 @@ class local_address_instruction(instruction):
 
     @classmethod
     def create(cls, name, elements):
-        index = elements[0]
+        index = super().get_number(name, elements)
         return local_address_instruction(name, index)
 
     @classmethod
@@ -44,4 +44,7 @@ class local_address_instruction(instruction):
         return ['ldloca', 'ldloca.s']
 
     def execute(self, storage):
-        raise NotImplementedError()
+        local_value = storage.get_local(self.index)
+        cls = storage.get_class(local_value.get_datatype())
+        storage.push_stack(cls)
+        return Actions.NOP, None

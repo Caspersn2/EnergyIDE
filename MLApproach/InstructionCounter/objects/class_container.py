@@ -68,4 +68,4 @@ class class_container():
 
 
     def __repr__(self) -> str:
-        return self.name
+        return f'{self.name} - {type(self)}'

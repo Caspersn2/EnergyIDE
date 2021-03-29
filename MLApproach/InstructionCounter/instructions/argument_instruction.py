@@ -19,7 +19,10 @@ class load_argument_instruction(instruction):
     def execute(self, storage):
         value = None
         if storage.is_instance:
-            value = storage.get_active_class()
+            if self.name == 'ldarg.0':
+                value = storage.get_active_class()
+            else:
+                value = storage.get_argument(self.index - 1).get_value()
         else:
             value = storage.get_argument(self.index).get_value()
         storage.push_stack(value)

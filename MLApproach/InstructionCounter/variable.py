@@ -14,5 +14,9 @@ class variable():
         return self.value
 
 
+    def get_datatype(self):
+        return self.type
+
+
     def __repr__(self) -> str:
         return f"('{self.value}' - {self.type})"
