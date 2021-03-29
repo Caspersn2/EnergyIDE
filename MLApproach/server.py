@@ -29,7 +29,8 @@ async def get_estimate(request):
         path_to_assembly = current_class['AssemblyPath']
         className = current_class['ClassName']
         methods = current_class['Methods']
-        name = path_to_assembly.split('/')[-1].split('.')[0]
+        abs_file_path = os.path.splitext(path_to_assembly)[0]
+        name = os.path.split(abs_file_path)[-1]
 
         # dissassemble
         subprocess.call(
