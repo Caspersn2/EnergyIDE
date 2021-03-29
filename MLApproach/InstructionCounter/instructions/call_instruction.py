@@ -41,7 +41,7 @@ class call_instruction(instruction):
 
             class_name, method_name = self.invocation_target.split('::')
             if self.call_type == 'instance':
-                class_instance = copy.deepcopy(storage.pop_stack())
+                class_instance = storage.pop_stack()
                 storage.set_active_class(class_instance)
             else:         
                 class_instance = storage.get_class(class_name)

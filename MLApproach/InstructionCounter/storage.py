@@ -79,7 +79,7 @@ class storage():
         elif key in self.classes:
             return self.classes[key]
         else:
-            raise simulation_exception('The class was not found in the list of classes')
+            raise simulation_exception(f'The class: "{key}" was not found in the list of classes')
 
 
     # STACK
@@ -95,6 +95,7 @@ class storage():
 
     # LOCALS
     def add_local(self, name, value):
+        value.set_default(self)
         self.locals[name] = value
 
     def get_local(self, key):

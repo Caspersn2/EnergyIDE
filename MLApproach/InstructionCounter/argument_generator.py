@@ -2,6 +2,10 @@ import random
 from simulation_exception import simulation_exception
 
 
+primitive = ['char', 'bool', 'int32', 'float32', 'float64', 'string']
+array_primitives = [f'{x}[]' for x in primitive]
+
+
 def random_bool():
     return random.randint(0, 1)
 
@@ -37,12 +41,31 @@ def generate_string(number):
 
 
 def convert_argument(value, datatype):
-    if datatype == 'bool' or datatype == 'int32' or datatype == 'char':
+    if datatype in ['bool', 'int32', 'char']:
         return int(value)
-    elif datatype == 'float32' or datatype == 'float64':
+    elif datatype in ['float32', 'float64']:
         return float(value)
     else:
         return value
+
+
+
+def can_generate(datatype):
+    return datatype in primitive or datatype in array_primitives
+
+
+def get_default(datatype):
+    if can_generate(datatype):
+        if datatype in ['char', 'int32', 'bool']:
+            return 0
+        elif datatype in ['float32', 'float64']:
+            return 0.0
+        elif datatype in ['string']:
+            return ''
+        elif '[]' in datatype:
+            return []
+    else:
+        raise simulation_exception(f'The type: "{datatype}" is not supported for default value')
 
 
 def create_random_argument(datatype):

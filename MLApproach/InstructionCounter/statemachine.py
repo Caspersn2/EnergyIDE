@@ -1,6 +1,5 @@
 from collections import Counter
 import result
-from method import method
 from storage import storage
 from action_enum import Actions
 from variable import variable
@@ -14,10 +13,15 @@ class state_machine():
         self.temp = None
 
 
-    def load_locals(self, variables):
+    def load_locals(self, method_ref):
+        variables = method_ref.locals
         if variables:
             for (k, v) in variables.items():
-                self.storage.add_local(k, variable(k, v))
+                if '!' in v:
+                    datatype = method_ref.get_concrete_type(v)
+                    self.storage.add_local(k, variable(k, datatype))
+                else:
+                    self.storage.add_local(k, variable(k, v))
 
 
     def load_arguments(self, variables):
@@ -40,7 +44,7 @@ class state_machine():
 
         self.load_arguments(method.arguments)
         self.load_arg_conversion(method.parameter_names)
-        self.load_locals(method.locals)
+        self.load_locals(method)
         self.storage.is_instance = method.is_instance
         return_val = self.execute_method(method)
 

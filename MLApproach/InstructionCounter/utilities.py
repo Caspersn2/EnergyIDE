@@ -125,7 +125,7 @@ def get_local_stack(text):
         matches = re.finditer(rf'(?:{locals_index})\s(?:{generic_type}|{primitive_type}|{struct_type}|{class_type})', text[start:end])
         for m in matches:
             put_variable_in_set(local_stack, m)
-        return local_stack
+    return local_stack
 
 
 def put_variable_in_set(locals, m):

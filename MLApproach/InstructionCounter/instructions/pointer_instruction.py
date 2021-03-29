@@ -44,7 +44,6 @@ class local_address_instruction(instruction):
         return ['ldloca', 'ldloca.s']
 
     def execute(self, storage):
-        local_value = storage.get_local(self.index)
-        cls = storage.get_class(local_value.get_datatype())
-        storage.push_stack(cls)
+        local_value = storage.get_local(self.index).get_value()
+        storage.push_stack(local_value)
         return Actions.NOP, None
