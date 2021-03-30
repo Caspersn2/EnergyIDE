@@ -12,6 +12,7 @@ class class_container():
         fields = get_fields(text, pos.start, len(name))
         self.fields = {key: fields[key] for key, value in fields.items() if not value.is_static}
         self.static_fields = {key: fields[key] for key, value in fields.items() if value.is_static}
+        self.superclass = None
         self.methods = None
         self.is_generic = False
         self.is_interface = False
@@ -25,7 +26,9 @@ class class_container():
 
     def get_method(self, class_container, method_name):
         method = self.find_method(method_name)
-        if class_container.is_interface and not method:
+        if not method and self.superclass:
+            return self.superclass.get_method(class_container, method_name)
+        elif not method and not self.superclass:
             raise NotImplementedError('Super class method search is not implemented yet')
         else:
             return method
