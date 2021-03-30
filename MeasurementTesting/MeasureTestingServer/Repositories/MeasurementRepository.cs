@@ -63,7 +63,15 @@ namespace Measurement.Repositories
                     {
                         byte[] rawAssembly = new byte[stream.Length];
                         stream.Read(rawAssembly, 0, (int)stream.Length);
-                        var ass = Assembly.Load(rawAssembly);
+                        Assembly ass = null;
+                        try
+                        {
+                            ass = Assembly.Load(rawAssembly);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
                         var classes = ass.GetTypes();
 
                         foreach (var currentClass in classes)
