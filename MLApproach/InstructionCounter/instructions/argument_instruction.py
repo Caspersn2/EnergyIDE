@@ -9,7 +9,10 @@ class load_argument_instruction(instruction):
     
     @classmethod
     def create(cls, name, elements):
-        index = cls.get_number(name, elements)
+        if elements and not elements[0].isnumeric():
+            index = elements[0]
+        else:
+            index = cls.get_number(name, elements)
         return load_argument_instruction(name, index)
 
     @classmethod
@@ -26,4 +29,25 @@ class load_argument_instruction(instruction):
         else:
             value = storage.get_argument(self.index).get_value()
         storage.push_stack(value)
+        return Actions.NOP, None
+
+
+
+class store_argument_instruction(instruction):
+    def __init__(self, name, var_name):
+        self.var_name = var_name
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, elements):
+        var_name = elements[0].replace('\'','')
+        return store_argument_instruction(name, var_name)
+
+    @classmethod
+    def keys(cls):
+        return ['starg', 'starg.s']
+
+    def execute(self, storage):
+        value = storage.pop_stack()
+        storage.add_argument(self.var_name, value)
         return Actions.NOP, None

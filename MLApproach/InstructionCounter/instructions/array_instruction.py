@@ -11,8 +11,9 @@ class newarr_instruction(instruction):
 
     def get_default(self, datatype):
         return {
-            'System.Boolean': 0
-        }.get(datatype, simulation_exception(datatype))
+            'System.Boolean': 0,
+            'System.String': ''
+        }[datatype]
 
     @classmethod
     def create(cls, name, elements):

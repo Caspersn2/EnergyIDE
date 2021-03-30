@@ -13,16 +13,17 @@ class arithmetic_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['add', 'mul', 'div', 'sub', 'rem']
+        return ['add', 'mul', 'div', 'div.un', 'sub', 'rem']
 
     def get_operator(_, name):
         return {
             'add': lambda x, y: y + x,
             'mul': lambda x, y: y * x,
             'div': lambda x, y: y / x,
+            'div.un': lambda x,y: y / x,
             'sub': lambda x, y: y - x,
             'rem': lambda x, y: y % x
-        }.get(name, simulation_exception(name))
+        }[name]
 
     def execute(self, storage):
         first = storage.pop_stack()
