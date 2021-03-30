@@ -58,4 +58,8 @@ class load_field_addr_instruction(instruction):
         return ['ldflda']
 
     def execute(self, storage):
-        raise NotImplementedError()
+        cls = storage.pop_stack()
+        field_name = self.field_name.split('::')[-1]
+        field = cls.get_state(field_name)
+        storage.push_stack(field)
+        return Actions.NOP, None
