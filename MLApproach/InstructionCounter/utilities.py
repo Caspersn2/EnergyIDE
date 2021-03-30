@@ -8,7 +8,7 @@ from objects.container_factory import create_class_container
 class_keywords = '(?:private|public|assembly|interface|sequential|abstract|protected|auto|ansi|nested|sealed|serializable|beforefieldinit)'
 method_instruction = r'\.method'
 class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+'
-locals_instruction = r'\.locals init'
+locals_instruction = r'\.locals (?:init)?'
 locals_index = r'\[[0-9]+\]'
 variable_name = r'\.?\'?[a-zA-Z<>\[][ _0-9a-zA-Z<>/\.\[\]`]*\'?'
 primitive_type = r'((?:object|float32|float64|bool|int16|int32|uint32|uint16|uint64|int64|int|string|char|void)\[?\]?)'
@@ -118,6 +118,7 @@ def get_all_classes(text):
 
 def get_local_stack(text):
     local_stack = {}
+    is_initialized = '.locals init' in text
     match = re.search(locals_instruction, text)
     if match:
         start = match.end()
@@ -125,7 +126,7 @@ def get_local_stack(text):
         matches = re.finditer(rf'(?:{locals_index})\s(?:{generic_type}|{primitive_type}|{struct_type}|{class_type})', text[start:end])
         for m in matches:
             put_variable_in_set(local_stack, m)
-    return local_stack
+    return local_stack, is_initialized
 
 
 def put_variable_in_set(locals, m):

@@ -16,7 +16,9 @@ class method():
         self.parameter_names = {x: i for i, x in enumerate(parameter_names)}
         self.__arguments = utilities.get_arguments(name)
         self.arguments = self.__arguments
-        self.locals = utilities.get_local_stack(text)
+        local_vars, is_init = utilities.get_local_stack(text)
+        self.locals = local_vars
+        self.is_locals_init = is_init
         self.data = instruction.get_all_instructions(self.text)
         self.is_generic = False
 
