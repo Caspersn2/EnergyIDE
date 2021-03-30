@@ -47,7 +47,7 @@ def count_instructions(args, text):
     elif not entry and not args.method:
         raise simulation_exception('No entry was found in the program, please specify one using the "-m" or "--method" command line argument')
 
-    if args.method == entry.name and args.counting_method == 'Simple':
+    if entry and args.method == entry.name and args.counting_method == 'Simple':
         for method in methods.values():
             execute(args, method, state)
     else:
