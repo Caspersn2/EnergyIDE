@@ -15,13 +15,14 @@ class state_machine():
 
     def load_locals(self, method_ref):
         variables = method_ref.locals
+        is_init = method_ref.is_locals_init
         if variables:
             for (k, v) in variables.items():
                 if '!' in v:
                     datatype = method_ref.get_concrete_type(v)
-                    self.storage.add_local(k, variable(k, datatype))
+                    self.storage.add_local(k, variable(k, datatype), is_init)
                 else:
-                    self.storage.add_local(k, variable(k, v))
+                    self.storage.add_local(k, variable(k, v), is_init)
 
 
     def load_arguments(self, variables):
@@ -42,6 +43,7 @@ class state_machine():
         else:
             self.storage.set_active_class(method.get_class())
 
+        self.storage.set_active_method(method)
         self.load_arguments(method.arguments)
         self.load_arg_conversion(method.parameter_names)
         self.load_locals(method)
@@ -49,7 +51,7 @@ class state_machine():
         return_val = self.execute_method(method)
 
         res = [res.name for res in self.executed]
-        result.add_results(Counter(res), method, 'Simulation')
+        result.add_results(Counter(res), method, 'Simulation', return_value = return_val)
         return return_val
 
 

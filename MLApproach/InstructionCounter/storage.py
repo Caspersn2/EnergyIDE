@@ -12,6 +12,7 @@ class storage():
         self.classes = classes
         self.methods = methods
         self.active_class = None
+        self.active_method = None
         self.is_instance = None
         self.static_fields = static_fields or self.obtain_static(classes)
 
@@ -25,6 +26,14 @@ class storage():
 
 
     # METHODS
+    def set_active_method(self, fun):
+        self.active_method = fun
+
+    
+    def get_active_method(self):
+        return self.active_method
+
+
     def get_method(self, key):
         method = key.split('::')[-1]
         if '<' in method and '>' in method:
@@ -94,8 +103,9 @@ class storage():
 
 
     # LOCALS
-    def add_local(self, name, value):
-        value.set_default(self)
+    def add_local(self, name, value, is_init = False):
+        if is_init:
+            value.set_default(self)
         self.locals[name] = value
 
     def get_local(self, key):
