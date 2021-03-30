@@ -1,8 +1,7 @@
 from instruction import instruction
 from action_enum import Actions
-from argument_generator import create_random_argument
 from utilities import is_library_call
-import copy
+import blacklist
 
 
 class call_instruction(instruction):
@@ -32,20 +31,21 @@ class call_instruction(instruction):
         return ['call']
 
     def execute(self, storage):
-        if self.is_library:
-            return Actions.NOP, create_random_argument(self.return_type)
-        else:
-            args = []
-            for _ in range(self.num_args):
-                args.append(storage.pop_stack())
+        if blacklist.contains(self.invocation_target):
+            return Actions.NOP, None
 
-            class_name, method_name = self.invocation_target.split('::')
-            if self.call_type == 'instance':
-                class_instance = storage.pop_stack()
-                storage.set_active_class(class_instance)
-            else:         
-                class_instance = storage.get_class(class_name)
-            
-            method = class_instance.get_method(class_instance, method_name)
-            method.set_parameters(args)
-            return Actions.CALL, method
+        args = []
+        for _ in range(self.num_args):
+            args.append(storage.pop_stack())
+
+        class_name, method_name = self.invocation_target.split('::')
+
+        if self.call_type == 'instance':
+            class_instance = storage.pop_stack()
+            storage.set_active_class(class_instance)
+        else:
+            class_instance = storage.get_class(class_name)
+        
+        method = class_instance.get_method(class_instance, method_name)
+        method.set_parameters(args)
+        return Actions.CALL, method

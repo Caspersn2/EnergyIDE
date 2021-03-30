@@ -2,7 +2,7 @@ import random
 from simulation_exception import simulation_exception
 
 
-primitive = ['char', 'bool', 'int32', 'float32', 'float64', 'string']
+primitive = ['char', 'bool', 'int32', 'uint32', 'float32', 'float64', 'string']
 array_primitives = [f'{x}[]' for x in primitive]
 
 
@@ -41,7 +41,7 @@ def generate_string(number):
 
 
 def convert_argument(value, datatype):
-    if datatype in ['bool', 'int32', 'char']:
+    if datatype in ['bool', 'int32', 'uint32', 'char']:
         return int(value)
     elif datatype in ['float32', 'float64']:
         return float(value)
@@ -56,7 +56,7 @@ def can_generate(datatype):
 
 def get_default(datatype):
     if can_generate(datatype):
-        if datatype in ['char', 'int32', 'bool']:
+        if datatype in ['char', 'int32', 'uint32', 'bool']:
             return 0
         elif datatype in ['float32', 'float64']:
             return 0.0

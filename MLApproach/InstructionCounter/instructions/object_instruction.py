@@ -1,3 +1,4 @@
+from objects.library_container import library_container
 from objects.delegate import delegate
 from objects.class_container import class_container
 from argument_generator import create_random_argument
@@ -10,7 +11,10 @@ import copy
 class object_instructions(instruction):
     def get_method(_, target_name, storage, cls):
         class_name, method_name = target_name.split('::')
-        class_instance = storage.get_class(class_name)
+        if is_library_call(class_name):
+            class_instance = library_container(class_name)
+        else:
+            class_instance = storage.get_class(class_name)
         method = cls.get_method(class_instance, method_name)
         return method
 
@@ -77,17 +81,19 @@ class new_object_instruction(object_instructions):
 
 
 class callvirt_instruction(object_instructions):
-    def __init__(self, name, method_name, return_type):
+    def __init__(self, name, method_name, return_type, is_instance):
         self.method_name = method_name
         self.return_type = return_type
+        self.is_instance = is_instance
         super().__init__(name)
 
 
     @classmethod
     def create(cls, name, elements):
+        is_instance = 'instance' in elements
         return_type = elements[1]
         method_name = ' '.join(elements[2:])
-        return callvirt_instruction(name, method_name, return_type)
+        return callvirt_instruction(name, method_name, return_type, is_instance)
 
 
     @classmethod
@@ -96,7 +102,7 @@ class callvirt_instruction(object_instructions):
 
 
     def execute(self, storage):
-        if is_library_call(self.method_name):
+        if not self.is_instance:
             temp_args = get_arguments(self.method_name)
             for _ in temp_args:
                 storage.pop_stack()
