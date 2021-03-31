@@ -24,6 +24,14 @@ class class_container():
         self.methods = utilities.get_by_method(self.text, self)
 
 
+    def clean(self, classes):
+        nested_end = 0
+        for cls in classes.values():
+            if self.name in cls.name and self.name != cls.name:
+                nested_end = cls.position.end
+        self.text = self.text[nested_end:]
+
+
     def get_method(self, class_container, method_name):
         method = self.find_method(method_name)
         if not method and self.superclass:

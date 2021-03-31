@@ -31,10 +31,12 @@ def execute(args, method, state_machine):
 
 def count_instructions(args, text):
     ## Split all code into methods
-    classes = utilities.get_all_classes(text)
+    program_classes = utilities.get_all_classes(text)
     external_libs = get_libraries(args)
-    for key, value in external_libs.items():
-        classes[key] = value
+    classes = {**program_classes, **external_libs}
+
+    for clzz in classes:
+       classes[clzz].clean(classes) 
 
     for cls in classes:
         classes[cls].load_methods()
