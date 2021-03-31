@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CsharpRAPL\CsharpRAPL.csproj" />
-    <ProjectReference Include="..\..\LibraryBenchmark\benchmark.csproj" />
+    <ProjectReference Include="..\..\Libraries\CsharpRAPL\CsharpRAPL.csproj" />
+    <ProjectReference Include="..\..\Libraries\LibraryBenchmark\benchmark.csproj" />
   </ItemGroup>
 
 </Project>

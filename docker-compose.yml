@@ -1,0 +1,30 @@
+version: "3.5" # We use version 3.5 syntax
+
+services: # Here we define our service(s)
+  #extension-service: # The name of the service
+  #  container_name: extension-container # Container name
+  #  build: 
+  #    context: ./EnergyExtension
+  #    dockerfile: Dockerfile # Location of our Dockerfile
+  #  volumes: 
+  #    - ./EnergyExtension:/workspace:cached
+  #    - ./MLApproach/clbg_benchmarks/binary-trees:/workspace/binary-trees
+  #  command: /bin/sh -c "while sleep 1000; do :; done"
+
+  ml-service: # The name of the service
+    container_name: machine-learning-container # Container name
+    build: 
+      context: ./MLApproach
+      dockerfile: Dockerfile # Location of our Dockerfile
+    ports: # Port mapping
+      - "5002:5002"
+
+  rapl-service:
+    container_name: rapl-container
+    build:
+      context: ./
+      dockerfile: ./MeasurementTesting/Dockerfile
+    volumes:
+      - ./Libraries:/src/
+    ports:
+      - "5000:5000"
