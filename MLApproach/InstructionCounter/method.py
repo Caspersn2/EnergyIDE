@@ -68,6 +68,10 @@ class method():
         return copy.deepcopy(self.cls)
 
 
+    def __repr__(self) -> str:
+        return f'({self.name} -- {self.__class__})'
+
+
 class generic_method(method):
     def __init__(self, name, cls, prototype, return_type, parameter_names, text):
         super().__init__(name, cls, prototype, return_type, parameter_names, text)

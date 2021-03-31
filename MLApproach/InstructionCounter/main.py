@@ -32,7 +32,9 @@ def execute(args, method, state_machine):
 def count_instructions(args, text):
     ## Split all code into methods
     classes = utilities.get_all_classes(text)
-    classes = {**classes, **get_libraries(args)}
+    external_libs = get_libraries(args)
+    for key, value in external_libs.items():
+        classes[key] = value
 
     for cls in classes:
         classes[cls].load_methods()
@@ -67,7 +69,8 @@ def get_libraries(args):
     if args.library:
         for lib in args.library:
             with open(lib, 'r') as lib_text:
-                classes = {**classes, **utilities.get_all_classes(lib_text.read())}
+                for key, value in utilities.get_all_classes(lib_text.read()).items():
+                    classes[key] = value
     return classes
 
 

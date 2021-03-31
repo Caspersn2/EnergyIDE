@@ -1,11 +1,11 @@
 class_blacklist = {
-    '[System.Console]System.Console'
+    'System.Console'
 }
 
 method_blacklist = {
-    '[System.Runtime]System.Object::.ctor()',
-    '[System.Runtime]System.String::Format(string, object)',
-    '[System.Runtime]System.String::Format(string, object, object)'
+    'System.Object::.ctor()',
+    'System.String::Format(string, object)',
+    'System.String::Format(string, object, object)'
 }
 
 def contains(invocation):

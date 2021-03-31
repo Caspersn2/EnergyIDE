@@ -4,7 +4,7 @@ from utilities import is_generic, get_args_between
 
 
 class storage():
-    def __init__(self, classes, methods, static_fields = None) -> None:
+    def __init__(self, classes, methods, static_fields = None, active_value = None) -> None:
         self.stack = []
         self.locals = {}
         self.arguments = {}
@@ -13,6 +13,7 @@ class storage():
         self.methods = methods
         self.active_class = None
         self.active_method = None
+        self.active_value = active_value
         self.is_instance = None
         self.static_fields = static_fields or self.obtain_static(classes)
 
@@ -22,7 +23,19 @@ class storage():
         classes = storage_class.classes
         methods = storage_class.methods
         static_fields = storage_class.static_fields
-        return storage(classes, methods, static_fields)
+        active_value = storage_class.active_value
+        return storage(classes, methods, static_fields, active_value)
+
+
+
+    # ACTIVE VALUE
+    def set_active_value(self, value):
+        self.active_value = value
+
+
+    def get_active_value(self):
+        return self.active_value
+
 
 
     # METHODS
@@ -43,6 +56,7 @@ class storage():
         else:
             raise simulation_exception(f"The desired method '{key}' was not found in the list of methods")
 
+
     def find_generic(self, method):
         method_name = method.split('::')[-1]
         if '<' in method_name and '>' in method_name:
@@ -55,6 +69,7 @@ class storage():
         return None
 
 
+
     # STATIC FIELDS
     def obtain_static(_, classes):
         combined = {}
@@ -65,11 +80,13 @@ class storage():
                 combined[field_name] = variable(field_name, datatype)
         return combined
 
+
     def get_static_field(self, key):
         if key in self.static_fields:
             return self.static_fields[key].get_value()
         else:
             raise simulation_exception(f'The static_field "{key}" was not found in the list of static fields')
+
 
     def set_static_field(self, key, value):
         if key in self.static_fields:
@@ -78,6 +95,7 @@ class storage():
             raise simulation_exception(f'The static_field "{key}" was not found in the list of static fields')
 
     
+
     # CLASSES
     def get_class(self, key):
         if is_generic(key):
@@ -91,15 +109,19 @@ class storage():
             raise simulation_exception(f'The class: "{key}" was not found in the list of classes')
 
 
+
     # STACK
     def pop_stack(self):
         return self.stack.pop()
 
+
     def push_stack(self, value):
         self.stack.append(value)
 
+
     def is_stack_empty(self):
         return len(self.stack) == 0
+
 
 
     # LOCALS
@@ -107,6 +129,7 @@ class storage():
         if is_init:
             value.set_default(self)
         self.locals[name] = value
+
 
     def get_local(self, key):
         if type(key) == str:
@@ -116,12 +139,14 @@ class storage():
             return self.locals[real_key]
 
 
+
     # ARGUMENTS
     def add_argument(self, name, value):
         if type(value) == variable:
             self.arguments[name] = value
         else:
             self.arguments[name] = variable(name, value)
+
 
     def get_argument(self, key):
         if type(key) == str:
@@ -131,9 +156,11 @@ class storage():
             return self.arguments[real_key]
 
     
+
     # ACTIVE CLASS
     def set_active_class(self, cls):
         self.active_class = cls
+
 
     def get_active_class(self):
         return self.active_class

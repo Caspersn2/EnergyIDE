@@ -10,7 +10,7 @@ method_instruction = r'\.method'
 class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+'
 locals_instruction = r'\.locals (?:init)?'
 locals_index = r'\[[0-9]+\]'
-variable_name = r'\.?\'?[a-zA-Z<>\[][ _0-9a-zA-Z<>/\.\[\]`]*\'?'
+variable_name = r'\.?\'?[a-zA-Z<>\[][ _0-9a-zA-Z<>/\.\[\]`\&\*]*\'?'
 primitive_type = r'((?:object|float32|float64|bool|int16|int32|uint32|uint16|uint64|int64|int|string|char|void)\[?\]?)'
 struct_type = r'(?:valuetype)\s(.+)'
 library_returntype = fr'\[{variable_name}\]{variable_name}'
@@ -45,7 +45,7 @@ def remove_parameter_names(name):
     parameter_names = []
     start = re.match(variable_name, name)
     if start:
-        matches = re.finditer(f'(?P<parameter>{variable_type}|{library_returntype}|{generic_type})\s(?P<var>{variable_name}),?', name[start.end(0)+1:-1])
+        matches = re.finditer(f'(?:valuetype\s)?(?P<parameter>{variable_type}|{library_returntype}|{generic_type})\s(?P<var>{variable_name}),?', name[start.end(0)+1:-1])
         
         if "'" in start.group():
             method_result += start.group() + "("

@@ -1,3 +1,4 @@
+from simulation_exception import simulation_exception
 from instruction import instruction
 from action_enum import Actions
 
@@ -62,5 +63,28 @@ class load_field_addr_instruction(instruction):
         field_name = self.field_name.split('::')[-1]
         field = cls.get_state(field_name)
         class_instance = field.get_datatype(storage)
+        storage.set_active_value(field.get_value())
         storage.push_stack(class_instance)
         return Actions.NOP, None
+
+    
+
+class load_indirect_instruction(instruction):
+    def __init__(self, name):
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, _):
+        return load_indirect_instruction(name)
+
+    @classmethod
+    def keys(cls):
+        return ['ldind.i', 'ldind.i1', 'ldind.i2','ldind.i4', 'ldind.i8']
+
+    def execute(self, storage):
+        active_value = storage.get_active_value()
+        if active_value:
+            storage.push_stack(active_value)
+            return Actions.NOP, None
+        else:
+            raise simulation_exception('There is no active value in storage to load as an indirect value')
