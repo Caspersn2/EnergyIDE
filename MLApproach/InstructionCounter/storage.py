@@ -1,6 +1,6 @@
 from simulation_exception import simulation_exception
 from variable import variable
-from utilities import is_library_call, is_generic, get_args_between
+from utilities import is_generic, get_args_between
 
 
 class storage():

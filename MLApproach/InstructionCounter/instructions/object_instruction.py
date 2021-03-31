@@ -1,20 +1,17 @@
-from objects.library_container import library_container
 from objects.delegate import delegate
 from objects.class_container import class_container
 from argument_generator import create_random_argument
 from instruction import instruction
 from action_enum import Actions
-from utilities import is_library_call, get_arguments, primitive_type
+from utilities import get_arguments, is_library_call, remove_library_names
+import blacklist
 import copy
 
 
 class object_instructions(instruction):
     def get_method(_, target_name, storage, cls):
         class_name, method_name = target_name.split('::')
-        if is_library_call(class_name):
-            class_instance = library_container(class_name)
-        else:
-            class_instance = storage.get_class(class_name)
+        class_instance = storage.get_class(class_name)
         method = cls.get_method(class_instance, method_name)
         return method
 
@@ -39,6 +36,8 @@ class new_object_instruction(object_instructions):
     @classmethod
     def create(cls, name, elements):
         constructor = ' '.join(elements[2:]).replace('class ', '')
+        if is_library_call(constructor):
+            constructor = remove_library_names(constructor)
         class_name = constructor.split('::')[0]
         return new_object_instruction(name, class_name, constructor)
 
@@ -47,11 +46,7 @@ class new_object_instruction(object_instructions):
         return ['newobj']
 
     def execute(self, storage):
-        if is_library_call(self.class_name):
-            temp_args = get_arguments(self.constructor)
-            argument_list = [v for _,v in temp_args.items() if v in primitive_type]
-            for _ in argument_list:
-                storage.pop_stack()
+        if blacklist.contains(self.constructor):
             return Actions.NOP, None
         else:
             cls, args = self.get_class_and_args(storage)
@@ -93,6 +88,8 @@ class callvirt_instruction(object_instructions):
         is_instance = 'instance' in elements
         return_type = elements[1]
         method_name = ' '.join(elements[2:])
+        if is_library_call(method_name):
+            method_name = remove_library_names(method_name)
         return callvirt_instruction(name, method_name, return_type, is_instance)
 
 

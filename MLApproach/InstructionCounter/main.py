@@ -32,6 +32,8 @@ def execute(args, method, state_machine):
 def count_instructions(args, text):
     ## Split all code into methods
     classes = utilities.get_all_classes(text)
+    classes = {**classes, **get_libraries(args)}
+
     for cls in classes:
         classes[cls].load_methods()
     entry, methods = get_methods_from_classes(classes)
@@ -59,6 +61,14 @@ def count_instructions(args, text):
 
     result.output(args.output)
     return result.get_results()
+
+def get_libraries(args):
+    classes = {}
+    if args.library:
+        for lib in args.library:
+            with open(lib, 'r') as lib_text:
+                classes = {**classes, **utilities.get_all_classes(lib_text.read())}
+    return classes
 
 
 def get_methods_from_classes(classes):
@@ -88,6 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--list', action='store_true', help='Will print a list of available methods')
     parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
     parser.add_argument('-o', '--output', type=str, help='The name of the output file')
+    parser.add_argument('--library', type=str, nargs='+', help='Names the library files which should be loaded into the simulator')
     parser.add_argument('-d', '--debug', action='store_true', help='Prints all of the args and their name after parsing')
     args = parser.parse_args()
 
