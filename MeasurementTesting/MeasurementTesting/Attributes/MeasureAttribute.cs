@@ -39,17 +39,6 @@ namespace MeasurementTesting.Attributes
                 }
             }
         }
-
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append("Measurements: ");
-            foreach(var measurement in Measurements)
-            {
-                builder.Append(measurement.ToString());
-            }
-            return builder.ToString();
-        }
     }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
@@ -88,7 +77,7 @@ namespace MeasurementTesting.Attributes
             
             if (setup.Count() > 1)
             {
-                throw new Exception("There has to be a single setup method in this class");
+                throw new Exception("There can only be zero or one setup method in this class");
             }
 
             return setup.Any() ? setup.First() : null;
@@ -108,6 +97,7 @@ namespace MeasurementTesting.Attributes
         }
     }
 
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class MeasureSetupAttribute : Attribute
     {
         public MeasureSetupAttribute()
@@ -116,6 +106,7 @@ namespace MeasurementTesting.Attributes
         }
     }
 
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class MeasureCleanupAttribute : Attribute
     {
         public MeasureCleanupAttribute()
