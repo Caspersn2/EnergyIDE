@@ -1,5 +1,4 @@
 from instruction import instruction
-from simulation_exception import simulation_exception
 from action_enum import Actions
 
 
@@ -20,7 +19,7 @@ class logical_instruction(instruction):
             'and': lambda x, y: x and y,
             'or': lambda x, y: x or y,
             'xor': lambda x, y: bool(x) ^ bool(y)
-        }.get(name, simulation_exception(name))
+        }[name]
 
     def execute(self, storage):
         first = storage.pop_stack()

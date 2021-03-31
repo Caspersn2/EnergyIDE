@@ -1,6 +1,5 @@
 from instruction import instruction
 from action_enum import Actions
-from simulation_exception import simulation_exception
 
 
 class unconditional_instruction(instruction):
@@ -45,7 +44,7 @@ class double_conditional_instruction(instruction):
             'ble': lambda x, y: y <= x,
             'blt': lambda x, y: y < x,
             'bne': lambda x, y: y != x
-        }.get(key, simulation_exception(key))
+        }[key]
 
     def execute(self, storage):
         first = storage.pop_stack()
@@ -83,7 +82,7 @@ class single_conditional_instruction(instruction):
             'brtrue.s': lambda x: x == 1,
             'brzero': lambda x: x == 0,
             'brzero.s': lambda x: x == 0
-        }.get(name, simulation_exception(name))
+        }[name]
 
     def execute(self, storage):
         value = storage.pop_stack()

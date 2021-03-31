@@ -1,4 +1,3 @@
-from simulation_exception import simulation_exception
 from instruction import instruction
 from action_enum import Actions
 

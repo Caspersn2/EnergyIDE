@@ -1,5 +1,4 @@
 from instruction import instruction
-from simulation_exception import simulation_exception
 from action_enum import Actions
 
 
@@ -22,7 +21,7 @@ class relational_instruction(instruction):
             'cgt.un': lambda x, y: y > x,
             'clt': lambda x, y: y < x,
             'clt.un': lambda x, y: y < x
-        }.get(name, simulation_exception(name))
+        }[name]
 
     def execute(self, storage):
         first = storage.pop_stack()

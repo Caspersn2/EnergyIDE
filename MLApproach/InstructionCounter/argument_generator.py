@@ -1,4 +1,5 @@
 import random
+import copy
 from simulation_exception import simulation_exception
 
 
@@ -66,6 +67,14 @@ def get_default(datatype):
             return []
     else:
         raise simulation_exception(f'The type: "{datatype}" is not supported for default value')
+
+
+
+def get_primitive(type, storage):
+    if type.datatype == 'int32':
+        return copy.deepcopy(storage.get_class('System.Int32'))
+    else:
+        return None
 
 
 def create_random_argument(datatype):

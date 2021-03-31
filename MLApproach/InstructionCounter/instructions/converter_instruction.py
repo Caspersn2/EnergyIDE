@@ -1,4 +1,3 @@
-from simulation_exception import simulation_exception
 from instruction import instruction
 from action_enum import Actions
 
@@ -15,14 +14,15 @@ class convert_instruction(instruction):
     def keys(cls):
         return ['conv.r4', 'conv.r8', 'conv.r.un']
 
-    def convert(self, name):
+    def convert(_, name):
         return {
             'conv.r4': lambda x: float(x),
             'conv.r8': lambda x: float(x),
             'conv.r.un': lambda x: float(x)
-        }.get(name, simulation_exception(name))
+        }[name]
 
     def execute(self, storage):
         value = storage.pop_stack()
         converted = self.convert(self.name)(value)
         storage.push_stack(converted)
+        return Actions.NOP, None

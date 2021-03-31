@@ -61,5 +61,6 @@ class load_field_addr_instruction(instruction):
         cls = storage.pop_stack()
         field_name = self.field_name.split('::')[-1]
         field = cls.get_state(field_name)
-        storage.push_stack(field)
+        class_instance = field.get_datatype(storage)
+        storage.push_stack(class_instance)
         return Actions.NOP, None
