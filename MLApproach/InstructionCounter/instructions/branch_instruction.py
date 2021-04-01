@@ -80,14 +80,14 @@ class single_conditional_instruction(instruction):
 
     def get_condition(self, name):
         return {
-            'brfalse': lambda x: x == 0,
-            'brfalse.s': lambda x: x == 0,
-            'brnull': lambda x: x == 0,
-            'brnull.s': lambda x: x == 0,
-            'brtrue': lambda x: x == 1,
-            'brtrue.s': lambda x: x == 1,
-            'brzero': lambda x: x == 0,
-            'brzero.s': lambda x: x == 0
+            'brfalse': lambda x: bool(x) == 0,
+            'brfalse.s': lambda x: bool(x) == 0,
+            'brnull': lambda x: bool(x) == 0,
+            'brnull.s': lambda x: bool(x) == 0,
+            'brtrue': lambda x: bool(x) == 1,
+            'brtrue.s': lambda x: bool(x) == 1,
+            'brzero': lambda x: bool(x) == 0,
+            'brzero.s': lambda x: bool(x) == 0
         }[name]
 
     def execute(self, storage):

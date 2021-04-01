@@ -115,7 +115,7 @@ class callvirt_instruction(object_instructions):
             generic_method = storage.find_generic(self.method_name)
 
             if function_replacement.contains(self.method_name):
-                res = function_replacement.call(self.method_name, args)
+                res = function_replacement.call(self.method_name, args, storage)
                 storage.push_stack(res)
                 return Actions.NOP, None
 

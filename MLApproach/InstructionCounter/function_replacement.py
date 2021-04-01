@@ -1,12 +1,12 @@
+from variable import variable
+import argument_generator
+
 replacement = {
-    "System.String::FastAllocateString(int32)": lambda x: '' * x[0]
+    "System.String::FastAllocateString(int32)": lambda _, storage: argument_generator.get_primitive('string', storage)
 }
 
-def call(invocation, args):
-    if invocation in replacement:
-        return replacement[invocation](args)
-    else:
-        return None
+def call(invocation, args, storage):
+    return replacement[invocation](args, storage)
 
 
 def contains(invocation):

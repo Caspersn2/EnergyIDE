@@ -1,8 +1,9 @@
 from utilities import is_library_call, remove_library_names
 from instruction import instruction
 from action_enum import Actions
-import blacklist
 import function_replacement
+import blacklist
+import re
 
 
 class call_instruction(instruction):
@@ -27,6 +28,8 @@ class call_instruction(instruction):
 
         if is_library_call(target):
             target = remove_library_names(target)
+        if 'modreq' in target or 'modopt' in target:
+            target = re.sub(r'(?:modreq|modopt)\(.*?\)', '', target).strip()
         return call_instruction(name, ret_type, target, call_type)
 
     @classmethod
@@ -44,7 +47,7 @@ class call_instruction(instruction):
         class_name, method_name = self.invocation_target.split('::')
 
         if function_replacement.contains(self.invocation_target):
-            res = function_replacement.call(self.invocation_target, args)
+            res = function_replacement.call(self.invocation_target, args, storage)
             storage.push_stack(res)
             return Actions.NOP, None
 
