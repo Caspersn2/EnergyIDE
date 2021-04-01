@@ -460,6 +460,8 @@ namespace Modeling
             runMethod(method, ilg);
         }
         #endregion
+        #region Load Null, Str, 
+        [Measure(10000, new[] { "Empty" })] // 0x14
         public void Ldnull()
         {
             var (method, ilg) = newMethod();
@@ -468,7 +470,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty" })]
+        [Measure(10000, new[] { "Empty" })]
         public void Ldstr(string value)
         {
             var (method, ilg) = newMethod();
@@ -476,6 +478,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
+        #endregion
         #endregion
 
         #region Operations (Add, Mul, Sub)
