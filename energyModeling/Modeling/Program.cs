@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -32,7 +32,7 @@ namespace Modeling
             XmlNodeList allMethods = doc.SelectNodes("/class/method");
             XmlNodeList remainingMethods = allMethods;
 
-            Dictionary<string,double> allMeans = new Dictionary<string, double>();
+            Dictionary<string, double> allMeans = new Dictionary<string, double>();
 
             var current = 0;
             var change = false;
@@ -41,27 +41,31 @@ namespace Modeling
             {
                 XmlNode methodNode = remainingMethods.Item(current);
 
-                if (current >= remainingMethods.Count) {
-                    if (change) {
+                if (current >= remainingMethods.Count)
+                {
+                    if (change)
+                    {
                         current = 0;
                         change = false;
                         continue;
                     }
-                    else {
+                    else
+                    {
                         running = false;
                         break;
                     }
                 }
 
                 if (allMeans.ContainsKey(methodNode.SelectSingleNode("name").InnerText) 
-                    || methodNode.SelectSingleNode("result").InnerText.Equals("Failed")){
+                    || methodNode.SelectSingleNode("result").InnerText.Equals("Failed"))
+                {
                     current++;
                     continue;
                 }
 
                 // Check for dependencies
                 XmlNodeList instructionNodes = methodNode.SelectNodes("dependencies/instruction");
-                Dictionary<string,int> dependencies = new Dictionary<string, int>();
+                Dictionary<string, int> dependencies = new Dictionary<string, int>();
                 
                 // check if the method actually has dependencies
                 if (instructionNodes.Count > 0)
@@ -69,15 +73,16 @@ namespace Modeling
                     foreach (XmlNode instruction in instructionNodes)
                     {
                         string name = instruction.InnerText;
-                        if(dependencies.ContainsKey(name))
+                        if (dependencies.ContainsKey(name))
                             dependencies[name]++;
-                        else dependencies.Add(name,1);
+                        else dependencies.Add(name, 1);
                     }
                 }
 
                 // Checks if all dependencies is in allMeans
                 var hasAll = dependencies.All(dep => allMeans.ContainsKey(dep.Key));
-                if (hasAll) {
+                if (hasAll)
+                {
                     double newMean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
                     foreach (var dependency in dependencies)
                         newMean -= allMeans[dependency.Key] * dependency.Value;
