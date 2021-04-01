@@ -1612,130 +1612,175 @@ namespace Modeling
         }
 
         #endregion
+        #region Store element in array
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem()
         {
             var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
             
+            //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_1);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem, typeof(int));
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
-        public void Stloc_2()
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I()
         {
             var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
             
+            //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_2);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
-        public void Stloc_3()
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I1()
         {
             var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
-            var test4 = ilg.DeclareLocal(typeof(int));
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
             
+            //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_3);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I1);
             
             runMethod(method, ilg);
         }
-
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S", "EmptyDeclareLocal" })]
-        public void Stloc_S()
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I2()
         {
             var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            
-            ilg.Emit(OpCodes.Ldc_I4_S, 0);
-            ilg.Emit(OpCodes.Stloc_S, 0);
-            
-            runMethod(method, ilg);
-        }
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_0" })]
-        public void Ldloc_0()
-        {
-            var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            
+            //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloc_0);
-            ilg.Emit(OpCodes.Pop);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I2);
             
             runMethod(method, ilg);
         }
-
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_1" })]
-        public void Ldloc_1()
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I4()
         {
             var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
             
+            //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_1);
-            ilg.Emit(OpCodes.Ldloc_1);
-            ilg.Emit(OpCodes.Pop);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I4);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_2" })]
-        public void Ldloc_2()
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I8()
         {
             var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
             
+            //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_2);
-            ilg.Emit(OpCodes.Ldloc_2);
-            ilg.Emit(OpCodes.Pop);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I8);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_3" })]
-        public void Ldloc_3()
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_R4" })]
+        public void Stelem_R4()
         {
             var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
-            var test4 = ilg.DeclareLocal(typeof(int));
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
             
+            //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_3);
-            ilg.Emit(OpCodes.Ldloc_3);
-            ilg.Emit(OpCodes.Pop);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_R4, 0.0);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_R4);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S", "EmptyDeclareLocal", "Stloc_S" })]
-        public void Ldloc_S()
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_R8" })]
+        public void Stelem_R8()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(float));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_R8, 0.0);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_R8);
+            
+            runMethod(method, ilg);
+        }
+
+
+        #endregion
         {
             var (method, ilg) = newMethod();
             
