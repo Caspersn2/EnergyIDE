@@ -1063,7 +1063,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        #region Compare
         public void Ceq(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -1139,6 +1139,7 @@ namespace Modeling
             
             runMethod(method, ilg);
         }
+        #endregion
 
         #region Conv
 
