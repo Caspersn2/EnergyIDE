@@ -1422,10 +1422,13 @@ namespace Modeling
 
         #endregion
 
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg(int boolValue, int value1)
+        [Measure(10000, new[] { "Empty" })]
+        public void Nop()
         {
             var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Nop);
+            runMethod(method, ilg);
+        }
         #region Stores
         #region Store Locals
         [Measure(10000, new[] { "Empty", "Ldc_I4_0" })]
