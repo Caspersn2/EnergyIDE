@@ -310,8 +310,74 @@ namespace Modeling
             runMethod(method, ilg);
         }
         #endregion
+        #region Load Arguments
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg(int boolValue, int value1)
+        {
+            var (method, ilg) = newMethod();
 
-        [Measure(10000, new []{ "Empty" })] // 0x14
+            ilg.Emit(OpCodes.Ldarg, boolValue);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_0(int value0)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_0);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_1(int value0, int value1)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_1);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_2(int value0, int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_2);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_3(int value0, int value1, int value2, int value3)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_3);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_S(byte value)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_S, value);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+
+        }
+        #endregion
         public void Ldnull()
         {
             var (method, ilg) = newMethod();
