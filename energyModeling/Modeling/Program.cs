@@ -129,6 +129,11 @@ namespace Modeling
         }
     }
 
+    public class Fields
+    {
+        public static int sfield;
+        public int field { get; set; }
+    }
     [MeasureClass(false, 0.005F, MeasurementType.Timer)]
     class measureClass
     {
@@ -147,6 +152,7 @@ namespace Modeling
 
         #region All IL-code tests
 
+        #region Empties
         [Measure(10000)]
         public void Empty()
         {
@@ -154,6 +160,26 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
+        [Measure(1000, new[] { "Empty" })]
+        public void EmptyDeclareLocal()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty" })]
+        public void EmptyGetField()
+        {
+            var (method, ilg) = newMethod();
+
+            FieldInfo fi = typeof(Fields).GetField("sfield");
+            runMethod(method, ilg);
+        }
+
+        #endregion
         #region Loads
         #region Load (INT, FLOAT): Codes: 0x20 - 0x22
         [Measure(10000, new []{ "Empty" })] // ox20
