@@ -378,6 +378,88 @@ namespace Modeling
 
         }
         #endregion
+        #region Load Locals
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_0" })]
+        public void Ldloc_0()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloc_0);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_1" })]
+        public void Ldloc_1()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+            var test2 = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_1);
+            ilg.Emit(OpCodes.Ldloc_1);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_2" })]
+        public void Ldloc_2()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+            var test2 = ilg.DeclareLocal(typeof(int));
+            var test3 = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_2);
+            ilg.Emit(OpCodes.Ldloc_2);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_3" })]
+        public void Ldloc_3()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+            var test2 = ilg.DeclareLocal(typeof(int));
+            var test3 = ilg.DeclareLocal(typeof(int));
+            var test4 = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_3);
+            ilg.Emit(OpCodes.Ldloc_3);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_S", "EmptyDeclareLocal", "Stloc_S" })]
+        public void Ldloc_S()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_S, 0);
+            ilg.Emit(OpCodes.Stloc_S, 0);
+            ilg.Emit(OpCodes.Ldloc_S);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+        #endregion
         public void Ldnull()
         {
             var (method, ilg) = newMethod();
