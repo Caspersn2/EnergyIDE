@@ -27,6 +27,9 @@ class load_float_instruction(instruction):
         storage.push_stack(self.value)
         return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.value}'
+
 
 
 class load_int_instruction(instruction):
@@ -56,3 +59,6 @@ class load_int_instruction(instruction):
     def execute(self, storage):
         storage.push_stack(self.value)
         return Actions.NOP, None
+
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.value}'

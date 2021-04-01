@@ -19,6 +19,9 @@ class unconditional_instruction(instruction):
     def execute(self, _):
         return Actions.JUMP, self.jump_target
 
+    def __repr__(self) -> str:
+        return f'{self.name} --> {self.jump_target}'
+
 
 
 class double_conditional_instruction(instruction):
@@ -56,6 +59,9 @@ class double_conditional_instruction(instruction):
         else:
             return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return f'{self.name} --> {self.jump_target}'
+
 
 
 class single_conditional_instruction(instruction):
@@ -92,6 +98,9 @@ class single_conditional_instruction(instruction):
         else:
             return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return f'{self.name} --> {self.jump_target}'
+
 
 
 class switch_instruction(instruction):
@@ -118,3 +127,5 @@ class switch_instruction(instruction):
         else:
             return Actions.NOP, None
             
+    def __repr__(self) -> str:
+        return f'{self.name} = {self.jump_table}'

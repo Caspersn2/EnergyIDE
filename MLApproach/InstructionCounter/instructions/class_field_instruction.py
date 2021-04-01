@@ -22,6 +22,9 @@ class store_class_field(instruction):
         cls.state[self.field_name].set_value(value)
         return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.field_name}'
+
 
 
 class load_class_field(instruction):
@@ -43,3 +46,6 @@ class load_class_field(instruction):
         value = cls.state[self.field_name].get_value()
         storage.push_stack(value)
         return Actions.NOP, None
+
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.field_name}'

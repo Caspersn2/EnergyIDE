@@ -57,3 +57,6 @@ class call_instruction(instruction):
         method = class_instance.get_method(class_instance, method_name)
         method.set_parameters(args)
         return Actions.CALL, method
+
+    def __repr__(self) -> str:
+        return f'{self.name} -- ({self.invocation_target})'

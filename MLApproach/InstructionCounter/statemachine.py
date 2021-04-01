@@ -1,4 +1,5 @@
 from collections import Counter
+from stacktrace import stacktrace
 import result
 from storage import storage
 from action_enum import Actions
@@ -9,7 +10,7 @@ from variable import variable
 class state_machine():
     def __init__(self, storage_class):
         self.storage = storage.copy(storage_class)
-        self.executed = []
+        self.stacktrace = stacktrace()
         self.temp = None
 
 
@@ -50,7 +51,7 @@ class state_machine():
         self.storage.is_instance = method.is_instance
         return_val = self.execute_method(method)
 
-        res = [res.name for res in self.executed]
+        res = [res.name for res in self.stacktrace.get_executed()]
         result.add_results(Counter(res), method, 'Simulation', return_value = return_val)
         return return_val
 
@@ -78,8 +79,14 @@ class state_machine():
         return_val = None
         while index != len(instruction_index):
             current = instruction_index[index]
-            action, value = instructions[current].execute(self.storage)
-            self.executed.append(instructions[current])
+
+            try:
+                self.stacktrace.add_step(instructions[current], current, method)
+                action, value = instructions[current].execute(self.storage)
+                self.stacktrace.step_done()
+            except Exception as e:
+                print(self.stacktrace.get_stacktrace())
+                raise e
 
             if action == Actions.JUMP:
                 index = instruction_index.index(value)

@@ -25,6 +25,9 @@ class load_ref_argument_instruction(instruction):
         storage.push_stack(value)
         return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.variable_name}'
+
 
 
 class load_field_addr_instruction(instruction):
@@ -66,6 +69,9 @@ class load_field_addr_instruction(instruction):
         storage.set_active_value(field.get_value())
         storage.push_stack(class_instance)
         return Actions.NOP, None
+
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.field_name}'
 
     
 

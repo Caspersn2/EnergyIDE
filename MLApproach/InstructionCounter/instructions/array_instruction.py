@@ -29,6 +29,9 @@ class newarr_instruction(instruction):
         storage.push_stack(arr)
         return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return f'{self.name} ({self.datatype})'
+
 
 
 class array_update_instruction(instruction):

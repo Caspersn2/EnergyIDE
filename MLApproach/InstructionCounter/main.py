@@ -33,10 +33,7 @@ def count_instructions(args, text):
     ## Split all code into methods
     program_classes = utilities.get_all_classes(text)
     external_libs = get_libraries(args)
-    classes = {**program_classes, **external_libs}
-
-    for clzz in classes:
-       classes[clzz].clean(classes) 
+    classes = {**program_classes, **external_libs} 
 
     for cls in classes:
         classes[cls].load_methods()
@@ -116,7 +113,7 @@ if __name__ == '__main__':
         subprocess.call(f'ilspycmd {file_location} --ilcode -o cil/', shell=True, 
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         file_name = os.path.splitext(os.path.basename(file_location))[0]
-        text = open(f'cil/{file_name}.il', 'r').read()
+        text = open(f'cil/{file_name}.il', encoding='utf-8', mode='r').read()
     else:
         text = args.file.read()
 

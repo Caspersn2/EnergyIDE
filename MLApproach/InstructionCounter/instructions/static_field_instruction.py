@@ -25,6 +25,9 @@ class store_static_field_instruction(instruction):
         else:
             raise simulation_exception('The static field in question was not found')
 
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.field}'
+
 
 
 class load_static_field_instruction(instruction):
@@ -49,3 +52,5 @@ class load_static_field_instruction(instruction):
         else:
             raise simulation_exception('The static field in question was not found')
 
+    def __repr__(self) -> str:
+        return f'{self.name}: {self.field}'

@@ -27,6 +27,9 @@ class method_pointer_instruction(instruction):
         storage.push_stack(method)
         return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return f'{self.name} -- ({self.method_name})'
+
 
 
 class local_address_instruction(instruction):

@@ -31,6 +31,9 @@ class load_argument_instruction(instruction):
         storage.push_stack(value)
         return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return self.name if '.s' not in self.name else f'{self.name}: {self.index}'
+
 
 
 class store_argument_instruction(instruction):
@@ -51,3 +54,6 @@ class store_argument_instruction(instruction):
         value = storage.pop_stack()
         storage.add_argument(self.var_name, value)
         return Actions.NOP, None
+
+    def __repr__(self) -> str:
+        return self.name if '.s' not in self.name else f'{self.name}: {self.index}'

@@ -21,6 +21,9 @@ class store_local_instruction(instruction):
         storage.get_local(self.index).set_value(value)
         return Actions.NOP, None
 
+    def __repr__(self) -> str:
+        return self.name if '.s' not in self.name else f'{self.name}: {self.index}'
+
 
 
 class load_local_instruction(instruction):
@@ -41,3 +44,6 @@ class load_local_instruction(instruction):
         value = storage.get_local(self.index).get_value()
         storage.push_stack(value)
         return Actions.NOP, None
+
+    def __repr__(self) -> str:
+        return self.name if '.s' not in self.name else f'{self.name}: {self.index}'

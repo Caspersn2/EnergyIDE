@@ -19,3 +19,6 @@ class string_instruction(instruction):
     def execute(self, storage):
         storage.push_stack(self.string)
         return Actions.NOP, None
+
+    def __repr__(self) -> str:
+        return f'{self.name} = {self.string}'

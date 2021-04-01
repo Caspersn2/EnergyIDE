@@ -79,3 +79,6 @@ class instruction():
                 return container.create(name, elements[1:])
 
         return dummy_instruction(name)
+
+    def __repr__(self) -> str:
+        return self.name

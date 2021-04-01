@@ -74,6 +74,9 @@ class new_object_instruction(object_instructions):
             args.append(storage.pop_stack())
         return cls, args
 
+    def __repr__(self) -> str:
+        return f'{self.name} -- ({self.constructor})'
+
 
 
 class callvirt_instruction(object_instructions):
@@ -141,3 +144,6 @@ class callvirt_instruction(object_instructions):
             else:
                 args.append(value)
         return cls, args
+
+    def __repr__(self) -> str:
+        return f'{self.name} -- ({self.method_name})'
