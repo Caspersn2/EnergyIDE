@@ -1781,18 +1781,33 @@ namespace Modeling
 
 
         #endregion
+        #region Store others: field, static field, arg
+
+        [Measure(1000, new[] { "Empty", "EmptyGetField", "Ldc_I4_0" })]
+        public void Stsfld()
         {
             var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            
-            ilg.Emit(OpCodes.Ldc_I4_S, 0);
-            ilg.Emit(OpCodes.Stloc_S, 0);
-            ilg.Emit(OpCodes.Ldloc_S);
-            ilg.Emit(OpCodes.Pop);
+            //Get static field and push value
+            FieldInfo fi = typeof(Fields).GetField("sfield");
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //Store value in static field
+            ilg.Emit(OpCodes.Stsfld, fi);
             
             runMethod(method, ilg);
         }
+            
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0" })]
+        public void Starg()
+        {
+            var (method, ilg) = newMethod();
+            //The value currently on top of the stack is popped and placed in argument slot num.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Starg,0);
+            
+            runMethod(method, ilg);
+        }
+        #endregion
 
         #endregion
     }
