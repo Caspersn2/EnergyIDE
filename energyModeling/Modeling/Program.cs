@@ -1476,60 +1476,142 @@ namespace Modeling
             
             runMethod(method, ilg);
         }
-
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg_S(byte value)
+        #region Store value into adress or array
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I()
         {
             var (method, ilg) = newMethod();
-            
-            ilg.Emit(OpCodes.Ldarg_S, value);
-            ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty" })]
-        public void Nop()
-        {
-            var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Nop);
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty", "Ldc_I4_0" })]
-        public void Stloc()
-        {
-            var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc, 0);
-            runMethod(method, ilg);
-        }
-
-        [Measure(1000, new []{ "Empty" })]
-        public void EmptyDeclareLocal()
-        {
-            var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal" })]
-        public void Stloc_0()
-        {
-            var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4_0);
             ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
-        public void Stloc_1()
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I1()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+            
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I1);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I2()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I2);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I4()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I4);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I8()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+            
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I8);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_R4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_R4()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_R4, 0.0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+            
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_R4);
+            
+            runMethod(method, ilg);
+        }
+            
+        [Measure(1000, new[] { "Empty", "Ldc_R8", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_R8()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_R8, 0.0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_R8);
+
+            
+            runMethod(method, ilg);
+        }
+
+        #endregion
         {
             var (method, ilg) = newMethod();
             
