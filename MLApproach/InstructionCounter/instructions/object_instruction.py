@@ -5,6 +5,7 @@ from instruction import instruction
 from action_enum import Actions
 from utilities import get_arguments, is_library_call, remove_library_names
 import blacklist
+import function_replacement
 import copy
 
 
@@ -109,6 +110,11 @@ class callvirt_instruction(object_instructions):
         else:
             cls, args = self.get_class_and_args(storage)
             generic_method = storage.find_generic(self.method_name)
+
+            if function_replacement.contains(self.method_name):
+                res = function_replacement.call(self.method_name, args)
+                storage.push_stack(res)
+                return Actions.NOP, None
 
             if cls.is_generic:
                 self.method_name = cls.get_generic_method(self.method_name)

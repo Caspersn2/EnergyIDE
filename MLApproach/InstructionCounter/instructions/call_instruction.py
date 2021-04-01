@@ -2,6 +2,7 @@ from utilities import is_library_call, remove_library_names
 from instruction import instruction
 from action_enum import Actions
 import blacklist
+import function_replacement
 
 
 class call_instruction(instruction):
@@ -41,6 +42,11 @@ class call_instruction(instruction):
             args.append(storage.pop_stack())
 
         class_name, method_name = self.invocation_target.split('::')
+
+        if function_replacement.contains(self.invocation_target):
+            res = function_replacement.call(self.invocation_target, args)
+            storage.push_stack(res)
+            return Actions.NOP, None
 
         if self.call_type == 'instance':
             class_instance = storage.pop_stack()
