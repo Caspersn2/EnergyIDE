@@ -62,7 +62,7 @@ class array_retrieval_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['ldelem', 'ldelem.i', 'ldelem.i1', 'ldelem.i2', 'ldelem.i4', 'ldelem.i8', 'ldelem.r4', 'ldelem.r8', 'ldelem.u1', 'ldelem.u2', 'ldelem.u4']
+        return ['ldelem', 'ldelem.i', 'ldelem.i1', 'ldelem.i2', 'ldelem.i4', 'ldelem.i8', 'ldelem.r4', 'ldelem.r8', 'ldelem.u1', 'ldelem.u2', 'ldelem.u4', 'ldelem.ref']
 
     def execute(self, storage):
         index = storage.pop_stack()

@@ -12,15 +12,23 @@ class convert_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['conv.r4', 'conv.r8', 'conv.r.un', 'conv.u', 'conv.i']
+        return ['conv.r4', 'conv.r8', 'conv.r.un', 'conv.i', 'conv.i1', 'conv.i2', 'conv.i4', 'conv.i8', 'conv.u', 'conv.u1', 'conv.u2', 'conv.u4', 'conv.u8']
 
     def convert(_, name):
         return {
             'conv.r4': lambda x: float(x),
             'conv.r8': lambda x: float(x),
             'conv.r.un': lambda x: float(x),
+            'conv.i': lambda x: int(x),
+            'conv.i1': lambda x: int(x),
+            'conv.i2': lambda x: int(x),
+            'conv.i4': lambda x: int(x),
+            'conv.i8': lambda x: int(x),
             'conv.u': lambda x: abs(int(x)),
-            'conv.i': lambda x: int(x)
+            'conv.u1': lambda x: abs(int(x)),
+            'conv.u2': lambda x: abs(int(x)),
+            'conv.u4': lambda x: abs(int(x)),
+            'conv.u8': lambda x: abs(int(x))
         }[name]
 
     def execute(self, storage):

@@ -79,7 +79,7 @@ class load_indirect_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['ldind.i', 'ldind.i1', 'ldind.i2','ldind.i4', 'ldind.i8']
+        return ['ldind.i', 'ldind.i1', 'ldind.i2','ldind.i4', 'ldind.i8', 'ldind.r4', 'ldind.r8', 'ldind.ref', 'ldind.u1', 'ldind.u2', 'ldind.u4', 'ldobj']
 
     def execute(self, storage):
         active_value = storage.get_active_value()
