@@ -1849,7 +1849,9 @@ namespace Modeling
             runMethod(method, ilg);
         }
         #endregion
+        #endregion
 
+        #region Array look-up
         [Measure(1000, new []{ "Empty", "Ldc_I4" })]
         public void Newarr(int value, Type type){
             var (method, ilg) = newMethod();
@@ -2087,8 +2089,8 @@ namespace Modeling
 
             runMethod(method, ilg);
         }
-
         #endregion
+
         #endregion
     }
 }
