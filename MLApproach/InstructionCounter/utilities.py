@@ -11,7 +11,7 @@ class_name = fr'\.class\s(?:{class_keywords}\s)+(.+)\s+'
 locals_instruction = r'\.locals (?:init)?'
 locals_index = r'\[[0-9]+\]'
 variable_name = r'\.?\'?[a-zA-Z<>\[][ _0-9a-zA-Z<>/\.\[\]`\&\*]*\'?'
-primitive_type = r'((?:object|float32|float64|bool|uint8|uint8*|int16|int32|uint32|uint16|uint64|int64|int|string|char|void|char\*)\[?\]?)'
+primitive_type = r'((?:object|float32|float64|bool|uint8|uint8\*|int16|int32|uint32|uint16|uint64|int64|int|string|char|void|char\*)\[?\]?)'
 struct_type = r'(?:valuetype)\s(.+)'
 library_returntype = fr'\[{variable_name}\]{variable_name}'
 generic_type = '(!!?[_a-zA-Z<>0-9]+)'
@@ -73,6 +73,8 @@ def get_by_method(text, cls):
             tmp_name = tmp_name.replace('\n','').replace('\t', '')
             name, parameter_names = remove_parameter_names(tmp_name)
             name = f'{cls.name}::{name}'
+            if is_library_call(name):
+                name = remove_library_names(name)
             end = count_by_set({'{': 0, '}': 0}, text[start:])
             prototype = text[start:start + method_match.end()]
             new_method = create_method(name, cls, prototype, return_type, parameter_names, text[start:start + end])
