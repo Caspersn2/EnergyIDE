@@ -8,6 +8,9 @@ class delegate_class_container(class_container, delegate):
         self.delegate_method = None
         super().__init__(name, text, pos)
 
+    def get_method(self, _, __):
+        return super(delegate, self).get_method()
+
 
 
 class generic_delegate_class_container(generic_class_container, delegate):
@@ -33,4 +36,4 @@ class generic_delegate_class_container(generic_class_container, delegate):
 
 
     def get_method(self, _, __):
-        return self.delegate_method
+        return super(delegate, self).get_method()
