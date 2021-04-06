@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -120,6 +120,8 @@ namespace Modeling
             ilg.Emit(OpCodes.Ret);
             method.Invoke(null, Type.EmptyTypes);
         }
+
+        
     }
 
     public class Fields
@@ -1848,14 +1850,241 @@ namespace Modeling
         }
         #endregion
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_8" })]
-        public void Newarr(){
+        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
+        public void Newarr(int value, Type type){
             var (method, ilg) = newMethod();
     
-            ilg.Emit(OpCodes.Ldc_I4_8);
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Newarr, type);
             ilg.Emit(OpCodes.Pop);
             
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_8", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4_8);
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem, typeof(int));
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_2", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_I()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4_2);
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_I);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_S", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_I1()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4_S, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(byte));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_I1);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_I2()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(Int16));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_I2);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_I4()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_I4);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_I8()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(long));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_I8);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_R4()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(float));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_R4);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_R8()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(double));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_R8);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_Ref()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(Fields));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_Ref);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_U1()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(byte));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_U1);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_U2()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(UInt16));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_U2);
+            
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        public void Ldelem_U4()
+        {
+            var (method, ilg) = newMethod();
+
+            // Create array of length 2
+            ilg.Emit(OpCodes.Ldc_I4, 10);
+            ilg.Emit(OpCodes.Newarr, typeof(uint));
+
+            // Push index
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            // Pop index and array. Push index value onto the stack
+            ilg.Emit(OpCodes.Ldelem_U4);
+            
+            ilg.Emit(OpCodes.Pop);
+
             runMethod(method, ilg);
         }
 

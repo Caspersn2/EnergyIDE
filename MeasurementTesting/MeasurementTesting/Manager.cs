@@ -263,6 +263,7 @@ namespace MeasurementTesting
             
 
                 // Check for input
+                var typeArray = new Type[]{ typeof(int), typeof(uint), typeof(short), typeof(ushort), typeof(byte), typeof(sbyte), typeof(double), typeof(float), typeof(string), typeof(long) };
                 object[] randomInputs = method.GetParameters().Select(parameter => {
                     var rnd = new Random();
                     var typeSwitch = new Dictionary<Type, Object> {
@@ -280,7 +281,8 @@ namespace MeasurementTesting
                         { typeof(string), new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", rnd.Next(1, 1000) )
                                                                     .Select(s => s[rnd.Next(s.Length)]).ToArray())},
 
-                        { typeof(bool), rnd.Next(0, 1) }
+                        { typeof(bool), rnd.Next(0, 1) },
+                        { typeof(Type), typeArray[rnd.Next(0, typeArray.Length-1)] }
                     };
                     
                     if (parameter.Name.Contains("bool")) {
