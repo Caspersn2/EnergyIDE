@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -32,7 +32,7 @@ namespace Modeling
             XmlNodeList allMethods = doc.SelectNodes("/class/method");
             XmlNodeList remainingMethods = allMethods;
 
-            Dictionary<string,double> allMeans = new Dictionary<string, double>();
+            Dictionary<string, double> allMeans = new Dictionary<string, double>();
 
             var current = 0;
             var change = false;
@@ -41,27 +41,31 @@ namespace Modeling
             {
                 XmlNode methodNode = remainingMethods.Item(current);
 
-                if (current >= remainingMethods.Count) {
-                    if (change) {
+                if (current >= remainingMethods.Count)
+                {
+                    if (change)
+                    {
                         current = 0;
                         change = false;
                         continue;
                     }
-                    else {
+                    else
+                    {
                         running = false;
                         break;
                     }
                 }
 
                 if (allMeans.ContainsKey(methodNode.SelectSingleNode("name").InnerText) 
-                    || methodNode.SelectSingleNode("result").InnerText.Equals("Failed")){
+                    || methodNode.SelectSingleNode("result").InnerText.Equals("Failed"))
+                {
                     current++;
                     continue;
                 }
 
                 // Check for dependencies
                 XmlNodeList instructionNodes = methodNode.SelectNodes("dependencies/instruction");
-                Dictionary<string,int> dependencies = new Dictionary<string, int>();
+                Dictionary<string, int> dependencies = new Dictionary<string, int>();
                 
                 // check if the method actually has dependencies
                 if (instructionNodes.Count > 0)
@@ -69,15 +73,16 @@ namespace Modeling
                     foreach (XmlNode instruction in instructionNodes)
                     {
                         string name = instruction.InnerText;
-                        if(dependencies.ContainsKey(name))
+                        if (dependencies.ContainsKey(name))
                             dependencies[name]++;
-                        else dependencies.Add(name,1);
+                        else dependencies.Add(name, 1);
                     }
                 }
 
                 // Checks if all dependencies is in allMeans
                 var hasAll = dependencies.All(dep => allMeans.ContainsKey(dep.Key));
-                if (hasAll) {
+                if (hasAll)
+                {
                     double newMean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
                     foreach (var dependency in dependencies)
                         newMean -= allMeans[dependency.Key] * dependency.Value;
@@ -117,6 +122,11 @@ namespace Modeling
         }
     }
 
+    public class Fields
+    {
+        public static int sfield;
+        public int field { get; set; }
+    }
     [MeasureClass(false, 0.005F, MeasurementType.Timer)]
     class measureClass
     {
@@ -135,6 +145,7 @@ namespace Modeling
 
         #region All IL-code tests
 
+        #region Empties
         [Measure(10000)]
         public void Empty()
         {
@@ -142,6 +153,26 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
+        [Measure(1000, new[] { "Empty" })]
+        public void EmptyDeclareLocal()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty" })]
+        public void EmptyGetField()
+        {
+            var (method, ilg) = newMethod();
+
+            FieldInfo fi = typeof(Fields).GetField("sfield");
+            runMethod(method, ilg);
+        }
+
+        #endregion
         #region Loads
         #region Load (INT, FLOAT): Codes: 0x20 - 0x22
         [Measure(10000, new []{ "Empty" })] // ox20
@@ -272,8 +303,158 @@ namespace Modeling
             runMethod(method, ilg);
         }
         #endregion
+        #region Load Arguments
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg(int boolValue, int value1)
+        {
+            var (method, ilg) = newMethod();
 
-        [Measure(10000, new []{ "Empty" })] // 0x14
+            ilg.Emit(OpCodes.Ldarg, boolValue);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_0(int value0)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_0);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_1(int value0, int value1)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_1);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_2(int value0, int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_2);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_3(int value0, int value1, int value2, int value3)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_3);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg_S(byte value)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldarg_S, value);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+
+        }
+        #endregion
+        #region Load Locals
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_0" })]
+        public void Ldloc_0()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloc_0);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_1" })]
+        public void Ldloc_1()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+            var test2 = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_1);
+            ilg.Emit(OpCodes.Ldloc_1);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_2" })]
+        public void Ldloc_2()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+            var test2 = ilg.DeclareLocal(typeof(int));
+            var test3 = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_2);
+            ilg.Emit(OpCodes.Ldloc_2);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_3" })]
+        public void Ldloc_3()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+            var test2 = ilg.DeclareLocal(typeof(int));
+            var test3 = ilg.DeclareLocal(typeof(int));
+            var test4 = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_3);
+            ilg.Emit(OpCodes.Ldloc_3);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_S", "EmptyDeclareLocal", "Stloc_S" })]
+        public void Ldloc_S()
+        {
+            var (method, ilg) = newMethod();
+
+            var test = ilg.DeclareLocal(typeof(int));
+
+            ilg.Emit(OpCodes.Ldc_I4_S, 0);
+            ilg.Emit(OpCodes.Stloc_S, 0);
+            ilg.Emit(OpCodes.Ldloc_S);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+        #endregion
+        #region Load Null, Str, 
+        [Measure(10000, new[] { "Empty" })] // 0x14
         public void Ldnull()
         {
             var (method, ilg) = newMethod();
@@ -282,7 +463,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty" })]
+        [Measure(10000, new[] { "Empty" })]
         public void Ldstr(string value)
         {
             var (method, ilg) = newMethod();
@@ -290,6 +471,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
+        #endregion
         #endregion
 
         #region Operations (Add, Mul, Sub)
@@ -885,7 +1067,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        #region Compare
         public void Ceq(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
@@ -961,6 +1143,7 @@ namespace Modeling
             
             runMethod(method, ilg);
         }
+        #endregion
 
         #region Conv
 
@@ -1243,81 +1426,16 @@ namespace Modeling
 
         #endregion
 
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg(int boolValue, int value1)
-        {
-            var (method, ilg) = newMethod();
-            
-            ilg.Emit(OpCodes.Ldarg, boolValue);
-            ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg_0(int value0)
-        {
-            var (method, ilg) = newMethod();
-            
-            ilg.Emit(OpCodes.Ldarg_0);
-            ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg_1(int value0, int value1)
-        {
-            var (method, ilg) = newMethod();
-            
-            ilg.Emit(OpCodes.Ldarg_1);
-            ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg_2(int value0, int value1, int value2)
-        {
-            var (method, ilg) = newMethod();
-            
-            ilg.Emit(OpCodes.Ldarg_2);
-            ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg_3(int value0, int value1, int value2, int value3)
-        {
-            var (method, ilg) = newMethod();
-            
-            ilg.Emit(OpCodes.Ldarg_3);
-            ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty" })]
-        public void Ldarg_S(byte value)
-        {
-            var (method, ilg) = newMethod();
-            
-            ilg.Emit(OpCodes.Ldarg_S, value);
-            ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(10000, new []{ "Empty" })]
+        [Measure(10000, new[] { "Empty" })]
         public void Nop()
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Nop);
             runMethod(method, ilg);
         }
-
-        [Measure(10000, new []{ "Empty", "Ldc_I4_0" })]
+        #region Stores
+        #region Store Locals
+        [Measure(10000, new[] { "Empty", "Ldc_I4_0" })]
         public void Stloc()
         {
             var (method, ilg) = newMethod();
@@ -1325,45 +1443,35 @@ namespace Modeling
             ilg.Emit(OpCodes.Stloc, 0);
             runMethod(method, ilg);
         }
-
-        [Measure(1000, new []{ "Empty" })]
-        public void EmptyDeclareLocal()
-        {
-            var (method, ilg) = newMethod();
             
-            var test = ilg.DeclareLocal(typeof(int));
-            
-            runMethod(method, ilg);
-        }
-
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal" })]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal" })]
         public void Stloc_0()
         {
             var (method, ilg) = newMethod();
             
             var test = ilg.DeclareLocal(typeof(int));
-            
+
             ilg.Emit(OpCodes.Ldc_I4_0);
             ilg.Emit(OpCodes.Stloc_0);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
         public void Stloc_1()
         {
             var (method, ilg) = newMethod();
             
             var test = ilg.DeclareLocal(typeof(int));
             var test2 = ilg.DeclareLocal(typeof(int));
-            
+
             ilg.Emit(OpCodes.Ldc_I4_0);
             ilg.Emit(OpCodes.Stloc_1);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
         public void Stloc_2()
         {
             var (method, ilg) = newMethod();
@@ -1371,14 +1479,14 @@ namespace Modeling
             var test = ilg.DeclareLocal(typeof(int));
             var test2 = ilg.DeclareLocal(typeof(int));
             var test3 = ilg.DeclareLocal(typeof(int));
-            
+
             ilg.Emit(OpCodes.Ldc_I4_0);
             ilg.Emit(OpCodes.Stloc_2);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal" })]
         public void Stloc_3()
         {
             var (method, ilg) = newMethod();
@@ -1387,106 +1495,358 @@ namespace Modeling
             var test2 = ilg.DeclareLocal(typeof(int));
             var test3 = ilg.DeclareLocal(typeof(int));
             var test4 = ilg.DeclareLocal(typeof(int));
-            
+
             ilg.Emit(OpCodes.Ldc_I4_0);
             ilg.Emit(OpCodes.Stloc_3);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S", "EmptyDeclareLocal" })]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_S", "EmptyDeclareLocal" })]
         public void Stloc_S()
         {
             var (method, ilg) = newMethod();
             
             var test = ilg.DeclareLocal(typeof(int));
-            
+
             ilg.Emit(OpCodes.Ldc_I4_S, 0);
             ilg.Emit(OpCodes.Stloc_S, 0);
             
             runMethod(method, ilg);
         }
-
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_0" })]
-        public void Ldloc_0()
+        #endregion
+        #region Store value into adress or array
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I()
         {
             var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4_0);
             ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloc_0);
-            ilg.Emit(OpCodes.Pop);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_1" })]
-        public void Ldloc_1()
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I1()
         {
             var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_1);
-            ilg.Emit(OpCodes.Ldloc_1);
-            ilg.Emit(OpCodes.Pop);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+            
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I1);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_2" })]
-        public void Ldloc_2()
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I2()
         {
             var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
-            
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_2);
-            ilg.Emit(OpCodes.Ldloc_2);
-            ilg.Emit(OpCodes.Pop);
-            
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I2);
+
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "EmptyDeclareLocal", "Stloc_3" })]
-        public void Ldloc_3()
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I4()
         {
             var (method, ilg) = newMethod();
-            
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
-            var test4 = ilg.DeclareLocal(typeof(int));
-            
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Stloc_3);
-            ilg.Emit(OpCodes.Ldloc_3);
-            ilg.Emit(OpCodes.Pop);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I4);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_I8()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+            
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_I8);
             
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S", "EmptyDeclareLocal", "Stloc_S" })]
-        public void Ldloc_S()
+        [Measure(1000, new[] { "Empty", "Ldc_R4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_R4()
         {
             var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_R4, 0.0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
             
-            var test = ilg.DeclareLocal(typeof(int));
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
             
-            ilg.Emit(OpCodes.Ldc_I4_S, 0);
-            ilg.Emit(OpCodes.Stloc_S, 0);
-            ilg.Emit(OpCodes.Ldloc_S);
-            ilg.Emit(OpCodes.Pop);
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_R4);
             
             runMethod(method, ilg);
         }
+            
+        [Measure(1000, new[] { "Empty", "Ldc_R8", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4_1", })]
+        public void Stind_R8()
+        {
+            var (method, ilg) = newMethod();
+            //Push Address
+            ilg.DeclareLocal(typeof(int));
+            ilg.Emit(OpCodes.Ldc_R8, 0.0);
+            ilg.Emit(OpCodes.Stloc_0);
+            ilg.Emit(OpCodes.Ldloca, 0);
+
+            //Push Value
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //Store value at adress
+            ilg.Emit(OpCodes.Stind_R8);
+
+            
+            runMethod(method, ilg);
+        }
+
+        #endregion
+        #region Store element in array
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem, typeof(int));
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I1()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I1);
+            
+            runMethod(method, ilg);
+        }
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I2()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+            
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I2);
+            
+            runMethod(method, ilg);
+        }
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I4()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I4);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_I4_1" })]
+        public void Stelem_I8()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_1);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_I8);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_R4" })]
+        public void Stelem_R4()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(int));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_R4, 0.0);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_R4);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_0", "Ldc_R8" })]
+        public void Stelem_R8()
+        {
+            var (method, ilg) = newMethod();
+            
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, 2); // Length
+            ilg.Emit(OpCodes.Newarr, typeof(float));
+            
+            //An index value, index, to an element in array is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //A value of the type specified in the instruction is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_R8, 0.0);
+
+            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+            ilg.Emit(OpCodes.Stelem_R8);
+            
+            runMethod(method, ilg);
+        }
+
+
+        #endregion
+        #region Store others: field, static field, arg
+
+        [Measure(1000, new[] { "Empty", "EmptyGetField", "Ldc_I4_0" })]
+        public void Stsfld()
+        {
+            var (method, ilg) = newMethod();
+            //Get static field and push value
+            FieldInfo fi = typeof(Fields).GetField("sfield");
+            ilg.Emit(OpCodes.Ldc_I4_0);
+
+            //Store value in static field
+            ilg.Emit(OpCodes.Stsfld, fi);
+            
+            runMethod(method, ilg);
+        }
+            
+        [Measure(1000, new[] { "Empty", "Ldc_I4_0" })]
+        public void Starg()
+        {
+            var (method, ilg) = newMethod();
+            //The value currently on top of the stack is popped and placed in argument slot num.
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Starg,0);
+            
+            runMethod(method, ilg);
+        }
+        #endregion
 
         [Measure(1000, new []{ "Empty", "Ldc_I4_8" })]
         public void Newarr(){
@@ -1499,6 +1859,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
+        #endregion
         #endregion
     }
 }
