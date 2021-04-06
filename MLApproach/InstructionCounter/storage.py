@@ -11,7 +11,7 @@ class storage():
         self.arg_conversion = None
         self.classes = classes
         self.methods = methods
-        self.active_class = None
+        self.active_class = []
         self.active_method = None
         self.active_value = active_value
         self.is_instance = None
@@ -159,8 +159,23 @@ class storage():
 
     # ACTIVE CLASS
     def set_active_class(self, cls):
-        self.active_class = cls
+        self.active_class.append(cls)
+
+
+    def dup_active_class(self):
+        if self.active_class:
+            cls = self.active_class[-1]
+            self.active_class.append(cls)
+        else:
+            raise simulation_exception('There was no class on the stack to duplicate')
 
 
     def get_active_class(self):
-        return self.active_class
+        if self.active_class:
+            return self.active_class[-1]
+        else:
+            return []
+
+
+    def pop_active_class(self):
+        self.active_class.pop()

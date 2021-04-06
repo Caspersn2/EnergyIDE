@@ -2,7 +2,8 @@ from variable import variable
 import argument_generator
 
 replacement = {
-    "System.String::FastAllocateString(int32)": lambda _, storage: argument_generator.get_primitive('string', storage)
+    "System.Number::UInt32ToDecStr(uint32)": lambda args, _: str(args[0]),
+    "System.String::Concat(string[])": lambda args, _: ''.join(args[0])
 }
 
 def call(invocation, args, storage):

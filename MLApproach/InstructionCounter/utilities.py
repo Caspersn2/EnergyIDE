@@ -169,7 +169,7 @@ def simple_count(text):
 
 
 def remove_library_names(text):
-    return re.sub(r'\[System\..+\]', '', text)
+    return re.sub(r'\[System\..+?\]', '', text)
 
 
 def is_library_call(value):

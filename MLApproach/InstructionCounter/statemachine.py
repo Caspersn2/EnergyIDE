@@ -97,6 +97,7 @@ class state_machine():
                 value.clear()
                 if return_val or return_val == 0:
                     self.storage.push_stack(return_val)
+                self.storage.pop_active_class()
                 index += 1
 
             elif action == Actions.NOP:

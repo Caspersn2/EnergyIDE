@@ -19,8 +19,12 @@ class method():
         local_vars, is_init = utilities.get_local_stack(text)
         self.locals = local_vars
         self.is_locals_init = is_init
-        self.data = instruction.get_all_instructions(self.text)
+        self.data = None
         self.is_generic = False
+
+    
+    def load_method(self):
+        self.data = instruction.get_all_instructions(self.text)
 
 
     def set_parameters(self, args):
@@ -61,7 +65,11 @@ class method():
 
     
     def get_instructions(self):
-        return self.data
+        if self.data:
+            return self.data
+        else:
+            self.load_method()
+            return self.data
     
 
     def get_class(self):
