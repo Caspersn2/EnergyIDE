@@ -103,9 +103,9 @@ namespace Modeling
     [MeasureClass(false, 0.05F, MeasurementType.Timer)]
     class testing
     {
-        private (DynamicMethod, ILGenerator) newMethod()
+        private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
         {
-            DynamicMethod method = new DynamicMethod("MyMethod", typeof(void), new Type[] { });
+            DynamicMethod method = new DynamicMethod(name, typeof(void), Type.EmptyTypes);
             var ilg = method.GetILGenerator();
             return (method, ilg);
         }
@@ -114,13 +114,6 @@ namespace Modeling
         {
             ilg.Emit(OpCodes.Ret);
             method.Invoke(null, Type.EmptyTypes);
-        }
-
-        [Measure(1000)]
-        public void Empty()
-        {
-            var (method, ilg) = newMethod();
-            runMethod(method, ilg);
         }
     }
 
@@ -469,6 +462,17 @@ namespace Modeling
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Xor);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        public void And(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.And);
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
@@ -1479,6 +1483,17 @@ namespace Modeling
             ilg.Emit(OpCodes.Ldc_I4_S, 0);
             ilg.Emit(OpCodes.Stloc_S, 0);
             ilg.Emit(OpCodes.Ldloc_S);
+            ilg.Emit(OpCodes.Pop);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new []{ "Empty", "Ldc_I4_8" })]
+        public void Newarr(){
+            var (method, ilg) = newMethod();
+    
+            ilg.Emit(OpCodes.Ldc_I4_8);
+            ilg.Emit(OpCodes.Newarr, typeof(int));
             ilg.Emit(OpCodes.Pop);
             
             runMethod(method, ilg);
