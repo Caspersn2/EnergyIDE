@@ -35,13 +35,12 @@ class call_instruction(instruction):
         return ['call']
 
     def execute(self, storage):
-        if blacklist.contains(self.invocation_target):
-            return Actions.NOP, None
-
         args = []
         for _ in range(self.num_args):
             args.append(storage.pop_stack())
 
+        if blacklist.contains(self.invocation_target):
+            return Actions.NOP, None
         class_name, method_name = self.invocation_target.split('::')
 
         if function_replacement.contains(self.invocation_target):

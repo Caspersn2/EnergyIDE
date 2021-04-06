@@ -1,3 +1,4 @@
+from simulation_exception import simulation_exception
 from objects.delegate import delegate
 from objects.class_container import class_container
 from argument_generator import create_random_argument
@@ -69,6 +70,8 @@ class new_object_instruction(object_instructions):
 
     def get_class_and_args(self, storage):
         cls = copy.deepcopy(storage.get_class(self.class_name))
+        if not cls:
+            raise simulation_exception(f'The class "{self.class_name}" was not found in the list of classes')
         args = []
         for _ in range(self.num_args):
             args.append(storage.pop_stack())

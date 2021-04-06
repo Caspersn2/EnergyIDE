@@ -3,9 +3,7 @@ class_blacklist = {
 }
 
 method_blacklist = {
-    'System.Object::.ctor()',
-    'System.String::Format(string, object)',
-    'System.String::Format(string, object, object)'
+    'System.Object::.ctor()'
 }
 
 def contains(invocation):

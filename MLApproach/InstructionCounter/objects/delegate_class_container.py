@@ -30,3 +30,7 @@ class generic_delegate_class_container(generic_class_container, delegate):
             if '::Invoke' in func.name:
                 self.change_types(method, func)
         self.delegate_method = method
+
+
+    def get_method(self, _, __):
+        return self.delegate_method

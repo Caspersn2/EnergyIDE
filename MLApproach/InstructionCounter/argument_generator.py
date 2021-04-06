@@ -26,7 +26,7 @@ def random_double():
 
 
 def random_string():
-    return generate_string(random.randint(0, 10000))
+    return generate_string(random.randint(0, 100))
 
 
 def generate_string(number):

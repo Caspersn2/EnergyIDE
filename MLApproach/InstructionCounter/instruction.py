@@ -1,6 +1,5 @@
 from abc import abstractclassmethod, abstractmethod
 from instructions.dummy_instruction import dummy_instruction
-from simulation_exception import simulation_exception
 import importlib
 import inspect
 import os
