@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -1896,15 +1896,15 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new[] { "Empty", "Ldc_I4_0" })]
-        public void Starg()
+        [Measure(1000, new[] { "Empty", "Ldc_I4" })]
+        public void Starg(int value)
         {
-            var (method, ilg) = newMethod();
+            var (method, ilg) = newMethodWithArgs();
             //The value currently on top of the stack is popped and placed in argument slot num.
-            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Ldc_I4, value);
             ilg.Emit(OpCodes.Starg, 0);
 
-            runMethod(method, ilg);
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
         #endregion
         #endregion
