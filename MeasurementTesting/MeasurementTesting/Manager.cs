@@ -265,6 +265,7 @@ namespace MeasurementTesting
                 // Check for input
                 object[] randomInputs = method.GetParameters().Select(parameter => {
                     var rnd = new Random();
+                    var allTypes = new Type[] {typeof(bool), typeof(byte), typeof(sbyte), typeof(char), typeof(decimal), typeof(double), typeof(float), typeof(int), typeof(uint), typeof(nint), typeof(nuint), typeof(long), typeof(ulong), typeof(short), typeof(ushort)};
                     var typeSwitch = new Dictionary<Type, Object> {
                         { typeof(int), rnd.Next(int.MinValue, int.MaxValue) },
                         { typeof(uint), ((uint)rnd.Next(int.MinValue, int.MaxValue) + (uint)int.MaxValue) },
@@ -276,11 +277,10 @@ namespace MeasurementTesting
                         { typeof(float), (float)rnd.NextDouble() },
                         { typeof(double), rnd.NextDouble() },
                         { typeof(string[]), new string[]{ "one", "two", "three" } },
-                        
                         { typeof(string), new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", rnd.Next(1, 1000) )
                                                                     .Select(s => s[rnd.Next(s.Length)]).ToArray())},
-
-                        { typeof(bool), rnd.Next(0, 1) }
+                        { typeof(bool), rnd.Next(0, 1) },
+                        { typeof(Type), allTypes[rnd.Next(0,allTypes.Length)]}
                     };
                     
                     if (parameter.Name.Contains("bool")) {
