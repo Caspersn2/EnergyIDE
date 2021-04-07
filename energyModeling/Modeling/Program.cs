@@ -114,22 +114,33 @@ namespace Modeling
             var ilg = method.GetILGenerator();
             return (method, ilg);
         }
+        private (DynamicMethod, ILGenerator) newMethodWithArgs()
+        {
+            DynamicMethod method = new DynamicMethod("MyMethod", typeof(void), new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
+            var ilg = method.GetILGenerator();
+            return (method, ilg);
+        }
 
         private void runMethod(DynamicMethod method, ILGenerator ilg)
         {
             ilg.Emit(OpCodes.Ret);
             method.Invoke(null, Type.EmptyTypes);
         }
+        private void runMethod(DynamicMethod method, ILGenerator ilg, object[] args)
+        {
+            ilg.Emit(OpCodes.Ret);
+            method.Invoke(null, args);
+        }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
-        public void Newarr(MeasurementTesting.Manager.PosInt length, Type type){
-            var (method, ilg) = newMethod();
-    
-            ilg.Emit(OpCodes.Ldc_I4, length.i);
-            ilg.Emit(OpCodes.Newarr, type);
+        [Measure(10000, new[] { "Empty" })]
+        public void Ldarg()
+        {
+            var (method, ilg) = newMethodWithArgs();
+
+            ilg.Emit(OpCodes.Ldarg, 3); // 3 is index, should probably randomise this
             ilg.Emit(OpCodes.Pop);
-            
-            runMethod(method, ilg);
+
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
 
         
@@ -144,9 +155,15 @@ namespace Modeling
     [MeasureClass(false, 0.005F, MeasurementType.Timer)]
     class measureClass
     {
-        private (DynamicMethod, ILGenerator) newMethod()
+        private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
         {
-            DynamicMethod method = new DynamicMethod("MyMethod", typeof(void), new Type[] { });
+            DynamicMethod method = new DynamicMethod(name, typeof(void), Type.EmptyTypes);
+            var ilg = method.GetILGenerator();
+            return (method, ilg);
+        }
+        private (DynamicMethod, ILGenerator) newMethodWithArgs()
+        {
+            DynamicMethod method = new DynamicMethod("MyMethod", typeof(void), new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
             var ilg = method.GetILGenerator();
             return (method, ilg);
         }
@@ -155,6 +172,11 @@ namespace Modeling
         {
             ilg.Emit(OpCodes.Ret);
             method.Invoke(null, Type.EmptyTypes);
+        }
+        private void runMethod(DynamicMethod method, ILGenerator ilg, object[] args)
+        {
+            ilg.Emit(OpCodes.Ret);
+            method.Invoke(null, args);
         }
 
         #region All IL-code tests
@@ -319,69 +341,69 @@ namespace Modeling
         #endregion
         #region Load Arguments
         [Measure(10000, new[] { "Empty" })]
-        public void Ldarg(int boolValue, int value1)
+        public void Ldarg()
         {
-            var (method, ilg) = newMethod();
+            var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg, boolValue);
+            ilg.Emit(OpCodes.Ldarg, 3); // 3 is index, should probably randomise this
             ilg.Emit(OpCodes.Pop);
 
-            runMethod(method, ilg);
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
 
         [Measure(10000, new[] { "Empty" })]
-        public void Ldarg_0(int value0)
+        public void Ldarg_0()
         {
-            var (method, ilg) = newMethod();
+            var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg_0);
+            ilg.Emit(OpCodes.Ldarg_0); // Arg0 is 'this'
             ilg.Emit(OpCodes.Pop);
 
-            runMethod(method, ilg);
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
 
         [Measure(10000, new[] { "Empty" })]
-        public void Ldarg_1(int value0, int value1)
+        public void Ldarg_1()
         {
-            var (method, ilg) = newMethod();
+            var (method, ilg) = newMethodWithArgs();
 
             ilg.Emit(OpCodes.Ldarg_1);
             ilg.Emit(OpCodes.Pop);
 
-            runMethod(method, ilg);
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
 
         [Measure(10000, new[] { "Empty" })]
-        public void Ldarg_2(int value0, int value1, int value2)
+        public void Ldarg_2()
         {
-            var (method, ilg) = newMethod();
+            var (method, ilg) = newMethodWithArgs();
 
             ilg.Emit(OpCodes.Ldarg_2);
             ilg.Emit(OpCodes.Pop);
 
-            runMethod(method, ilg);
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
 
         [Measure(10000, new[] { "Empty" })]
-        public void Ldarg_3(int value0, int value1, int value2, int value3)
+        public void Ldarg_3()
         {
-            var (method, ilg) = newMethod();
+            var (method, ilg) = newMethodWithArgs();
 
             ilg.Emit(OpCodes.Ldarg_3);
             ilg.Emit(OpCodes.Pop);
 
-            runMethod(method, ilg);
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
 
         [Measure(10000, new[] { "Empty" })]
-        public void Ldarg_S(byte value)
+        public void Ldarg_S()
         {
-            var (method, ilg) = newMethod();
+            var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg_S, value);
+            ilg.Emit(OpCodes.Ldarg_S, 3);
             ilg.Emit(OpCodes.Pop);
 
-            runMethod(method, ilg);
+            runMethod(method, ilg, new object[] {2,2,2,2,2});
 
         }
         #endregion
