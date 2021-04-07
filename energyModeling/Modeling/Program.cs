@@ -669,6 +669,17 @@ namespace Modeling
         }
 
         [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
+        public void Rem_Un(uint value1, uint value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Rem_Un);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
         public void Shl(int value1, int value2)
         {
             var (method, ilg) = newMethod();
