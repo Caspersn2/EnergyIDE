@@ -286,7 +286,7 @@ namespace MeasurementTesting
                                                                     .Select(s => s[rnd.Next(s.Length)]).ToArray())},
                         { typeof(bool), rnd.Next(0, 1) },
                         { typeof(Type), allTypes[rnd.Next(0,allTypes.Length-1)]},
-                        { typeof(PosInt), new PosInt() {i = rnd.Next(0, Int16.MaxValue)}}
+                        { typeof(PosInt), new PosInt() {i = rnd.Next(1, Int16.MaxValue)}}
                     };
                     
                     if (parameter.Name.Contains("bool")) {
