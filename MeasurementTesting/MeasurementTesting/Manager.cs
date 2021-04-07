@@ -248,6 +248,11 @@ namespace MeasurementTesting
             methodProgress.Stage = "Done: " + attribute.ToString();
         }
 
+        public struct PosInt
+        {
+            public int i;
+        }
+
         private static void runBenchmark(MethodInfo method, object measureClass, Benchmark bm, int iterations)
         {
             var overflowExceptions = 0;
@@ -280,7 +285,8 @@ namespace MeasurementTesting
                         { typeof(string), new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", rnd.Next(1, 1000) )
                                                                     .Select(s => s[rnd.Next(s.Length)]).ToArray())},
                         { typeof(bool), rnd.Next(0, 1) },
-                        { typeof(Type), allTypes[rnd.Next(0,allTypes.Length)]}
+                        { typeof(Type), allTypes[rnd.Next(0,allTypes.Length)]},
+                        { typeof(PosInt), new PosInt() {i = rnd.Next(0, Int16.MaxValue)}}
                     };
                     
                     if (parameter.Name.Contains("bool")) {

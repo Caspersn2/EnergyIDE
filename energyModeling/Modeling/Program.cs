@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -1896,8 +1896,7 @@ namespace Modeling
 
             ilg.Emit(OpCodes.Sizeof, type);
             ilg.Emit(OpCodes.Pop);
-
-
+        }
         [Measure(10000, new[] { "Empty", "Ldc_I4" })] // 0x38
         public void Ldlen(MeasurementTesting.Manager.PosInt length, Type type)
         {
