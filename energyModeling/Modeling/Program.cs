@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -481,7 +481,6 @@ namespace Modeling
         }
         #endregion
         #endregion
-
         #region Operations (Add, Mul, Sub)
         [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x58
         public void Add(int value1, int value2)
@@ -670,7 +669,6 @@ namespace Modeling
         }
 
         #endregion
-
         #region Branches
 
         [Measure(10000, new[] { "Empty" })]
@@ -1055,17 +1053,6 @@ namespace Modeling
         }
 
         #endregion
-
-        [Measure(10000, new[] { "Empty" })] // 0x38
-        public void Break()
-        {
-            var (method, ilg) = newMethod();
-
-            ilg.Emit(OpCodes.Break);
-
-            runMethod(method, ilg);
-        }
-
         #region Compare
         public void Ceq(int boolValue1, int boolValue2)
         {
@@ -1143,7 +1130,6 @@ namespace Modeling
             runMethod(method, ilg);
         }
         #endregion
-
         #region Conv
 
         [Measure(10000, new[] { "Empty", "Ldc_I4_S" })]
@@ -1424,14 +1410,6 @@ namespace Modeling
         }
 
         #endregion
-
-        [Measure(10000, new[] { "Empty" })]
-        public void Nop()
-        {
-            var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Nop);
-            runMethod(method, ilg);
-        }
         #region Stores
         #region Store Locals
         [Measure(10000, new[] { "Empty", "Ldc_I4_0" })]
@@ -1847,6 +1825,25 @@ namespace Modeling
         }
         #endregion
 
+        #endregion
+        #region Misc
+        [Measure(10000, new[] { "Empty" })]
+        public void Nop()
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Nop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })] // 0x38
+        public void Break()
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Break);
+
+            runMethod(method, ilg);
+        }
         #endregion
         #endregion
     }
