@@ -481,7 +481,7 @@ namespace Modeling
         }
         #endregion
         #endregion
-        #region Operations (Add, Mul, Sub)
+        #region Operations (Add, Mul, Sub, Shl, Shr)
         [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x58
         public void Add(int value1, int value2)
         {
@@ -664,6 +664,39 @@ namespace Modeling
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Rem);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
+        public void Shl(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Shl);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
+        public void Shr(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Shr);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
+        public void Shr_Un(uint value1, uint value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Shr_Un);
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
