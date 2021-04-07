@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -1841,6 +1841,17 @@ namespace Modeling
             var (method, ilg) = newMethod();
 
             ilg.Emit(OpCodes.Break);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })] // 0x38
+        public void Sizeof(Type type)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Sizeof, type);
+            ilg.Emit(OpCodes.Pop);
 
             runMethod(method, ilg);
         }
