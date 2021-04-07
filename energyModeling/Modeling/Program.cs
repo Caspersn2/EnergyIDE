@@ -1897,6 +1897,19 @@ namespace Modeling
             ilg.Emit(OpCodes.Sizeof, type);
             ilg.Emit(OpCodes.Pop);
 
+        [Measure(10000, new[] { "Empty" })] // 0x38
+        public void Ldlen(Type type)
+        {
+            var rnd = new Random(); //TODO: FIX
+            int length = rnd.Next(0,Int16.MaxValue);
+            var (method, ilg) = newMethod();
+
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, length); // Length
+            ilg.Emit(OpCodes.Newarr, type);
+
+            ilg.Emit(OpCodes.Ldlen);
+            ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
         #endregion
