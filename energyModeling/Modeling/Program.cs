@@ -1897,6 +1897,18 @@ namespace Modeling
             ilg.Emit(OpCodes.Sizeof, type);
             ilg.Emit(OpCodes.Pop);
 
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4" })] // 0x38
+        public void Ldlen(MeasurementTesting.Manager.PosInt length, Type type)
+        {
+            var (method, ilg) = newMethod();
+
+            //An object reference to an array, array, is pushed onto the stack.
+            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+            ilg.Emit(OpCodes.Newarr, type);
+
+            ilg.Emit(OpCodes.Ldlen);
+            ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
         #endregion
