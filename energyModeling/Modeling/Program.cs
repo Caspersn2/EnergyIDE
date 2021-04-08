@@ -2201,6 +2201,32 @@ namespace Modeling
 
             runMethod(method, ilg);
         }
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Box" })] // 0x38
+        public void Unbox(int value)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Box, typeof(int));
+            ilg.Emit(OpCodes.Unbox, typeof(int));
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Box" })] // 0x38
+        public void Unbox_Any(int value)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Box, typeof(int));
+            ilg.Emit(OpCodes.Unbox_Any, typeof(int));
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
         #endregion
         #endregion
     }
