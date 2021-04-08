@@ -248,6 +248,11 @@ namespace MeasurementTesting
             methodProgress.Stage = "Done: " + attribute.ToString();
         }
 
+        public struct PosInt
+        {
+            public int i;
+        }
+
         private static void runBenchmark(MethodInfo method, object measureClass, Benchmark bm, int iterations)
         {
             var overflowExceptions = 0;
@@ -263,7 +268,7 @@ namespace MeasurementTesting
             
 
                 // Check for input
-                var typeArray = new Type[]{ typeof(int), typeof(uint), typeof(short), typeof(ushort), typeof(byte), typeof(sbyte), typeof(double), typeof(float), typeof(string), typeof(long) };
+                var allTypes = new Type[] {typeof(bool), typeof(byte), typeof(sbyte), typeof(char), typeof(decimal), typeof(double), typeof(float), typeof(int), typeof(uint), typeof(nint), typeof(nuint), typeof(long), typeof(ulong), typeof(short), typeof(ushort)};
                 object[] randomInputs = method.GetParameters().Select(parameter => {
                     var rnd = new Random();
                     var typeSwitch = new Dictionary<Type, Object> {
@@ -277,12 +282,11 @@ namespace MeasurementTesting
                         { typeof(float), (float)rnd.NextDouble() },
                         { typeof(double), rnd.NextDouble() },
                         { typeof(string[]), new string[]{ "one", "two", "three" } },
-                        
                         { typeof(string), new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", rnd.Next(1, 1000) )
                                                                     .Select(s => s[rnd.Next(s.Length)]).ToArray())},
-
                         { typeof(bool), rnd.Next(0, 1) },
-                        { typeof(Type), typeArray[rnd.Next(0, typeArray.Length-1)] }
+                        { typeof(Type), allTypes[rnd.Next(0,allTypes.Length-1)]},
+                        { typeof(PosInt), new PosInt() {i = rnd.Next(1, Int16.MaxValue)}}
                     };
                     
                     if (parameter.Name.Contains("bool")) {
