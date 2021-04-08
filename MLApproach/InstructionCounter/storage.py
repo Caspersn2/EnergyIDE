@@ -103,10 +103,11 @@ class storage():
             for elem in self.classes:
                 if new_key in elem:
                     return self.classes[elem]
+            raise simulation_exception(f'The generic class: "{key}" was not found in the list of classes (Could be a missing import)')
         elif key in self.classes:
             return self.classes[key]
         else:
-            raise simulation_exception(f'The class: "{key}" was not found in the list of classes')
+            raise simulation_exception(f'The class: "{key}" was not found in the list of classes (Could be a missing import)')
 
 
 

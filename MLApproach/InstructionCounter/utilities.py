@@ -145,6 +145,9 @@ def put_variable_in_set(locals, m):
     if data[-1] in [',']:
         datatype = data[:-1]
 
+    if is_library_call(datatype):
+        datatype = remove_library_names(datatype)
+
     locals[name] = datatype
 
 

@@ -18,7 +18,7 @@ class variable():
         if can_generate(self.type):
             default_value = get_default(self.type)
         else:
-            default_value = copy.deepcopy(storage.get_class(self.type))
+            default_value = None
         self.set_value(default_value)
 
 
