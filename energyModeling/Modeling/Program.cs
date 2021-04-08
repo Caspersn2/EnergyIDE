@@ -2188,6 +2188,19 @@ namespace Modeling
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
+
+        [Measure(10000, new[] { "Empty" })] // 0x38
+        [Measure(10000, new[] { "Empty", "Ldc_I4" })] // 0x38
+        public void Box(int value)
+        {
+            var (method, ilg) = newMethod();
+
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Box, typeof(int));
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
         #endregion
         #endregion
     }
