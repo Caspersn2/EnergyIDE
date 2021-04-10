@@ -9,6 +9,18 @@ import os
 import argparse
 import pickle
 
+def get_model(method):
+    if method == 'Lasso':
+        model = Lasso()
+    elif method == 'Ridge':
+        model = Ridge()
+    elif method == 'RandomForest':
+        model = RandomForestRegressor(max_depth=10, random_state=0)
+    elif method == 'SVR':
+        model = SVR(kernel='rbf', C=1e3, gamma=0.1)
+    else:
+        model = LinearRegression()
+    return model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -28,28 +40,13 @@ if __name__ == '__main__':
         df = pd.read_csv('output.csv')
 
 
-    X = pd.DataFrame(
-        df.drop(['name', 'pkg(µj)', 'duration(ms)', 'dram(µj)', 'temp(C)'], axis=1))
+    X = pd.DataFrame(df.drop(['name', 'pkg(µj)', 'duration(ms)', 'dram(µj)', 'temp(C)'], axis=1))
     y = pd.DataFrame(df['pkg(µj)'])
 
-    model = None
+    model = get_model(args.regression_method)
+    y = np.ravel(y)
 
-    if args.regression_method == 'Lasso':
-        model = Lasso()
-    elif args.regression_method == 'Ridge':
-        model = Ridge()
-    elif args.regression_method == 'RandomForest':
-        model = RandomForestRegressor(max_depth=10, random_state=0)
-        y = np.ravel(y)
-    elif args.regression_method == 'SVR':
-        model = SVR(kernel='rbf', C=1e3, gamma=0.1)
-        y = np.ravel(y)
-    else:
-        model = LinearRegression()
-
-    
     model.fit(X, y)
-    print(model.score(X, y))
     if args.cross_validate:
         splits = int(len(y) /10)
         print(np.mean(cross_val_score(model, X, y, cv=splits,scoring='neg_root_mean_squared_error')))
