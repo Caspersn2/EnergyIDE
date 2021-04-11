@@ -16,10 +16,9 @@ namespace Modeling
         static void Main(string[] args)
         {
             //var output = Manager.Test(typeof(measureClass));
-            var output = Manager.Test(typeof(testing));
+            var output = Manager.Test(typeof(measureClass));
 
             System.IO.File.WriteAllText("output.xml", output);
-            //UpdateXMLWithSubtractedCost("output.xml");
             UpdateNew("output.xml");
         }
 
@@ -1495,10 +1494,11 @@ namespace Modeling
         #endregion
         #region Stores
         #region Store Locals
-        [Measure(10000, new[] { "Empty", "Ldc_I4" })]
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal" })]
         public void Stloc(int value)
         {
             var (method, ilg) = newMethod();
+            var test = ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4, value);
             ilg.Emit(OpCodes.Stloc, 0);
             runMethod(method, ilg);
@@ -2189,7 +2189,6 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new[] { "Empty" })] // 0x38
         [Measure(10000, new[] { "Empty", "Ldc_I4" })] // 0x38
         public void Box(int value)
         {
