@@ -1,9 +1,15 @@
 import os
 import re
 import subprocess
+import signal
 from tqdm import tqdm
 from loguru import logger
 
+class TimeoutException(Exception):
+    pass
+
+def timeout_handler(signum, frame):
+    raise TimeoutException
 
 def refactor_for_energy_measurement(path):
     with open(f'{path}/Program.cs') as f:
@@ -43,7 +49,9 @@ def refactor_for_energy_measurement(path):
 
 
 if __name__ == '__main__':
+    # Initialise logger and alarm
     logger.add('perform_energy_measurements.log')
+    signal.signal(signal.SIGALRM, timeout_handler)
     # Clear temp results
     with open('tempResults.csv', 'w+') as data:
         data.write('name;duration(ms);pkg(µj);dram(µj);temp(C)\n')
@@ -60,6 +68,11 @@ if __name__ == '__main__':
         # energy measurements of the benchmark
         refactor_for_energy_measurement(benchmark)
 
+
+        # Start timer. If exceeds 5 min, the benchmark is probably waiting for input,
+        # so we continue to the next and log the benchmark
+        signal.alarm(5*60)
+
         # Perform energy measurement
         try:
             subprocess.run(f'dotnet build {benchmark}', shell=True, check=True,
@@ -68,5 +81,12 @@ if __name__ == '__main__':
             subprocess.run(f'dotnet run -p {benchmark}', shell=True, check=True,
                            stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL)
+        except TimeoutException:
+            logger.info(f'Benchmark timed out: {benchmark}')
+            continue
         except:
             logger.info(f'Could not build or run: {benchmark}')
+            continue
+        else:
+            # If no exceptions reset the alarm
+            signal.alarm(0)
