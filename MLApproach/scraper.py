@@ -71,7 +71,9 @@ def save_benchmark(program, title, index):
     with open(f'{path}/Program.cs', 'w+') as f:
         if 'ReadKey' in program:
             program = program.replace('Console.ReadKey(true);', '')
-            program = program.replace('ReadKey(true);', '')
+            program = program.replace('Console.ReadKey();', '')
+            program = program.replace('Console.Read(true);', '')
+            program = program.replace('Console.Read();', '')
         f.write(program)
     # Add csproj
     with open(f'{path}/project.csproj', 'w+') as f:
@@ -135,5 +137,5 @@ if __name__ == '__main__':
     with open('benchmark_links.txt') as f:
         benchmark_links = f.readlines()
     
-    pool = Pool(processes=4)
+    pool = Pool(processes=2)
     pool.map(scrape_benchmark, benchmark_links)
