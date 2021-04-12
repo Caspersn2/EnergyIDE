@@ -11,8 +11,10 @@ class newarr_instruction(instruction):
     def get_default(self, datatype):
         return {
             'System.Boolean': 0,
-            'System.String': ''
-        }[datatype]
+            'System.String': '',
+            'System.Double': 0.0,
+            'System.Int32': 0,
+        }.get(datatype, None)
 
     @classmethod
     def create(cls, name, elements):
