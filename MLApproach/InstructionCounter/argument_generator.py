@@ -71,12 +71,16 @@ def get_default(datatype):
 
 
 def get_primitive(d_type, storage):
-    datatype = d_type.get_name()
+    datatype = d_type
     if type(datatype) != str:
-        datatype = datatype.datatype
+        datatype = d_type.get_name()
+        if type(datatype) != str:
+            datatype = datatype.datatype
 
     if datatype == 'int32':
         return copy.deepcopy(storage.get_class('System.Int32'))
+    elif datatype == 'uint32':
+        return copy.deepcopy(storage.get_class('System.UInt32'))
     elif datatype == 'string':
         return copy.deepcopy(storage.get_class('System.String'))
     else:

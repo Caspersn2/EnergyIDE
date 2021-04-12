@@ -1,3 +1,6 @@
+from argument_generator import can_generate
+from objects.Types import DataType
+from variable import variable
 from instruction import instruction
 from action_enum import Actions
 
@@ -47,6 +50,11 @@ class local_address_instruction(instruction):
         return ['ldloca', 'ldloca.s']
 
     def execute(self, storage):
-        local_value = storage.get_local(self.index).get_value()
+        local = storage.get_local(self.index)
+        local_value = local.get_value()
+        if can_generate(local.get_name()):
+            temp = variable(None, local.get_datatype(storage))
+            temp.set_value(local.get_value())
+            local_value = temp
         storage.push_stack(local_value)
         return Actions.NOP, None

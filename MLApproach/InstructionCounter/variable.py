@@ -29,6 +29,10 @@ class variable():
         return self.value
 
 
+    def get_name(self):
+        return self.type
+
+
     def get_datatype(self, storage):
         datatype = get_primitive(self.type, storage)
         if datatype:

@@ -70,12 +70,13 @@ class GenericType():
 
 
 class ArrayType():
-    def __init__(self, type_name):
+    def __init__(self, type_name, bound):
         self.type_name = type_name
+        self.bound = bound
 
     def get_name(self):
         return f'{self.type_name}[]'
 
     @classmethod
-    def new(cls, arr_datatype):
-        return ArrayType(arr_datatype.type_name)
+    def new(cls, arr_datatype, bound):
+        return ArrayType(arr_datatype.type_name, bound)

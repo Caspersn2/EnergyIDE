@@ -1,3 +1,5 @@
+import copy
+from variable import variable
 from Parser import InstructionParser
 from instruction import instruction
 from action_enum import Actions
@@ -39,6 +41,9 @@ class call_instruction(instruction):
         class_name, method_name = self.invocation_target.split('::')
         if self.is_instance:
             class_instance = storage.pop_stack()
+            if isinstance(class_instance, variable):
+                storage.active_value = class_instance.get_value()
+                class_instance = class_instance.get_datatype(storage)
             storage.set_active_class(class_instance)
         else:
             class_instance = storage.get_class(class_name)
