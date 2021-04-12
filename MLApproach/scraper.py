@@ -9,7 +9,15 @@ from multiprocessing import Pool
 
 # These statements requires the user to provide some input.
 # We do not want to consider programs that require input.
-blacklist = ['Read', 'ReadLine', 'ReadKey', 'args[']
+blacklist = ['=Read', '=ReadLine', '=ReadKey',
+             '= Read', '= ReadLine', '= ReadKey',
+             '=Console.Read', '=Console.ReadLine', '=Console.ReadKey',
+             '= Console.Read', '= Console.ReadLine', '= Console.ReadKey',
+             '(Read())', '(ReadLine())', '(ReadKey())',
+             # If in function call (int.Parse(Console.XX))
+             '(Console.Read())', '(Console.ReadLine())', '(Console.ReadKey())',
+             'args['  # Index into commandline arguments
+             ]
 
 
 def get_benchmark_code(url, type='rosetta'):
@@ -61,9 +69,9 @@ def save_benchmark(program, title, index):
 
     # Add implementation
     with open(f'{path}/Program.cs', 'w+') as f:
-        if 'Console.ReadKey' in program:
+        if 'ReadKey' in program:
             program = program.replace('Console.ReadKey(true);', '')
-            program = program.replace('Console.ReadKey();', '')
+            program = program.replace('ReadKey(true);', '')
         f.write(program)
     # Add csproj
     with open(f'{path}/project.csproj', 'w+') as f:
@@ -115,7 +123,7 @@ def scrape_benchmark(benchmark):
         except:
             # If the project cannot be build or dissambled,
             # delete it from the benchmarks folder
-            subprocess.call(f'rm -rf {path}', shell=True)
+            os.remove(path)
             logger.info(f'Could not build or dissamble: {path}')
             continue
 
