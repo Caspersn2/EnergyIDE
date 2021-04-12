@@ -1,3 +1,4 @@
+from objects.Custom import Custom
 from objects.Types import DataType, ArrayType, GenericType, Parameter, GenericClassType, GenericMethodType
 from objects.Instruction import Instruction
 from objects.Field import Field
@@ -38,6 +39,7 @@ class NameParser(TextParsers):
     classname = \
             ('[' & opt('.module') & dotted_name & ']') >> slashedName \
             | slashedName
+    dataLabel = identifier
 
 
 
@@ -72,6 +74,12 @@ class TypeParser(TextParsers):
             | NameParser.classname
     genParAttr = lit('+', '-', 'class', 'valuetype', '.ctor')
     genPar = (rep(genParAttr) & opt('(' >> repsep(type_, ',') << ')')) >> NameParser.identifier > DataType
+    ddItem = \
+            lit('bytearray') & '(' & rep(reg(BYTES)) & ')' \
+            | lit('float32', 'float64') & opt('(' >> reg(DOUBLE) << ')') & opt('(' >> reg(INTEGER) << ')') \
+            | lit('int8', 'int16', 'int32', 'int64') & opt('(' >> reg(INTEGER) << ')') & opt('(' >> reg(INTEGER) << ')') 
+    ddBody = repsep(ddItem, ',')
+    dataDecl = lit('cil') >> opt(NameParser.dataLabel << '=') & ddBody
 
 
 
@@ -95,13 +103,15 @@ class FieldParser(TextParsers):
     floatInit = lit('float32', 'float64') << '(' & doubleParse << ')'
     intInit = lit('char', 'int8', 'int16', 'int32', 'int64') << '(' & intParse << ')'
     uintInit = lit('uint8', 'uint16', 'uint32', 'uint64') << '(' & uintParse << ')'
+    stringInit = NameParser.qstring
     fieldInit = \
             boolInit \
             | floatInit \
             | intInit \
             | uintInit \
+            | stringInit \
             | 'nullref'
-    field_ = ('.field' & fieldDecl) >> rep(fieldAttr) & TypeParser.type_ & NameParser.identifier & opt('=' >> fieldInit) > splat(Field)
+    field_ = ('.field' & fieldDecl) >> rep(fieldAttr) & TypeParser.type_ & NameParser.identifier & opt('=' >> fieldInit | 'at' >> NameParser.dataLabel) > splat(Field)
 
 
 
@@ -125,7 +135,7 @@ class MethodParser(TextParsers):
     methodHeader = rep(methodAttr) & callConv & (TypeParser.type_ | lit('<bad signature>')) & opt(marshal) & methodname & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
     methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
     method_ = '.method' >> methodHeader > splat(Method)
-    customDecl = '.custom' & methodHeaderFull & opt((lit('=') & '(') >> rep(reg(BYTES)) << ')')
+    customDecl = '.custom' >> methodHeaderFull << opt((lit('=') & '(') & rep(reg(BYTES)) & ')') > Custom
     instruction_ = lit('IL_') >> reg(HEX) << ':' & reg(r'[^\n]+') > splat(Instruction)
     scopeblock = fwd()
     tryblock = lit('.try') & scopeblock
@@ -141,6 +151,7 @@ class MethodParser(TextParsers):
             | lit('.param') << '[' & reg(INTEGER) << ']' & opt('=' >> FieldParser.fieldInit) \
             | customDecl \
             | LocalsParser.locals_ \
+            | lit('.data') >> TypeParser.dataDecl \
             | lit('.override') & lit('method') & (methodHeaderFull | TypeParser.typespec & '::' & methodname) \
             | scopeblock \
             | SEHBlock
@@ -162,6 +173,7 @@ class ClassParser(TextParsers):
             | classProperty \
             | MethodParser.customDecl \
             | FieldParser.field_ \
+            | lit('.data') >> TypeParser.dataDecl \
             | (class_ << '{' & rep(classMembers_) << '}' > splat(Container.add_members))
 
 
