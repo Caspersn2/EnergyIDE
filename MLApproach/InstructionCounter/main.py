@@ -3,7 +3,8 @@ from storage import storage
 from simulation_exception import simulation_exception
 from statemachine import state_machine
 from argument_generator import create_random_argument, convert_argument
-import utilities
+from collections import Counter
+import Parser
 import subprocess
 import result
 import os
@@ -11,14 +12,14 @@ import os
 
 def execute(args, method, state_machine):
     if args.counting_method == 'Simple':
-        res = utilities.simple_count(method.text)
+        res = Counter([x.name for x in method.instructions.values()])
         result.add_results(res, method)
     else:
         if method.is_entry:
             state_machine.simulate(method, None)
         else:
             args_list = []
-            for idx, param in enumerate(method.arguments.values()):
+            for idx, param in enumerate(method.parameters):
                 if args.input and idx < len(args.input):
                     value = convert_argument(args.input[idx], param)
                 else:
@@ -31,26 +32,25 @@ def execute(args, method, state_machine):
 
 def count_instructions(args, text):
     ## Split all code into methods
-    program_classes = utilities.get_all_classes(text)
-    external_libs = get_libraries(args)
-    classes = {**program_classes, **external_libs} 
-
-    for cls in classes:
-        classes[cls].load_methods()
-    entry, methods = get_methods_from_classes(classes)
-    storage_unit = storage(classes, methods)
+    outerclasses = Parser.parse_text(text)
+    classes = get_all_classes(outerclasses)
+    if args.library:
+        library_classes = get_library_classes(args.library)
+        classes = {**classes, **library_classes}
+    methods, entry = get_methods_and_entry(classes)
+    storage_unit = storage(classes)
     state = state_machine(storage_unit)
 
     if args.list:
-        print_methods(methods)
+        print_methods(classes)
         exit()
         
     if entry and not args.method:
-        args.method = entry.name
+        args.method = entry
     elif not entry and not args.method:
         raise simulation_exception('No entry was found in the program, please specify one using the "-m" or "--method" command line argument')
 
-    if entry and args.method == entry.name and args.counting_method == 'Simple':
+    if entry and args.method == entry and args.counting_method == 'Simple':
         for method in methods.values():
             execute(args, method, state)
     else:
@@ -63,32 +63,38 @@ def count_instructions(args, text):
     result.output(args.output)
     return result.get_results()
 
-def get_libraries(args):
+
+def get_library_classes(file_list):
     classes = {}
-    if args.library:
-        for lib in args.library:
-            with open(lib, 'r') as lib_text:
-                for key, value in utilities.get_all_classes(lib_text.read()).items():
-                    classes[key] = value
+    for file in file_list:
+        classes = {**classes, **Parser.parse_file(file)}
     return classes
 
 
-def get_methods_from_classes(classes):
+def get_all_classes(outerclasses):
+    classes = outerclasses
+    for cls in outerclasses.values():
+        classes = {**classes, **cls.get_nested()}
+    return classes
+    
+
+def get_methods_and_entry(classes):
+    entry = ''
     methods = {}
-    entry = None
-    for _, cls in classes.items():
-        for m in cls.methods:
-            if m.is_entry:
-                entry = m
-            methods[m.name] = m
-    return entry, methods
+    for cls in classes.values():
+        for meth in cls.methods.values():
+            methods[meth.get_full_name()] = meth
+            if meth.is_entry:
+                entry = meth.get_full_name()
+    return methods, entry
 
 
-def print_methods(methods):
+
+def print_methods(classes):
     print(f'The available methods are as follows:')
-    keys = [f'{x}' for x in methods.keys()]
-    for key in keys:
-        print(key)
+    for cls in classes.values():
+        for meth in cls.methods.values():
+            print(meth.get_full_name())
 
 
 if __name__ == '__main__':

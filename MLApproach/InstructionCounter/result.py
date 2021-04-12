@@ -2,10 +2,9 @@ result_store = []
 
 
 def add_results(results, method, counting_type='Simple', return_value = None):
-    name = method.name
+    name = method.get_full_name()
     args = None
     if counting_type == 'Simulation':
-        name = method.get_name()
         args = method.arguments
 
     single_result = {

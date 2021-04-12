@@ -71,7 +71,7 @@ def get_default(datatype):
 
 
 def get_primitive(d_type, storage):
-    datatype = d_type
+    datatype = d_type.get_name()
     if type(datatype) != str:
         datatype = datatype.datatype
 
@@ -84,19 +84,20 @@ def get_primitive(d_type, storage):
 
 
 def create_random_argument(datatype):
-    if datatype == 'void':
+    data_type = datatype.get_name()
+    if data_type == 'void':
         return None
-    elif datatype == 'char':
+    elif data_type == 'char':
         return random_char()
-    elif datatype == 'bool':
+    elif data_type == 'bool':
         return random_bool()
-    elif datatype == 'int32':
+    elif data_type == 'int32':
         return random_int32()
-    elif datatype == 'float32':
+    elif data_type == 'float32':
         return random_double()
-    elif datatype == 'float64':
+    elif data_type == 'float64':
         return random_double()
-    elif datatype == 'string':
+    elif data_type == 'string':
         return random_string()
     else:
-        raise simulation_exception(f"The type '{datatype}' has no random implementation")
+        raise simulation_exception(f"The type '{data_type}' has no random implementation")

@@ -68,14 +68,12 @@ class instruction():
 
 
     @classmethod
-    def create(cls, text):
-        elements = text.split(' ')
-        name = elements[0]
+    def create(cls, name, data):
         load_classes()
         
         for container in classes:
             if name in container.keys():
-                return container.create(name, elements[1:])
+                return container.create(name, data)
 
         return dummy_instruction(name)
 

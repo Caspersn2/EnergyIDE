@@ -1,16 +1,22 @@
 from simulation_exception import simulation_exception
 from variable import variable
-from utilities import is_generic, get_args_between
+import re
+
+
+def is_generic(value):
+    if re.search(r'`[0-9]+<', value):
+        return True
+    else:
+        return False
 
 
 class storage():
-    def __init__(self, classes, methods, static_fields = None, active_value = None) -> None:
+    def __init__(self, classes, static_fields = None, active_value = None) -> None:
         self.stack = []
         self.locals = {}
         self.arguments = {}
         self.arg_conversion = None
         self.classes = classes
-        self.methods = methods
         self.active_class = []
         self.active_method = None
         self.active_value = active_value
@@ -21,10 +27,9 @@ class storage():
     @classmethod
     def copy(cls, storage_class):
         classes = storage_class.classes
-        methods = storage_class.methods
         static_fields = storage_class.static_fields
         active_value = storage_class.active_value
-        return storage(classes, methods, static_fields, active_value)
+        return storage(classes, static_fields, active_value)
 
 
 
@@ -47,35 +52,13 @@ class storage():
         return self.active_method
 
 
-    def get_method(self, key):
-        method = key.split('::')[-1]
-        if '<' in method and '>' in method:
-            return self.find_generic(method)
-        if key in self.methods:
-            return self.methods[key]
-        else:
-            raise simulation_exception(f"The desired method '{key}' was not found in the list of methods")
-
-
-    def find_generic(self, method):
-        method_name = method.split('::')[-1]
-        if '<' in method_name and '>' in method_name:
-            num_args = len(get_args_between(method_name, '(', ')'))
-            generic_methods = [v for v in self.methods.values() if v.is_generic]
-            for candidate in generic_methods:
-                candidate_name = candidate.get_simple_name()
-                if method_name.split('<')[0] == candidate_name.split('<')[0] and num_args == len(candidate.arguments):
-                    return candidate
-        return None
-
-
 
     # STATIC FIELDS
     def obtain_static(_, classes):
         combined = {}
         for c in classes.values():
             for static in c.static_fields:
-                field_name = c.name + '::' + static
+                field_name = c.get_name() + '::' + static
                 datatype = c.static_fields[static].datatype
                 combined[field_name] = variable(field_name, datatype)
         return combined

@@ -1,6 +1,6 @@
+from Parser import InstructionParser
 from instruction import instruction
 from action_enum import Actions
-import utilities
 
 
 class newarr_instruction(instruction):
@@ -16,7 +16,7 @@ class newarr_instruction(instruction):
 
     @classmethod
     def create(cls, name, elements):
-        datatype = utilities.remove_library_names(' '.join(elements))
+        datatype = InstructionParser.parse(name, ' '.join(elements))
         return newarr_instruction(name, datatype)
 
     @classmethod
