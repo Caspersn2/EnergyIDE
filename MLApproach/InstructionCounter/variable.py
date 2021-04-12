@@ -17,8 +17,11 @@ class variable():
     def set_default(self, storage):
         if can_generate(self.type):
             default_value = get_default(self.type)
+        elif self.type in storage.classes:
+            default_value = copy.deepcopy(storage.get_class(self.type))
         else:
-            default_value = None
+            # Note that this is not totally understood. This statement could potentially break some programs (I do not know)
+            return None
         self.set_value(default_value)
 
 
