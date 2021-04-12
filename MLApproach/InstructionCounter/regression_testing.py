@@ -3,6 +3,7 @@ import subprocess
 import os
 import unittest
 
+FILE_STORAGE = 'results.csv'
 CIL_INSTRUCTIONS = [x.strip()
                     for x in open('CIL_Instructions.txt').readlines()]
 
@@ -25,15 +26,15 @@ def helper(il_file, correct, is_simple):
         subprocess.run(f'python3 main.py -f {il_file} -o results.csv', shell=True)
 
     # Assert Simple
-    res = count_occurrences('results.csv')
+    res = count_occurrences(FILE_STORAGE)
     truth = count_occurrences(correct)
     return res, truth
 
 
 class TestCounting(unittest.TestCase):
     def tearDown(self):
-        if os.path.isfile('results.csv'):
-            os.remove('results.csv')
+        if os.path.isfile(FILE_STORAGE):
+            os.remove(FILE_STORAGE)
 
 
     ## Simple Add
