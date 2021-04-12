@@ -5,10 +5,11 @@ from objects.Locals import Locals
 
 
 class Method():
-    def __init__(self, method_attr, call_conv, return_type, method_name, gens, params):
+    def __init__(self, method_attr, call_conv, return_type, marshal, method_name, gens, params):
         self.attributes = method_attr
         self.call_convensions = call_conv
         self.return_type = return_type
+        self.marshal = marshal
         if type(method_name) == list:
             self.name = self.combine_name(method_name)
         else:

@@ -28,7 +28,8 @@ def slash_join(*lst):
 
 class NameParser(TextParsers):
     small_id = reg(r'[_$@`?A-Za-z][_$@`?A-Za-z0-9]*')
-    sqstring = reg(r'\'[^\']+\'')
+    sqstring = reg(r'\'[^\']*\'')
+    qstring = reg(r'\"[^\"]+\"')
     identifier = \
             small_id \
             | sqstring
@@ -102,17 +103,20 @@ class MethodParser(TextParsers):
     callConv = \
             lit('instance', 'explicit') & callConv \
             | opt(callkind)
-    methodAttr = lit('abstract', 'assembly', 'family', 'compilercontrolled', 'famandassem', 'famorassem', 'final', 'hidebysig', 'newslot', 'private', 'public', 'rtspecialname', 'specialname', 'static', 'virtual', 'strict')
+    pinvattr = lit('ansi', 'autochar', 'cdecl', 'fastcall', 'stdcall', 'thiscall', 'unicode', 'winapi', 'lasterr', 'nomangle')
+    pinvoke = lit('pinvokeimpl') & '(' & NameParser.qstring & opt('as' & NameParser.qstring) & rep(pinvattr) & ')'
+    methodAttr = lit('abstract', 'assembly', 'family', 'compilercontrolled', 'famandassem', 'famorassem', 'final', 'hidebysig', 'newslot', 'private', 'public', 'rtspecialname', 'specialname', 'static', 'virtual', 'strict') | pinvoke
     methodname = \
             lit('.ctor') \
             | lit('.cctor') \
             | NameParser.dotted_name
     paramAttr = lit('[in]', '[out]', '[opt]')
-    implAttr = lit('cil', 'forwardref', 'internalcall', 'managed', 'native', 'noinlining', 'nooptimization', 'runtime', 'synchronized', 'unmanaged', 'aggressiveinlining')
+    implAttr = lit('cil', 'forwardref', 'internalcall', 'managed', 'native', 'noinlining', 'nooptimization', 'runtime', 'synchronized', 'unmanaged', 'aggressiveinlining', 'preservesig')
     sigArg = TypeParser.type_ & opt(NameParser.identifier) > splat(Parameter.new)
     params = rep(paramAttr) >> sigArg
-    methodHeader = rep(methodAttr) & callConv & TypeParser.type_ & methodname & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
-    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & (TypeParser.typespec & '::' & methodname) & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
+    marshal = (lit('marshal') & '(') >> TypeParser.primitive_types << ')'
+    methodHeader = rep(methodAttr) & callConv & (TypeParser.type_ | lit('<bad signature>')) & opt(marshal) & methodname & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
+    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
     method_ = '.method' >> methodHeader > splat(Method)
     customDecl = '.custom' & methodHeaderFull & opt((lit('=') & '(') >> rep(reg(BYTES)) << ')')
     instruction_ = lit('IL_') >> reg(HEX) << ':' & reg(r'[^\n]+') > splat(Instruction)
@@ -211,5 +215,5 @@ def parse_text(text, path=None):
 
 
 def parse_file(path):
-    text = open(path, 'r').read()
+    text = open(path, 'r', encoding='utf-8').read()
     return parse_text(text, path)
