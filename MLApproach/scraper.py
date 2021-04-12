@@ -9,15 +9,7 @@ from multiprocessing import Pool
 
 # These statements requires the user to provide some input.
 # We do not want to consider programs that require input.
-blacklist = ['=Read', '=ReadLine', '=ReadKey',
-             '= Read', '= ReadLine', '= ReadKey',
-             '=Console.Read', '=Console.ReadLine', '=Console.ReadKey',
-             '= Console.Read', '= Console.ReadLine', '= Console.ReadKey',
-             '(Read())', '(ReadLine())', '(ReadKey())',
-             # If in function call (int.Parse(Console.XX))
-             '(Console.Read())', '(Console.ReadLine())', '(Console.ReadKey())',
-             'args['  # Index into commandline arguments
-             ]
+blacklist = ['Read', 'ReadLine', 'ReadKey', 'args[']
 
 
 def get_benchmark_code(url, type='rosetta'):
