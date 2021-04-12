@@ -96,3 +96,22 @@ class array_update_ref_instruction(instruction):
         array = storage.pop_stack()
         array[index] = value
         return Actions.NOP, None
+
+
+
+class load_length_instruction(instruction):
+    def __init__(self, name):
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, _):
+        return load_length_instruction(name)
+
+    @classmethod
+    def keys(cls):
+        return ['ldlen']
+
+    def execute(self, storage):
+        array = storage.pop_stack()
+        storage.push_stack(len(array))
+        return Actions.NOP, None

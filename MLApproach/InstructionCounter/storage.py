@@ -1,3 +1,4 @@
+import copy
 from simulation_exception import simulation_exception
 from variable import variable
 import re
@@ -54,13 +55,14 @@ class storage():
 
 
     # STATIC FIELDS
-    def obtain_static(_, classes):
+    def obtain_static(self, classes):
         combined = {}
         for c in classes.values():
             for static in c.static_fields:
                 field_name = c.get_name() + '::' + static
                 datatype = c.static_fields[static].datatype
                 combined[field_name] = variable(field_name, datatype)
+                combined[field_name].set_default(self)
         return combined
 
 
@@ -92,6 +94,11 @@ class storage():
         else:
             raise simulation_exception(f'The class: "{key}" was not found in the list of classes (Could be a missing import)')
 
+    
+    def get_class_copy(self, key):
+        cls = copy.deepcopy(self.get_class(key))
+        cls.init_state(self)
+        return cls
 
 
     # STACK

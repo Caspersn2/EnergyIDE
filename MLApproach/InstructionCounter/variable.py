@@ -18,7 +18,7 @@ class variable():
         if can_generate(self.type):
             default_value = get_default(self.type)
         elif self.type in storage.classes:
-            default_value = copy.deepcopy(storage.get_class(self.type))
+            default_value = storage.get_class_copy(self.type)
         else:
             # Note that this is not totally understood. This statement could potentially break some programs (I do not know)
             return None

@@ -1,5 +1,4 @@
 import random
-import copy
 from simulation_exception import simulation_exception
 
 
@@ -52,21 +51,28 @@ def convert_argument(value, datatype):
 
 
 def can_generate(datatype):
-    return datatype in primitive or datatype in array_primitives
+    data_type = datatype
+    if type(datatype) != str:
+        data_type = datatype.get_name()
+    return data_type in primitive or data_type in array_primitives
 
 
 def get_default(datatype):
-    if can_generate(datatype):
-        if datatype in ['char', 'int32', 'uint32', 'bool']:
+    data_type = datatype
+    if type(datatype) != str:
+        data_type = datatype.get_name()
+
+    if can_generate(data_type):
+        if data_type in ['char', 'int32', 'uint32', 'bool']:
             return 0
-        elif datatype in ['float32', 'float64']:
+        elif data_type in ['float32', 'float64']:
             return 0.0
-        elif datatype in ['string']:
+        elif data_type in ['string']:
             return ''
-        elif '[]' in datatype:
+        elif '[]' in data_type:
             return []
     else:
-        raise simulation_exception(f'The type: "{datatype}" is not supported for default value')
+        raise simulation_exception(f'The type: "{data_type}" is not supported for default value')
 
 
 def get_system_name(d_type):
@@ -93,7 +99,7 @@ def get_primitive(d_type, storage):
 
     system_name = get_system_name(datatype)
     if system_name:
-        return copy.deepcopy(storage.get_class(system_name))
+        return storage.get_class_copy(system_name)
     else:
         return None
 

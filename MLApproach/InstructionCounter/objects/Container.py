@@ -27,6 +27,11 @@ class Container():
     def get_state(self, key):
         return self.state[key]
 
+    
+    def init_state(self, storage):
+        for key in self.state:
+            self.state[key].set_default(storage)
+
 
     def set_types(self, concrete):
         for idx, gen in enumerate(self.generics):

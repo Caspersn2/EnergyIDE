@@ -67,7 +67,7 @@ class new_object_instruction(object_instructions):
 
 
     def get_class_and_args(self, storage):
-        cls = copy.deepcopy(storage.get_class(self.class_name))
+        cls = storage.get_class_copy(self.class_name)
         if not cls:
             raise simulation_exception(f'The class "{self.class_name}" was not found in the list of classes')
         args = []
