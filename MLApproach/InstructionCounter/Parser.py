@@ -164,7 +164,7 @@ class ClassParser(TextParsers):
     propHeader = opt('specialname') & opt('rtspecialname') & MethodParser.callConv & TypeParser.type_ & NameParser.dotted_name << '(' & repsep(MethodParser.params, ',') << ')'
     propMember = (lit('.get') | lit('.set')) & MethodParser.callConv & TypeParser.type_ & opt(TypeParser.typespec & '::') & MethodParser.methodname << '(' & repsep(MethodParser.params, ',') << ')'
     classProperty = '.property' & propHeader << '{' & rep(propMember) << '}'
-    class_ = '.class' >> rep(classAttr) & NameParser.dotted_name & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & opt('extends' >> TypeParser.typespec) & opt('implements' & repsep(TypeParser.typespec, ',')) > splat(Container.new)
+    class_ = '.class' >> rep(classAttr) & NameParser.dotted_name & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & opt('extends' >> TypeParser.typespec) & opt('implements' & repsep(opt(MethodParser.customDecl) >> TypeParser.typespec, ',')) > splat(Container.new)
     classMembers_ = \
             (MethodParser.method_ << '{' & rep(MethodParser.methodBody_) << '}' > splat(Method.add_members)) \
             | lit('.pack') & reg(INTEGER) \
