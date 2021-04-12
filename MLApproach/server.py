@@ -14,6 +14,19 @@ from InstructionCounter import main
 routes = web.RouteTableDef()
 model_path = 'model.obj'
 
+def get_cil_counts(methods,className):
+    counts = {}  # maps method/program name to IL instruction Counter
+    if methods:
+        for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
+            args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                    counting_method='Simple', entry='Main(string[])', output=None)
+            counts[method_name] = main.count_instructions(args, text)
+    else:
+        args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                counting_method='Simple', entry='Main(string[])', output=None)
+        counts[name] = main.count_instructions(args, text)
+        return counts
+
 
 @routes.post('/post')
 async def get_estimate(request):
@@ -23,33 +36,21 @@ async def get_estimate(request):
         return web.Response(text='This service is currently unavailable. No regression model is present', status=503)
 
     json_data = await request.json()
-    active_classes = json_data['activeClasses']
+    activate_classes = json_data['activeClasses']
     all_predictions = {}
-    for current_class in active_classes:
+    for current_class in activate_classes:
         path_to_assembly = current_class['AssemblyPath']
         className = current_class['ClassName']
         methods = current_class['Methods']
         abs_file_path = os.path.splitext(path_to_assembly)[0]
         name = os.path.split(abs_file_path)[-1]
 
-        # dissassemble
-        subprocess.call(
-            f'ilspycmd {path_to_assembly} -o . -il', shell=True)
-
-        # get il code
+        # dissassemble and get il code
+        subprocess.call(f'ilspycmd {path_to_assembly} -o . -il', shell=True)
         text = open(f'{name}.il').read()
 
-        # count instructions
-        counts = {}  # maps method/program name to IL instruction Counter
-        if methods:
-            for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
-                args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
-                                        counting_method='Simple', entry='Main(string[])', output=None)
-                counts[method_name] = main.count_instructions(args, text)
-        else:
-            args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
-                                    counting_method='Simple', entry='Main(string[])', output=None)
-            counts[name] = main.count_instructions(args, text)
+        # count instructions, maps method/program name to IL instruction Counter
+        counts = get_cil_counts(methods, className)  
 
         # make prediction
         predictions = {} # maps method/program name to energy prediction
