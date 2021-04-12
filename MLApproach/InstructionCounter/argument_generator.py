@@ -69,6 +69,20 @@ def get_default(datatype):
         raise simulation_exception(f'The type: "{datatype}" is not supported for default value')
 
 
+def get_system_name(d_type):
+    datatype = d_type
+    if type(datatype) != str:
+        datatype = d_type.get_name()
+        if type(datatype) != str:
+            datatype = datatype.datatype
+
+    return {
+        'int32': 'System.Int32',
+        'uint32': 'System.UInt32',
+        'string': 'System.String'
+    }.get(d_type, None)
+
+
 
 def get_primitive(d_type, storage):
     datatype = d_type
@@ -77,12 +91,9 @@ def get_primitive(d_type, storage):
         if type(datatype) != str:
             datatype = datatype.datatype
 
-    if datatype == 'int32':
-        return copy.deepcopy(storage.get_class('System.Int32'))
-    elif datatype == 'uint32':
-        return copy.deepcopy(storage.get_class('System.UInt32'))
-    elif datatype == 'string':
-        return copy.deepcopy(storage.get_class('System.String'))
+    system_name = get_system_name(datatype)
+    if system_name:
+        return copy.deepcopy(storage.get_class(system_name))
     else:
         return None
 

@@ -1,6 +1,8 @@
+from argument_generator import can_generate
 from simulation_exception import simulation_exception
 from instruction import instruction
 from action_enum import Actions
+from variable import variable
 
 
 class load_ref_argument_instruction(instruction):
@@ -21,8 +23,13 @@ class load_ref_argument_instruction(instruction):
 
     def execute(self, storage):
         key = storage.arg_conversion[self.variable_name]
-        value = storage.arguments[key].get_value()
-        storage.push_stack(value)
+        arg = storage.arguments[key]
+        arg_value = arg.get_value()
+        if can_generate(arg.get_name()):
+            temp = variable(None, arg.get_datatype(storage))
+            temp.value = arg.get_value()
+            arg_value = temp
+        storage.push_stack(arg_value)
         return Actions.NOP, None
 
     def __repr__(self) -> str:

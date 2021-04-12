@@ -1,3 +1,4 @@
+from variable import variable
 from Parser import InstructionParser, UtilityParser
 from simulation_exception import simulation_exception
 from argument_generator import create_random_argument
@@ -56,7 +57,7 @@ class new_object_instruction(object_instructions):
 
             storage.set_active_class(cls)
             if isinstance(cls, DelegateContainer):
-                cls.add_method(args)
+                cls.set_method(args)
                 storage.push_stack(cls)
                 return Actions.NOP, None
             else:
@@ -137,6 +138,10 @@ class callvirt_instruction(object_instructions):
             value = storage.pop_stack()
             if isinstance(value, Container):
                 cls = value
+                break
+            elif isinstance(value, variable):
+                cls = value.get_datatype(storage)
+                storage.active_value = value.get_value()
                 break
             else:
                 args.append(value)

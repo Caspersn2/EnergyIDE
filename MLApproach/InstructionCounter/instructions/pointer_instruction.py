@@ -1,32 +1,39 @@
+from Parser import InstructionParser, UtilityParser
 from argument_generator import can_generate
-from objects.Types import DataType
 from variable import variable
 from instruction import instruction
 from action_enum import Actions
 
 
 class method_pointer_instruction(instruction):
-    def __init__(self, name, datatype, method_name):
-        self.datatype = datatype
+    def __init__(self, name, method_inst):
+        class_name, method_name = method_inst.get_name().split('::')
+        self.class_name = class_name
         self.method_name = method_name
+        c_gen = UtilityParser.parse_generics(class_name)
+        self.class_generics = c_gen[0] if c_gen else []
+        m_gen = UtilityParser.parse_generics(method_name)
+        self.method_generics = m_gen[0] if m_gen else []
         super().__init__(name)
 
     @classmethod
     def create(cls, name, elements):
-        if 'instance' in elements:
-            datatype = elements[1]
-            method_name = ' '.join(elements[2:])
-        else:
-            datatype = elements[0]
-            method_name = ' '.join(elements[1:])
-        return method_pointer_instruction(name, datatype, method_name)
+        text = ' '.join(elements)
+        method_inst = InstructionParser.parse(name, text)
+        return method_pointer_instruction(name, method_inst)
 
     @classmethod
     def keys(cls):
         return ['ldftn']
 
     def execute(self, storage):
-        method = storage.get_method(self.method_name)
+        cls = storage.get_class(self.class_name)
+
+        if cls.is_generic or '!!' in self.method_name:
+            method = cls.get_generic_method(self.method_name, self.class_generics, self.method_generics)
+        else:
+            method = cls.get_method(None, self.method_name)
+
         storage.push_stack(method)
         return Actions.NOP, None
 

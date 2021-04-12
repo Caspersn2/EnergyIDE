@@ -94,7 +94,8 @@ class Container():
         if method_gen:
             real_name = self.replace_method_generics(real_name, method_gen)
         method = self.get_method(None, real_name)
-        method.set_types(method_gen)
+        if method.is_generic and method_gen:
+            method.set_types(method_gen)
         return method
 
     
@@ -133,13 +134,21 @@ class Container():
     def get_nested(self):
         nested = {}
         for inner in self.nested.values():
-            nested[inner.get_simple_name()] = inner
+            nested[inner.get_qualifying_name()] = inner
             nested = {**nested, **inner.get_nested()}
         return nested
 
 
     def get_simple_name(self):
         return self.name
+
+
+    def get_qualifying_name(self):
+        name = ''
+        if self.parent_class:
+            name = self.parent_class.get_qualifying_name() + '/'
+        name += self.name
+        return name
 
 
     def get_name(self):
@@ -189,7 +198,7 @@ class DelegateContainer(Container):
 
 
     def set_method(self, method):
-        self.delegate_method = method
+        self.delegate_method = method[0]
 
 
     def get_method(self, _, __):

@@ -175,7 +175,7 @@ class InstructionParser(TextParsers):
         result = None
         if name in ['call', 'callvirt', 'jmp', 'ldftn', 'ldvirtftn', 'newobj']:
             result = InstructionParser.method_instruction.parse(data)
-        elif name in ['box', 'castclass', 'initobj', 'isinst', 'ldelema', 'ldobj', 'newarr', 'refanyval', 'sizeof', 'stobj', 'ldobj', 'unbox']:
+        elif name in ['box', 'castclass', 'initobj', 'isinst', 'ldelema', 'ldobj', 'newarr', 'refanyval', 'sizeof', 'stobj', 'ldobj', 'unbox', 'unbox.any']:
             result = InstructionParser.type_argument_instruction.parse(data)
         else:
             raise NotImplementedError(f'The command "{name}" has not been implemented in the instruction parser')
@@ -213,7 +213,7 @@ def parse_text(text, path=None):
     if isinstance(res, Success):
         outers = {}
         for cls in res.value:
-            outers[cls.get_simple_name()] = cls
+            outers[cls.get_qualifying_name()] = cls
         return outers
     else:
         if path:
