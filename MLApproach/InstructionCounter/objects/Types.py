@@ -49,7 +49,10 @@ class Parameter():
         if type(p_datatype) == list:
             datatype = p_datatype[0]
             for d_type in p_datatype[1:]:
-                datatype.type_name += d_type
+                if type(d_type) == str:
+                    datatype.type_name += d_type
+                else:
+                    datatype.type_name += d_type.get_name()
             p_datatype = datatype
         return Parameter(p_datatype, name)
 
