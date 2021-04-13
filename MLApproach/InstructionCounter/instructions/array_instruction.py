@@ -46,7 +46,7 @@ class array_update_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['stelem.i', 'stelem.i1', 'stelem.i2', 'stelem.i4', 'stelem.i8', 'stelem.r4', 'stelem.r8']
+        return ['stelem', 'stelem.i', 'stelem.i1', 'stelem.i2', 'stelem.i4', 'stelem.i8', 'stelem.r4', 'stelem.r8']
 
     def execute(self, storage):
         value = storage.pop_stack()
