@@ -53,6 +53,7 @@ class TypeParser(TextParsers):
             | ('!!' & (reg(POSITIVE_INT) | NameParser.identifier) > GenericMethodType) \
             | (primitive_types > DataType.new)
     genArgs = fwd()
+    typespec = fwd()
     type2 = \
             (type1 << '<' & genArgs << '>' > splat(GenericType.new)) \
             | type1
@@ -61,17 +62,19 @@ class TypeParser(TextParsers):
             | reg(POSITIVE_INT) & lit('...') \
             | reg(POSITIVE_INT) \
             | lit('...') 
-    type_ = \
+    type3 = \
             (type2 << lit('[') & repsep(bound, ',') << lit(']') > splat(ArrayType.new)) \
             | type2 & lit('value') & '[' & reg(POSITIVE_INT) & ']' \
             | type2 & '*&' \
             | type2 & '*' \
             | type2 & '&' \
             | type2
+    type_ = \
+            type3 << lit('modreq') << '(' & typespec << ')' \
+            | type3 << lit('modopt') << '(' & typespec << ')' \
+            | type3
     genArgs.define(repsep(type_ | NameParser.identifier, ','))
-    typespec = \
-            type_ \
-            | NameParser.classname
+    typespec.define(type_ | NameParser.classname)
     genParAttr = lit('+', '-', 'class', 'valuetype', '.ctor')
     genPar = (rep(genParAttr) & opt('(' >> repsep(type_, ',') << ')')) >> NameParser.identifier > DataType
     ddItem = \
@@ -164,7 +167,7 @@ class ClassParser(TextParsers):
     classAttr = lit('abstract', 'ansi', 'auto', 'autochar', 'beforefieldinit', 'explicit', 'interface', 'nested assembly', 'nested family', 'nested private', 'nested public', 'private', 'public', 'rtspecialname', 'sealed', 'sequential', 'serializable', 'specialname', 'unicode')
     propHeader = opt('specialname') & opt('rtspecialname') & MethodParser.callConv & TypeParser.type_ & NameParser.dotted_name << '(' & repsep(MethodParser.params, ',') << ')'
     propMember = (lit('.get') | lit('.set')) & MethodParser.callConv & TypeParser.type_ & opt(TypeParser.typespec & '::') & MethodParser.methodname << '(' & repsep(MethodParser.params, ',') << ')'
-    classProperty = '.property' & propHeader << '{' & rep(propMember) << '}'
+    classProperty = '.property' & propHeader << '{' & rep(opt(MethodParser.customDecl) >> propMember) << '}'
     class_ = '.class' >> rep(classAttr) & NameParser.dotted_name & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & opt('extends' >> TypeParser.typespec) & opt('implements' & repsep(opt(MethodParser.customDecl) >> TypeParser.typespec, ',')) > splat(Container.new)
     classMembers_ = \
             (MethodParser.method_ << '{' & rep(MethodParser.methodBody_) << '}' > splat(Method.add_members)) \

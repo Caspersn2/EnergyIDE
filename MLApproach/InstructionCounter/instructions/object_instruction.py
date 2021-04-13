@@ -7,7 +7,6 @@ from instruction import instruction
 from action_enum import Actions
 import blacklist
 import function_replacement
-import copy
 
 
 class object_instructions(instruction):
@@ -131,12 +130,14 @@ class callvirt_instruction(object_instructions):
             return Actions.CALL, method
 
 
-    def get_class_and_args(_, storage):
+    def get_class_and_args(self, storage):
         cls = None
         args = []
         while(True):
             value = storage.pop_stack()
-            if isinstance(value, Container):
+            if len(args) != self.num_args:
+                args.append(value)
+            elif isinstance(value, Container):
                 cls = value
                 break
             elif isinstance(value, variable):
@@ -144,7 +145,7 @@ class callvirt_instruction(object_instructions):
                 storage.active_value = value.get_value()
                 break
             else:
-                args.append(value)
+                raise simulation_exception('Custom exception')
         return cls, args
 
     def __repr__(self) -> str:

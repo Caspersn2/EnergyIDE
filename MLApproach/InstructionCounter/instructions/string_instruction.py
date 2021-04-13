@@ -1,5 +1,7 @@
+from argument_generator import get_system_name
 from instruction import instruction
 from action_enum import Actions
+from variable import variable
 
 
 class string_instruction(instruction):
@@ -17,7 +19,9 @@ class string_instruction(instruction):
         return ['ldstr']
 
     def execute(self, storage):
-        storage.push_stack(self.string)
+        temp = variable(None, get_system_name('string'))
+        temp.value = self.string
+        storage.push_stack(temp)
         return Actions.NOP, None
 
     def __repr__(self) -> str:

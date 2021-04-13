@@ -5,6 +5,9 @@ class DataType():
     def get_name(self):
         return self.type_name
 
+    def set_name(self, val):
+        self.type_name += val
+
     @classmethod
     def new(cls, type_name):
         datatype = type_name
@@ -47,13 +50,13 @@ class Parameter():
     def new(cls, p_datatype, name):
         name = name[0] if name else None
         if type(p_datatype) == list:
-            datatype = p_datatype[0]
+            tmp = DataType(p_datatype[0].get_name())
             for d_type in p_datatype[1:]:
                 if type(d_type) == str:
-                    datatype.type_name += d_type
+                    tmp.set_name(d_type)
                 else:
-                    datatype.type_name += d_type.get_name()
-            p_datatype = datatype
+                    tmp.set_name(d_type.get_name())
+            p_datatype = tmp
         return Parameter(p_datatype, name)
 
 

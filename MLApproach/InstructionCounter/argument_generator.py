@@ -3,6 +3,7 @@ from simulation_exception import simulation_exception
 
 
 primitive = ['char', 'bool', 'int32', 'uint32', 'float32', 'float64', 'string']
+system_types = ['System.Int32', 'System.UInt32', 'System.String', 'System.Single', 'System.Double', 'System.Decimal']
 array_primitives = [f'{x}[]' for x in primitive]
 
 
@@ -96,6 +97,8 @@ def get_primitive(d_type, storage):
     system_name = get_system_name(datatype)
     if system_name:
         return storage.get_class_copy(system_name)
+    elif datatype in system_types:
+        return storage.get_class_copy(datatype)
     else:
         return None
 
