@@ -109,6 +109,10 @@ class storage():
     def push_stack(self, value):
         self.stack.append(value)
 
+    
+    def peek_stack(self):
+        return self.stack[-1]
+
 
     def is_stack_empty(self):
         return len(self.stack) == 0

@@ -34,6 +34,8 @@ class call_instruction(instruction):
             return Actions.NOP, None
 
         if function_replacement.contains(self.invocation_target):
+            if self.is_instance and isinstance(storage.peek_stack(), variable):
+                storage.active_value = storage.pop_stack().get_value()
             res = function_replacement.call(self.invocation_target, args, storage)
             storage.push_stack(res)
             return Actions.NOP, None

@@ -5,6 +5,9 @@ from simulation_exception import simulation_exception
 primitive = ['char', 'bool', 'int32', 'int64', 'uint32', 'float32', 'float64', 'string']
 system_types = ['System.Boolean', 'System.Int32', 'System.Int64', 'System.UInt32', 'System.String', 'System.Single', 'System.Double', 'System.Decimal']
 array_primitives = [f'{x}[]' for x in primitive]
+symbols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
+        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'æ', 'ø',
+         'å', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '-', ',', '.']
 
 
 def random_bool():
@@ -29,11 +32,7 @@ def random_string():
     return generate_string(random.randint(0, 100))
 
 
-def generate_string(number):
-    symbols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
-        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'æ', 'ø',
-         'å', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '-', ',', '.']
-    
+def generate_string(number):    
     string = ''
     for _ in range(number):
         index = random.randint(0, len(symbols) - 1)
