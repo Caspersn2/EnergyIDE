@@ -58,8 +58,8 @@ class call_instruction(instruction):
             class_instance = storage.get_class(class_name)
             storage.dup_active_class()
         
-        if class_instance.is_generic or '!!' in self.method_name:
-            method = class_instance.get_generic_method(self.method_name, self.class_generics, self.method_generics)
+        if class_instance.is_generic or '!!' in self.invocation_target:
+            method = class_instance.get_generic_method(self.invocation_target, self.class_generics, self.method_generics)
         else:
             method = class_instance.get_method(class_instance, method_name)
         method.set_parameters(args)
