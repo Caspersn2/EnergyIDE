@@ -149,6 +149,7 @@ class MethodParser(TextParsers):
             | lit('.entrypoint') \
             | lit('.maxstack') & reg(POSITIVE_INT) \
             | lit('.param') << '[' & reg(INTEGER) << ']' & opt('=' >> FieldParser.fieldInit) \
+            | lit('.param') & 'type' & NameParser.identifier \
             | customDecl \
             | LocalsParser.locals_ \
             | lit('.data') >> TypeParser.dataDecl \

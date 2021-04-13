@@ -79,14 +79,12 @@ def get_system_name(d_type):
     datatype = d_type
     if type(datatype) != str:
         datatype = d_type.get_name()
-        if type(datatype) != str:
-            datatype = datatype.datatype
 
     return {
         'int32': 'System.Int32',
         'uint32': 'System.UInt32',
         'string': 'System.String'
-    }.get(d_type, None)
+    }.get(datatype, None)
 
 
 
@@ -94,8 +92,6 @@ def get_primitive(d_type, storage):
     datatype = d_type
     if type(datatype) != str:
         datatype = d_type.get_name()
-        if type(datatype) != str:
-            datatype = datatype.datatype
 
     system_name = get_system_name(datatype)
     if system_name:
