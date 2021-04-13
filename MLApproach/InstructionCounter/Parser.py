@@ -18,6 +18,7 @@ INTEGER = r'([-+]?[0-9]+|0x[0-9a-f]+)'
 DOUBLE = r'[+-]?\d+\.\d+(e[+-]?\d+)?'
 BYTES = r'[0-9a-f]'
 COMMENT = r'//[^\n]+'
+PARAM = '.param'
 
 
 def dot_join(*lst):
@@ -148,8 +149,8 @@ class MethodParser(TextParsers):
             instruction_ \
             | lit('.entrypoint') \
             | lit('.maxstack') & reg(POSITIVE_INT) \
-            | lit('.param') << '[' & reg(INTEGER) << ']' & opt('=' >> FieldParser.fieldInit) \
-            | lit('.param') & 'type' & NameParser.identifier \
+            | lit(PARAM) << '[' & reg(INTEGER) << ']' & opt('=' >> FieldParser.fieldInit) \
+            | lit(PARAM) & 'type' & NameParser.identifier \
             | customDecl \
             | LocalsParser.locals_ \
             | lit('.data') >> TypeParser.dataDecl \
@@ -170,7 +171,7 @@ class ClassParser(TextParsers):
             (MethodParser.method_ << '{' & rep(MethodParser.methodBody_) << '}' > splat(Method.add_members)) \
             | lit('.pack') & reg(INTEGER) \
             | lit('.size') & reg(INTEGER) \
-            | lit('.param') & 'type' & NameParser.identifier \
+            | lit(PARAM) & 'type' & NameParser.identifier \
             | classProperty \
             | MethodParser.customDecl \
             | FieldParser.field_ \
