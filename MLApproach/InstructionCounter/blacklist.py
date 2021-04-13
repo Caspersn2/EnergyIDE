@@ -7,7 +7,8 @@ method_blacklist = {
     'System.Console::WriteLine(object)',
     'System.Console::WriteLine(bool)',
     'System.Console::WriteLine(int32)',
-    'System.Console::WriteLine(float64)'
+    'System.Console::WriteLine(float64)',
+    'System.Console::WriteLine(string, object, object)'
 }
 
 def contains(invocation):
