@@ -12,7 +12,7 @@ class arithmetic_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['add', 'mul', 'div', 'div.un', 'sub', 'rem', 'rem.un', 'shl', 'shr']
+        return ['add', 'mul', 'div', 'div.un', 'sub', 'rem', 'rem.un', 'shl', 'shr', 'shr.un']
 
     def get_operator(_, name):
         return {
@@ -24,7 +24,8 @@ class arithmetic_instruction(instruction):
             'rem': lambda x, y: y % x,
             'rem.un': lambda x, y: y % x,
             'shl': lambda x, y: y << x,
-            'shr': lambda x, y: y >> x
+            'shr': lambda x, y: y >> x,
+            'shr.un': lambda x, y: y >> x
         }[name]
 
     def execute(self, storage):
