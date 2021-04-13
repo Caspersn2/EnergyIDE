@@ -2,8 +2,8 @@ import random
 from simulation_exception import simulation_exception
 
 
-primitive = ['char', 'bool', 'int32', 'uint32', 'float32', 'float64', 'string']
-system_types = ['System.Int32', 'System.UInt32', 'System.String', 'System.Single', 'System.Double', 'System.Decimal']
+primitive = ['char', 'bool', 'int32', 'int64', 'uint32', 'float32', 'float64', 'string']
+system_types = ['System.Boolean', 'System.Int32', 'System.Int64', 'System.UInt32', 'System.String', 'System.Single', 'System.Double', 'System.Decimal']
 array_primitives = [f'{x}[]' for x in primitive]
 
 
