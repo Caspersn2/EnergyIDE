@@ -19,7 +19,7 @@ class store_class_field(instruction):
     def execute(self, storage):
         value = storage.pop_stack()
         cls = storage.pop_stack()
-        cls.state[self.field_name].set_value(value)
+        cls.set_state(self.field_name, value)
         return Actions.NOP, None
 
     def __repr__(self) -> str:
@@ -43,7 +43,7 @@ class load_class_field(instruction):
 
     def execute(self, storage):
         cls = storage.pop_stack()
-        value = cls.state[self.field_name].get_value()
+        value = cls.get_state(self.field_name).get_value()
         storage.push_stack(value)
         return Actions.NOP, None
 

@@ -4,6 +4,9 @@ from objects.Field import Field
 from variable import variable
 
 
+exts_blacklist = ['System.ValueType']
+
+
 class Container():
     def __init__(self, cls_attr, cls_name, gens, exts, impl):
         self.attributes = cls_attr
@@ -12,7 +15,7 @@ class Container():
         self.is_interface = 'interface' in cls_attr
         self.is_generic = bool(gens) == True
         self.is_entry = False
-        self.extends = exts
+        self.extends = exts[0] if exts else None
         self.implements = impl
         self.parent_class = None
         self.methods = {}
@@ -25,12 +28,31 @@ class Container():
 
 
     def get_state(self, key):
-        return self.state[key]
+        if key in self.state:
+            return self.state[key]
+        elif self.extends and type(self.extends) != str:
+            return self.extends.get_state_value(key)
+        else:
+            raise simulation_exception(f'The desired state: "{key}" was not found in the class: {self.name}')
+
+
+    def set_state(self, key, value):
+        if key in self.state:
+            self.state[key].set_value(value)
+        elif self.extends and type(self.extends) != str:
+            self.extends.set_state(key, value)
+        else:
+            raise simulation_exception(f'The desired state: "{key}" was not found in the class: {self.name}')
 
     
     def init_state(self, storage):
         for key in self.state:
             self.state[key].set_default(storage)
+
+    
+    def init_extends(self, storage):
+        if self.extends and type(self.extends) == str and self.extends not in exts_blacklist:
+            self.extends = storage.get_class_copy(self.extends)
 
 
     def set_types(self, concrete):
@@ -115,6 +137,8 @@ class Container():
     def get_method(self, class_instance, method_name):
         if method_name in self.methods:
             return self.methods[method_name]
+        elif self.extends:
+            return self.extends.get_method(class_instance, method_name)
         else:
             raise simulation_exception(f'The method: "{method_name}" was not found in the class')
 

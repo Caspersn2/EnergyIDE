@@ -46,6 +46,8 @@ class call_instruction(instruction):
             if isinstance(class_instance, variable):
                 storage.active_value = class_instance.get_value()
                 class_instance = class_instance.get_datatype(storage)
+            else:
+                class_instance.init_extends(storage)
             storage.set_active_class(class_instance)
         else:
             class_instance = storage.get_class(class_name)
