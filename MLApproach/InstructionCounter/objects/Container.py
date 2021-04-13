@@ -4,7 +4,7 @@ from objects.Field import Field
 from variable import variable
 
 
-exts_blacklist = ['System.ValueType']
+exts_blacklist = ['System.ValueType', 'System.Object', 'System.MulticastDelegate']
 
 
 class Container():
@@ -47,7 +47,14 @@ class Container():
     
     def init_state(self, storage):
         for key in self.state:
-            self.state[key].set_default(storage)
+            if '[' in self.state[key].get_name():
+                self.state[key].set_default(storage, 'int32[]')
+            elif '!' in self.state[key].get_name() and self.gen2type:
+                data_type = self.state[key].get_name()
+                concrete = self.get_concrete_type(data_type)
+                self.state[key].set_default(storage, concrete)
+            else:
+                self.state[key].set_default(storage)
 
     
     def init_extends(self, storage):
@@ -57,7 +64,9 @@ class Container():
 
     def set_types(self, concrete):
         for idx, gen in enumerate(self.generics):
-            conc = concrete[idx].get_name()
+            conc = concrete[idx]
+            if type(concrete[idx]) != str:
+                conc = concrete[idx].get_name()
             self.gen2type[gen] = conc
             self.type2gen[conc] = gen
 
@@ -137,7 +146,7 @@ class Container():
     def get_method(self, class_instance, method_name):
         if method_name in self.methods:
             return self.methods[method_name]
-        elif self.extends:
+        elif self.extends and type(self.extends) != str:
             return self.extends.get_method(class_instance, method_name)
         else:
             raise simulation_exception(f'The method: "{method_name}" was not found in the class')

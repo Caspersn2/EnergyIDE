@@ -113,5 +113,8 @@ class load_length_instruction(instruction):
 
     def execute(self, storage):
         array = storage.pop_stack()
-        storage.push_stack(len(array))
+        if array is None:
+            storage.push_stack(0)
+        else:
+            storage.push_stack(len(array))
         return Actions.NOP, None

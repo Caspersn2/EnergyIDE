@@ -14,11 +14,15 @@ class variable():
         self.value = value
 
 
-    def set_default(self, storage):
-        if can_generate(self.type):
-            default_value = get_default(self.type)
-        elif self.type in storage.classes:
-            default_value = storage.get_class_copy(self.type)
+    def set_default(self, storage, concrete = None):
+        datatype = self.type
+        if concrete:
+            datatype = concrete
+
+        if can_generate(datatype):
+            default_value = get_default(datatype)
+        elif datatype in storage.classes:
+            default_value = storage.get_class_copy(datatype)
         else:
             # Note that this is not totally understood. This statement could potentially break some programs (I do not know)
             return None
@@ -30,7 +34,10 @@ class variable():
 
 
     def get_name(self):
-        return self.type
+        if type(self.type) == str:
+            return self.type
+        else:
+            return self.type.get_name()
 
 
     def get_datatype(self, storage):
