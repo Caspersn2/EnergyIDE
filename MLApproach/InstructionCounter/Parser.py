@@ -69,10 +69,7 @@ class TypeParser(TextParsers):
             | type2 & '*' \
             | type2 & '&' \
             | type2
-    type_ = \
-            type3 << lit('modreq') << '(' & typespec << ')' \
-            | type3 << lit('modopt') << '(' & typespec << ')' \
-            | type3
+    type_ = type3 << opt(lit('modreq', 'modopt') & '(' & typespec & ')')
     genArgs.define(repsep(type_ | NameParser.identifier, ','))
     typespec.define(type_ | NameParser.classname)
     genParAttr = lit('+', '-', 'class', 'valuetype', '.ctor')
