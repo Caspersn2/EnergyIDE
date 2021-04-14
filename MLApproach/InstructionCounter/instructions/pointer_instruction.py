@@ -65,3 +65,32 @@ class local_address_instruction(instruction):
             local_value = temp
         storage.push_stack(local_value)
         return Actions.NOP, None
+
+
+
+class load_token_instruction(instruction):
+    def __init__(self, name, data):
+        super().__init__(name)
+        self.data = data
+
+    @classmethod
+    def create(cls, name, elements):
+        text = ' '.join(elements)
+        if 'method' in elements:
+            data = InstructionParser.parse('call', text)
+        else:
+            data = InstructionParser.parse(name, text)
+            if len(data) != 1:
+                data = variable(''.join(data[1:]), data[0])
+        return load_token_instruction(name, data)
+
+    @classmethod
+    def keys(cls):
+        return ['ldtoken']
+
+    def execute(self, storage):
+        if type(self.data) == variable and 'StaticArrayInit' in self.data.get_name():
+            storage.push_stack([])
+        else:
+            raise NotImplementedError('FIX THIS')
+        return Actions.NOP, None

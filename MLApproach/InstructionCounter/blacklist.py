@@ -8,7 +8,8 @@ method_blacklist = {
     'System.Console::WriteLine(bool)',
     'System.Console::WriteLine(int32)',
     'System.Console::WriteLine(float64)',
-    'System.Console::WriteLine(string, object, object)'
+    'System.Console::WriteLine(string, object, object)',
+    'System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array, System.RuntimeFieldHandle)'
 }
 
 def contains(invocation):
