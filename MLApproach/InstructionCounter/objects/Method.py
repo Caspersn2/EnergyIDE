@@ -41,6 +41,8 @@ class Method():
 
     def load_generics(self, gens):
         if gens:
+            if type(gens) == list and len(gens) == 1:
+                gens = gens[0]
             return ['!!' + x.get_name() for x in gens]
         else:
             return []

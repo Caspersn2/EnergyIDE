@@ -46,6 +46,7 @@ class NameParser(TextParsers):
 
 class TypeParser(TextParsers):    
     primitive_types = lit('object', 'string', 'typedref', 'char', 'void', 'bool', 'int8', 'int16', 'int32', 'int64', 'float32', 'float64', 'uint8', 'uint16', 'uint32', 'uint64', 'native int', 'native uint', 'native float')
+    native_types = primitive_types | lit('lpstruct')
     type1 = \
             ('class ' >> NameParser.classname > DataType.new) \
             | lit('value') & lit('class') & NameParser.classname \
@@ -66,15 +67,17 @@ class TypeParser(TextParsers):
     type3 = \
             (type2 << lit('[') & repsep(bound, ',') << lit(']') > splat(ArrayType.new)) \
             | type2 & lit('value') & '[' & reg(POSITIVE_INT) & ']' \
-            | type2 & '*&' \
-            | type2 & '*' \
-            | type2 & '&' \
             | type2
-    type_ = type3 << opt(lit('modreq', 'modopt') & '(' & typespec & ')')
+    type4 = \
+            type3 & '*&' \
+            | type3 & '*' \
+            | type3 & '&' \
+            | type3
+    type_ = type4 << opt(lit('modreq', 'modopt') & '(' & typespec & ')')
     genArgs.define(repsep(type_ | NameParser.dotted_name, ','))
     typespec.define(type_ | NameParser.classname)
     genParAttr = lit('+', '-', 'class', 'valuetype', '.ctor')
-    genPar = (rep(genParAttr) & opt('(' >> repsep(type_, ',') << ')')) >> NameParser.identifier > DataType
+    genPar = (rep(genParAttr) & opt('(' >> repsep(type_ | NameParser.dotted_name, ',') << ')')) >> NameParser.dotted_name > DataType
     ddItem = \
             lit('bytearray') & '(' & rep(reg(BYTES)) & ')' \
             | lit('float32', 'float64') & opt('(' >> reg(DOUBLE) << ')') & opt('(' >> reg(INTEGER) << ')') \
@@ -130,11 +133,11 @@ class MethodParser(TextParsers):
             | NameParser.dotted_name
     paramAttr = lit('[in]', '[out]', '[opt]')
     implAttr = lit('cil', 'forwardref', 'internalcall', 'managed', 'native', 'noinlining', 'nooptimization', 'runtime', 'synchronized', 'unmanaged', 'aggressiveinlining', 'preservesig')
-    sigArg = TypeParser.type_ & opt(NameParser.identifier) > splat(Parameter.new)
+    marshal = (lit('marshal') & '(') >> TypeParser.native_types << ')'
+    sigArg = TypeParser.type_ << opt(marshal) & opt(NameParser.identifier) > splat(Parameter.new)
     params = rep(paramAttr) >> sigArg
-    marshal = (lit('marshal') & '(') >> TypeParser.primitive_types << ')'
-    methodHeader = rep(methodAttr) & callConv & (TypeParser.type_ | lit('<bad signature>')) & opt(marshal) & methodname & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
-    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
+    methodHeader = rep(methodAttr) & callConv & (TypeParser.type_ | lit('<bad signature>')) & opt(marshal) & methodname & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
+    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
     method_ = '.method' >> methodHeader > splat(Method)
     customDecl = '.custom' >> methodHeaderFull << opt((lit('=') & '(') & rep(reg(BYTES)) & ')') > Custom
     instruction_ = lit('IL_') >> reg(HEX) << ':' & reg(r'[^\n]+') > splat(Instruction)
