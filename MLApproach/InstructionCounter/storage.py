@@ -150,6 +150,9 @@ class storage():
 
 
     def get_argument(self, key):
+        if len(self.arguments) == 0:
+            raise simulation_exception('The method has arguments to take from (If this error occurs in the Main function, it is because the program require input arguments)')
+        
         if type(key) == str:
             return self.arguments[key]
         else:
