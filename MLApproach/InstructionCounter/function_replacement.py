@@ -36,12 +36,32 @@ def join(values):
     return ''.join(strings)
 
 
+def trim_start(string):
+    stripped = string.lstrip()
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = stripped
+    return tmp
+
+def trim_end(string):
+    stripped = string.rstrip()
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = stripped
+    return tmp
+
+def trim(string):
+    stripped = string.strip()
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = stripped
+    return tmp
+
+
 replacement = {
     'System.Console::Read()': lambda _, __: random_char(),
-    "System.Number::UInt32ToDecStr(uint32)": lambda args, _: str(args[0]),
-    'System.String::Concat(string, string)': lambda args, _: join(args[0]),
-    'System.String::Concat(string, string, string)': lambda args, _: join(args[0]),
-    'System.String::Concat(string, string, string, string)': lambda args, _: join(args[0]),
+    'System.Number::UInt32ToDecStr(uint32)': lambda args, _: str(args[0]),
+    'System.Number::UInt64ToDecStr(uint64, int32)': lambda args, _: str(args[0]),
+    'System.String::Concat(string, string)': lambda args, _: join(args),
+    'System.String::Concat(string, string, string)': lambda args, _: join(args),
+    'System.String::Concat(string, string, string, string)': lambda args, _: join(args),
     'System.String::Concat(string[])': lambda args, _: join(args[0]),
     'System.String::Format(string, object)': lambda _, __: random_string(),
     'System.String::Format(string, object, object)': lambda _, __: random_string(),
@@ -53,7 +73,12 @@ replacement = {
     'System.String::Replace(string, string)': lambda args, storage: replace(storage.active_value, args[1], args[0]),
     'System.String::IndexOf(char, int32)': lambda args, storage: indexof(storage.active_value, args[1], args[0]),
     'System.String::IndexOf(char, int32, int32)': lambda args, storage: indexof(storage.active_value, args[2], args[1], args[0]),
-    'System.Math::Sqrt(float64)': lambda args, _: math.sqrt(args[0])
+    'System.String::TrimStart()': lambda _, storage: trim_start(storage.active_value),
+    'System.String::TrimEnd()': lambda _, storage: trim_end(storage.active_value),
+    'System.String::Trim()': lambda _, storage: trim(storage.active_value),
+    'System.Math::Sqrt(float64)': lambda args, _: math.sqrt(args[0]),
+    'System.Runtime.InteropServices.MemoryMarshal::GetArrayDataReference<!!T>(!!0[])': lambda args, _: args[0],
+    'System.ByReference`1<!T>::.ctor(!T&)': lambda args, _: args[0]
 }
 
 

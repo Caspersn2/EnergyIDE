@@ -5,7 +5,16 @@ class Local():
         self.name = name
 
     def get_name(self):
-        return self.type_name.get_name()
+        if type(self.type_name) == list:
+            t_name = ''
+            for typ in self.type_name:
+                if type(typ) == str:
+                    t_name += typ
+                else:
+                    t_name += typ.get_name()
+            return t_name
+        else:
+            return self.type_name.get_name()
 
     @classmethod
     def new(cls, index, l_datatype, name):

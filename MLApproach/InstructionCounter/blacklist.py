@@ -5,6 +5,7 @@ method_blacklist = {
     'System.Console::Write(string, object)',
     'System.Console::WriteLine()',
     'System.Console::Write(string)',
+    'System.Console::Write(int32)',
     'System.Console::WriteLine(string)',
     'System.Console::Write(object)',
     'System.Console::WriteLine(object)',

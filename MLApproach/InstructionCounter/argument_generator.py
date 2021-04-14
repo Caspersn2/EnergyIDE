@@ -82,6 +82,7 @@ def get_system_name(d_type):
 
     return {
         'int32': 'System.Int32',
+        'int64': 'System.Int64',
         'uint32': 'System.UInt32',
         'string': 'System.String'
     }.get(datatype, None)
