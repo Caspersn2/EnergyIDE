@@ -22,7 +22,7 @@ class stacktrace():
 
 
     def get_stacktrace(self, length=15):
-        result = f'======{self.current_method.name}======\n'
+        result = f'======{self.current_method.get_name()}======\n'
         for _ in range(length):
             if self.stack:
                 result += f'{self.stack.pop()}\n'
