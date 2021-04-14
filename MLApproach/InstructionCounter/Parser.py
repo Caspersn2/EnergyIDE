@@ -186,6 +186,7 @@ class ClassParser(TextParsers):
 class InstructionParser(TextParsers):
     method_instruction = MethodParser.methodHeaderFull > splat(Method)
     type_argument_instruction = TypeParser.typespec
+    class_field_instruction = TypeParser.type_ & ((TypeParser.typespec & '::' & NameParser.identifier) > ''.join)
     load_token_instruction = \
             lit('field') >> TypeParser.type_ & TypeParser.typespec & '::' & NameParser.identifier \
             | TypeParser.typespec 
@@ -201,6 +202,8 @@ class InstructionParser(TextParsers):
             result = InstructionParser.type_argument_instruction.parse(data)
         elif name in ['ldtoken']:
             result = InstructionParser.load_token_instruction.parse(data)
+        elif name in ['ldfld', 'ldflda', 'ldsfld', 'ldsflda', 'stfld', 'stsfld']:
+            result = InstructionParser.class_field_instruction.parse(data)
         else:
             raise NotImplementedError(f'The command "{name}" has not been implemented in the instruction parser')
 

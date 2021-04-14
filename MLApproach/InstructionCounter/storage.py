@@ -63,7 +63,13 @@ class storage():
                 datatype = c.static_fields[static].datatype
                 combined[field_name] = variable(field_name, datatype)
                 combined[field_name].set_default(self)
+        self.add_additional_statics(combined)
         return combined
+
+    def add_additional_statics(self, combined):
+        empty = 'System.String::Empty'
+        combined[empty] = variable(empty, 'System.String')
+        combined[empty].set_value('')
 
 
     def get_static_field(self, key):

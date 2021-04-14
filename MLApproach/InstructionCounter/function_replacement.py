@@ -47,6 +47,7 @@ replacement = {
     'System.String::Format(string, object, object)': lambda _, __: random_string(),
     'System.Console::ReadLine()': lambda _, __: random_string(),
     'System.String::get_Length()': lambda _, storage: len(storage.active_value),
+    'System.String::Contains(string)': lambda args, storage: args[0].value in storage.active_value,
     'System.String::EqualsHelper(string, string)': lambda args, _: args[0] == args[1],
     'System.String::PadLeft(int32, char)': lambda args, storage: pad_left(storage.active_value, args[1], args[0]),
     'System.String::Replace(string, string)': lambda args, storage: replace(storage.active_value, args[1], args[0]),

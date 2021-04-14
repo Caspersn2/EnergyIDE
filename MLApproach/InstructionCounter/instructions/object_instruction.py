@@ -2,7 +2,7 @@ from variable import variable
 from Parser import InstructionParser, UtilityParser
 from simulation_exception import simulation_exception
 from argument_generator import create_random_argument
-from objects.Container import Container, DelegateContainer
+from objects.Container import Container, DelegateContainer, StructContainer
 from instruction import instruction
 from action_enum import Actions
 import blacklist
@@ -59,15 +59,17 @@ class new_object_instruction(object_instructions):
                 cls.set_method(args)
                 storage.push_stack(cls)
                 return Actions.NOP, None
-            else:
-                method = super().get_method(self.constructor, storage, cls)
-                method.set_parameters(args)
-                return Actions.CALL, method
+            elif isinstance(cls, StructContainer):
+                storage.push_stack(cls)
+                
+            method = super().get_method(self.constructor, storage, cls)
+            method.set_parameters(args)
+            return Actions.CALL, method
 
 
     def get_class_and_args(self, storage):
         cls = storage.get_class_copy(self.class_name)
-        if not cls:
+        if not isinstance(cls, Container):
             raise simulation_exception(f'The class "{self.class_name}" was not found in the list of classes')
         args = []
         for _ in range(self.num_args):
