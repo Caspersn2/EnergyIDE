@@ -85,8 +85,17 @@ class Container():
 
 
     def get_concrete_type(self, generic):
+        modifier_ending = ''
+        for mod in ['[]', '&', '*']:
+            if mod in generic:
+                generic = generic.replace(mod, '')
+                modifier_ending += mod
+
         if generic in self.generics:
-            return self.gen2type[generic]
+            new_type = self.gen2type[generic]
+            if modifier_ending:
+                new_type += modifier_ending
+            return new_type
         else:
             raise simulation_exception(f'The generic type: "{generic}" was not found in the class')
 

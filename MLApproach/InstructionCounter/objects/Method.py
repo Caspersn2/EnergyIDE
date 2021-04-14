@@ -40,12 +40,16 @@ class Method():
 
 
     def load_generics(self, gens):
+        gen_types = []
         if gens:
-            if type(gens) == list and len(gens) == 1:
+            if type(gens) == list and len(gens) == 1 and type(gens[0]) == list:
                 gens = gens[0]
-            return ['!!' + x.get_name() for x in gens]
-        else:
-            return []
+            for generic in gens:
+                if '!!' in generic.get_name():
+                    gen_types.append(generic.get_name())
+                else:
+                    gen_types.append('!!' + generic.get_name())
+        return gen_types
 
 
     def set_types(self, concrete):
@@ -74,8 +78,17 @@ class Method():
 
 
     def get_concrete_type(self, generic):
+        modifier_ending = ''
+        for mod in ['[]', '&', '*']:
+            if mod in generic:
+                generic = generic.replace(mod, '')
+                modifier_ending += mod
+
         if generic in self.generics:
-            return self.gen2type[generic]
+            new_type = self.gen2type[generic]
+            if modifier_ending:
+                new_type += modifier_ending
+            return new_type
         else:
             return self.cls.get_concrete_type(generic)
 

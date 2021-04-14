@@ -137,7 +137,7 @@ class MethodParser(TextParsers):
     sigArg = TypeParser.type_ << opt(marshal) & opt(NameParser.identifier) > splat(Parameter.new)
     params = rep(paramAttr) >> sigArg
     methodHeader = rep(methodAttr) & callConv & (TypeParser.type_ | lit('<bad signature>')) & opt(marshal) & methodname & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
-    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
+    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
     method_ = '.method' >> methodHeader > splat(Method)
     customDecl = '.custom' >> methodHeaderFull << opt((lit('=') & '(') & rep(reg(BYTES)) & ')') > Custom
     instruction_ = lit('IL_') >> reg(HEX) << ':' & reg(r'[^\n]+') > splat(Instruction)
