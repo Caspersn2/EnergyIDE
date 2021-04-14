@@ -46,7 +46,7 @@ class array_update_instruction(instruction):
 
     @classmethod
     def keys(cls):
-        return ['stelem.i', 'stelem.i1', 'stelem.i2', 'stelem.i4', 'stelem.i8', 'stelem.r4', 'stelem.r8']
+        return ['stelem', 'stelem.i', 'stelem.i1', 'stelem.i2', 'stelem.i4', 'stelem.i8', 'stelem.r4', 'stelem.r8']
 
     def execute(self, storage):
         value = storage.pop_stack()
@@ -113,5 +113,8 @@ class load_length_instruction(instruction):
 
     def execute(self, storage):
         array = storage.pop_stack()
-        storage.push_stack(len(array))
+        if array is None:
+            storage.push_stack(0)
+        else:
+            storage.push_stack(len(array))
         return Actions.NOP, None

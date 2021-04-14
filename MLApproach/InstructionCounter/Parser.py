@@ -71,7 +71,7 @@ class TypeParser(TextParsers):
             | type2 & '&' \
             | type2
     type_ = type3 << opt(lit('modreq', 'modopt') & '(' & typespec & ')')
-    genArgs.define(repsep(type_ | NameParser.identifier, ','))
+    genArgs.define(repsep(type_ | NameParser.dotted_name, ','))
     typespec.define(type_ | NameParser.classname)
     genParAttr = lit('+', '-', 'class', 'valuetype', '.ctor')
     genPar = (rep(genParAttr) & opt('(' >> repsep(type_, ',') << ')')) >> NameParser.identifier > DataType

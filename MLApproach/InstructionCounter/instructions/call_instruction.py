@@ -1,6 +1,6 @@
 import copy
 from variable import variable
-from Parser import InstructionParser
+from Parser import InstructionParser, UtilityParser
 from instruction import instruction
 from action_enum import Actions
 import function_replacement
@@ -11,8 +11,13 @@ class call_instruction(instruction):
     def __init__(self, name, method_inst):
         self.return_type = method_inst.return_type
         self.invocation_target = method_inst.get_name()
+        class_name, method_name = self.invocation_target.split('::')
         self.is_instance = method_inst.is_instance
         self.num_args = len(method_inst.parameters)
+        c_gen = UtilityParser.parse_generics(class_name)
+        self.class_generics = c_gen[0] if c_gen else []
+        m_gen = UtilityParser.parse_generics(method_name)
+        self.method_generics = m_gen[0] if m_gen else []
         super().__init__(name)
 
     @classmethod
@@ -46,12 +51,17 @@ class call_instruction(instruction):
             if isinstance(class_instance, variable):
                 storage.active_value = class_instance.get_value()
                 class_instance = class_instance.get_datatype(storage)
+            else:
+                class_instance.init_extends(storage)
             storage.set_active_class(class_instance)
         else:
             class_instance = storage.get_class(class_name)
             storage.dup_active_class()
         
-        method = class_instance.get_method(class_instance, method_name)
+        if class_instance.is_generic or '!!' in self.invocation_target:
+            method = class_instance.get_generic_method(self.invocation_target, self.class_generics, self.method_generics)
+        else:
+            method = class_instance.get_method(class_instance, method_name)
         method.set_parameters(args)
         return Actions.CALL, method
 

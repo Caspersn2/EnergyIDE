@@ -36,6 +36,7 @@ def count_instructions(args, text):
     classes = get_all_classes(outerclasses)
     if args.library:
         library_classes = get_library_classes(args.library)
+        library_classes = get_all_classes(library_classes)
         classes = {**classes, **library_classes}
     methods, entry = get_methods_and_entry(classes)
     storage_unit = storage(classes)

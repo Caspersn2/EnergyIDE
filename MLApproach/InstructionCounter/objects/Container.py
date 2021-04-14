@@ -4,6 +4,9 @@ from objects.Field import Field
 from variable import variable
 
 
+exts_blacklist = ['System.ValueType', 'System.Object', 'System.MulticastDelegate']
+
+
 class Container():
     def __init__(self, cls_attr, cls_name, gens, exts, impl):
         self.attributes = cls_attr
@@ -12,7 +15,7 @@ class Container():
         self.is_interface = 'interface' in cls_attr
         self.is_generic = bool(gens) == True
         self.is_entry = False
-        self.extends = exts
+        self.extends = exts[0] if exts else None
         self.implements = impl
         self.parent_class = None
         self.methods = {}
@@ -25,17 +28,45 @@ class Container():
 
 
     def get_state(self, key):
-        return self.state[key]
+        if key in self.state:
+            return self.state[key]
+        elif self.extends and type(self.extends) != str:
+            return self.extends.get_state_value(key)
+        else:
+            raise simulation_exception(f'The desired state: "{key}" was not found in the class: {self.name}')
+
+
+    def set_state(self, key, value):
+        if key in self.state:
+            self.state[key].set_value(value)
+        elif self.extends and type(self.extends) != str:
+            self.extends.set_state(key, value)
+        else:
+            raise simulation_exception(f'The desired state: "{key}" was not found in the class: {self.name}')
 
     
     def init_state(self, storage):
         for key in self.state:
-            self.state[key].set_default(storage)
+            if '[' in self.state[key].get_name():
+                self.state[key].set_default(storage, 'int32[]')
+            elif '!' in self.state[key].get_name() and self.gen2type:
+                data_type = self.state[key].get_name()
+                concrete = self.get_concrete_type(data_type)
+                self.state[key].set_default(storage, concrete)
+            else:
+                self.state[key].set_default(storage)
+
+    
+    def init_extends(self, storage):
+        if self.extends and type(self.extends) == str and self.extends not in exts_blacklist:
+            self.extends = storage.get_class_copy(self.extends)
 
 
     def set_types(self, concrete):
         for idx, gen in enumerate(self.generics):
-            conc = concrete[idx].get_name()
+            conc = concrete[idx]
+            if type(concrete[idx]) != str:
+                conc = concrete[idx].get_name()
             self.gen2type[gen] = conc
             self.type2gen[conc] = gen
 
@@ -115,6 +146,8 @@ class Container():
     def get_method(self, class_instance, method_name):
         if method_name in self.methods:
             return self.methods[method_name]
+        elif self.extends and type(self.extends) != str:
+            return self.extends.get_method(class_instance, method_name)
         else:
             raise simulation_exception(f'The method: "{method_name}" was not found in the class')
 

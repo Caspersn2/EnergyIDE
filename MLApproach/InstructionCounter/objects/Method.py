@@ -1,3 +1,4 @@
+from objects.Types import DataType
 from variable import variable
 from instruction import instruction
 from objects.Instruction import Instruction
@@ -8,7 +9,10 @@ class Method():
     def __init__(self, method_attr, call_conv, return_type, marshal, method_name, gens, params):
         self.attributes = method_attr
         self.call_convensions = call_conv
-        self.return_type = return_type
+        if type(return_type) == list:
+            self.return_type = self.combine_type(return_type)
+        else:
+            self.return_type = return_type
         self.marshal = marshal
         if type(method_name) == list:
             self.name = self.combine_name(method_name)
@@ -28,6 +32,11 @@ class Method():
         self.arguments = None
         self.gen2type = {}
         self.type2gen = {}
+
+
+    def combine_type(self, datatype):
+        combined = DataType.new(datatype)
+        return combined
 
 
     def load_generics(self, gens):
