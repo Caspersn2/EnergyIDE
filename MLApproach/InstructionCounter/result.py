@@ -21,6 +21,10 @@ def get_results():
     return [x['res'] for x in result_store]
 
 
+def clear():
+    result_store.clear()
+
+
 def output(output):
     if output:
         with open(output, 'a+') as data_file:
