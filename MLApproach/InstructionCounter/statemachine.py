@@ -85,7 +85,7 @@ class state_machine():
                 action, value = instructions[current].execute(self.storage)
                 self.stacktrace.step_done()
             except Exception as e:
-                print(self.stacktrace.get_stacktrace())
+                e.args = (e.args[0] + '\nINTERNAL STACKTRACE\n' + self.stacktrace.get_stacktrace(),)
                 raise e
 
             if action == Actions.JUMP:

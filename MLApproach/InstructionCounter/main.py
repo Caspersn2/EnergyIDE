@@ -67,11 +67,13 @@ def simulate(file, is_assembly, environment = {}):
 
 def count_instructions(args, text):
     ## Split all code into methods
+    library_classes = {}
     outerclasses = Parser.parse_text(text)
     classes = get_all_classes(outerclasses)
     if args.library:
         library_classes = get_library_classes(args.library)
         library_classes = get_all_classes(library_classes)
+        classes = {**classes, **library_classes}
     methods, entry = get_methods_and_entry(classes)
     storage_unit = storage(classes, library_classes)
     state = state_machine(storage_unit)
