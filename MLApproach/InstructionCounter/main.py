@@ -30,6 +30,41 @@ def execute(args, method, state_machine):
             state_machine.simulate(method, None)
 
 
+def load_environment(libraries):
+    if libraries:
+        library_classes = get_library_classes(libraries)
+        library_classes = get_all_classes(library_classes)
+    return library_classes
+
+
+def simulate(file, is_assembly, environment = {}):
+    # GET IL
+    text = ''
+    if is_assembly:
+        text = get_il_from_dll(file)
+    else:
+        text = open(file, 'r').read()
+    
+    # SETUP
+    classes = Parser.parse_text(text)
+    classes = get_all_classes(classes)
+    methods, entry = get_methods_and_entry(classes)
+    if entry is None:
+        raise simulation_exception('The provided file has no entry method, and no other entry was provided')
+
+    # EXECUTION
+    storage_unit = storage({**classes, **environment})
+    state = state_machine(storage_unit)
+    if entry:
+        found_method = methods[entry]
+        state.simulate(found_method, None)
+
+    # RESULTS
+    res = result.get_results()
+    result.clear()
+    return res
+
+
 def count_instructions(args, text):
     ## Split all code into methods
     outerclasses = Parser.parse_text(text)
@@ -37,9 +72,8 @@ def count_instructions(args, text):
     if args.library:
         library_classes = get_library_classes(args.library)
         library_classes = get_all_classes(library_classes)
-        classes = {**classes, **library_classes}
     methods, entry = get_methods_and_entry(classes)
-    storage_unit = storage(classes)
+    storage_unit = storage(classes, library_classes)
     state = state_machine(storage_unit)
 
     if args.list:
@@ -98,6 +132,14 @@ def print_methods(classes):
             print(meth.get_full_name())
 
 
+def get_il_from_dll(file_name):
+    file_location = os.path.abspath(file_name)
+    subprocess.call(f'ilspycmd {file_location} --ilcode -o cil/', shell=True, 
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    file_name = os.path.splitext(os.path.basename(file_location))[0]
+    return open(f'cil/{file_name}.il', encoding='utf-8', mode='r').read()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=argparse.FileType('r', encoding='utf-8'), help='Counts all of the instructions used', required=True)
@@ -116,11 +158,7 @@ if __name__ == '__main__':
 
     ## Read the il file
     if args.assembly:
-        file_location = os.path.abspath(args.file.name)
-        subprocess.call(f'ilspycmd {file_location} --ilcode -o cil/', shell=True, 
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        file_name = os.path.splitext(os.path.basename(file_location))[0]
-        text = open(f'cil/{file_name}.il', encoding='utf-8', mode='r').read()
+        text = get_il_from_dll(args.file.name)
     else:
         text = args.file.read()
 
