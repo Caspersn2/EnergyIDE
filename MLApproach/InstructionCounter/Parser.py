@@ -1,3 +1,4 @@
+from parse_exception import parse_exception
 from objects.Custom import Custom
 from objects.Types import DataType, ArrayType, GenericType, Parameter, GenericClassType, GenericMethodType
 from objects.Instruction import Instruction
@@ -243,10 +244,14 @@ def parse_text(text, path=None):
             outers[cls.get_qualifying_name()] = cls
         return outers
     else:
+        ex = path
         if path:
-            print('=' * 15, path, '=' * 15)
-        print(res.message)
-        exit()
+            ex = '=' * 15
+            ex += path
+            ex += '=' * 15
+        ex += '\n'
+        ex += res.message
+        raise parse_exception(ex)
 
 
 def parse_file(path):
