@@ -1,67 +1,46 @@
 import os
 import subprocess
-import msvcrt
+import main
 
-correct = 0
-not_correct = 0
 
-def count_benchmark(benchmark, libs=[]):
-    global correct
-    global not_correct
-    path = '../benchmarks/' + benchmark + '/bin/Debug/net5.0/project.dll'
-    instruction = 'python .\main.py -a -f ' + path
+def count_benchmark(benchmark, environment):
+    benchmark_path = '../benchmarks/' + benchmark
+    dll_path = benchmark_path + '/bin/Debug/net5.0/project.dll'
     
-    if len(libs) > 0:
-        instruction += ' --library'
-        for lib in libs:
-            instruction += ' ./init_library/' + lib + '.il'
-    
-    print(instruction)
-    
-    process = subprocess.Popen(instruction, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, err = process.communicate()
-    
-    if (len(output) == 0):
-        # The program works!
-        correct += 1
-        return 0
-    elif (len(err) != 0):
-        # The program do not work
-        not_correct += 1
-        print("--------------")
-        lines = str(err)[2:][:-1].split('\n')
-        print(lines)
-        for line in lines:
-            print('.')
+    print(f'Building: {benchmark}')
+    progress = subprocess.run(f'dotnet build {benchmark_path}', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if progress.returncode != 0:
+        print('The benchmark could not be build')
+        return
+
+    try:
+        _ = main.simulate(dll_path, True, environment)
         return 1
-    print('Test something')
-    return 1
+    except Exception as ex:
+        text = f'{benchmark}\n====================\n{ex.args[0]}\n\n'
+        open('errors.txt', 'a+').write(text)
+        return -1
+
+
+def print_current_stats(correct, not_correct):
+    print(f'Correct: {correct}, Incorrect: {not_correct}. TOTAL: {correct + not_correct} ({(correct / (correct + not_correct)) * 100}% success)')
+    print('=' * 20)
+
 
 if __name__ == '__main__':
     benchmarks = os.listdir('../benchmarks')
-    should_exit = False
+    correct = 0
+    not_correct = 0
     
-    for benchmark in benchmarks:
-        if (should_exit):
-            break
-        running = True
-        libs = []
-        while running :
-            is_output = count_benchmark(benchmark, libs)
-            
-            if (is_output == 1):
-                print('Going to next when key pressed')
-                key = chr(ord(msvcrt.getch()))
-                
-                if key == 'x': 
-                    should_exit = True
-                    break
-                elif key == 'n':
-                    running = False
-                elif key == 'l':
-                    lib = input('which lib: ')
-                    libs.append(lib)
-            else:
-                running = False
-    print('Done!')
+    libs = ['object', 'int32', 'delegate', 'uint32', 'valuetuple3', 'number', 'math', 'string', 'int64', 'span', 'readOnlySpan', 'byReference', 'array']
+    library_paths = ['init_library/' + x + '.il' for x in libs]
+    environment = main.load_environment(library_paths)
 
+    for benchmark in benchmarks:
+        output = count_benchmark(benchmark, environment)
+        if output == 1:
+            correct += 1
+        else:
+            not_correct += 1
+        print_current_stats(correct, not_correct)
+    print('Done!')
