@@ -15,17 +15,7 @@ from xml.dom import minidom
 routes = web.RouteTableDef()
 model_path = 'output.xml'
 
-@routes.post('/post')
-async def get_estimate(request):
-    # If the machine learning model is not available
-    # return 503: service unavailable
-    if model_path not in os.listdir():
-        return web.Response(text='This service is currently unavailable. No energy model is pressent', status=503)
-
-    # Read the XML model file
-    mydoc = minidom.parse(model_path)
-    items = mydoc.getElementsByTagName('method')
-    
+def get_il_energy_values(items):
     ILModelDict = {}
     for item in items:
         name = "undefined"
@@ -38,52 +28,67 @@ async def get_estimate(request):
                 # Maybe this should not be here i guess
                 mean = mean = getValueOfTagName(measurement, 'mean')
             ILModelDict[name] = float(mean.replace(',', '.'))
+    return ILModelDict
+
+def get_cil_counts(methods,className):
+    counts = {}  # maps method/program name to IL instruction Counter
+    if methods:
+        for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
+            args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                    counting_method='Simple', entry='Main(string[])', output=None)
+            counts[method_name] = main.count_instructions(args, text)
+    else:
+        args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
+                                counting_method='Simple', entry='Main(string[])', output=None)
+        counts[name] = main.count_instructions(args, text)
+        return counts
+
+@routes.post('/post')
+async def get_estimate(request):
+    # If the energy model is not available
+    # return 503: service unavailable
+    if model_path not in os.listdir():
+        return web.Response(text='This service is currently unavailable. No energy model is pressent', status=503)
+
+    # Read the XML model file
+    mydoc = minidom.parse(model_path)
+    items = mydoc.getElementsByTagName('method')
+    ILModelDict = get_il_energy_values(items)
     
     # Read the request info
     fileinfo = await request.json()
-    print(fileinfo)
-    path_to_assembly = fileinfo['path']
-    methods = fileinfo['methods']
-    name = path_to_assembly.split('/')[-1].split('.')[0]
+    activate_classes = json_data['activeClasses']
+    all_results = {}
+    for current_class in activate_classes:
+        path_to_assembly = current_class['AssemblyPath']
+        class_name = current_class['ClassName']
+        methods = current_class['Methods']
+        abs_file_path = os.path.splitext(path_to_assembly)[0]
+        name = os.path.split(abs_file_path)[-1]
 
-    # dissassemble path
-    subprocess.call(
-        f'ilspycmd {path_to_assembly} -o . -il', shell=True)
+        # dissassemble and get il code
+        subprocess.call(f'ilspycmd {path_to_assembly} -o . -il', shell=True)
+        text = open(f'{name}.il').read()
 
-    # get il code
-    # text = open(f'{name}.il').read()
-    text = open('C:/Users/Caspe/Documents/GitHub/EnergyIDE/MLApproach/InstructionCounter/testSets/100Doors.il').read()
+        # Count instructions
+        counts = get_cil_counts(methods, class_name)
+        
+        # Calculate measurements for all methods in class
+        results = {}
+        for method_name, counter in counts.items():
+            counter = reduce(lambda a, b: a+b, counter, counter[0])
+            sum = 0.0
+            for instruction in counter:
+                count = counter[instruction]
+                instruction = ILToEmit(instruction)
+                if instruction in ILModelDict:
+                    cost = ILModelDict[instruction]
+                    sum += count*cost
+            results[method_name] = sum
+        all_results[class_name] = results
 
-    # Count instructions
-    counts = {}  # maps method/program name to IL instruction Counter
-    if methods:
-        for method_name in methods:
-            args = argparse.Namespace(method=method_name, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
-                                      counting_method='Simple', entry='Main(string[])', output=None)
-            counts[method_name] = main.count_instructions(args, text)
-    else:
-        args = argparse.Namespace(method=None, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
-                                  counting_method='Simple', entry='Main(string[])', output=None)
-        counts[name] = main.count_instructions(args, text)
-    
-    # Calculate measurements for all methods
-    print(counts)
-    for methodName, counter in counts.items():
-        counter = reduce(lambda a, b: a+b, counter, counter[0])
-        sum = 0.0
-        for IL in counter:
-            count = counter[IL]
-            IL = ILToEmit(IL)
-
-            if IL in ILModelDict:
-                cost = ILModelDict[IL]
-                sum += count*cost
-            else: 
-                print(IL + " is not measured")
-        print(methodName + ": " + str(sum))
-    
     # return result
-    return web.Response(text="something", status=200)
+    return web.Response(text=json.dumps(all_results), status=200)
 
 # Converts the Assembly IL format to the format used by microsoft reflection.
 # TODO: This can be left out if either the instructions.yaml or the methods when creating the models are renamed to the same.
