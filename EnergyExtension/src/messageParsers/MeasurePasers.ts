@@ -71,12 +71,8 @@ export class Measure {
             MeasureTestingService.startML(activeClasses).then(response => {
                 if(response)
                 {
-                    console.log("heyyo");
                     webviewView.webview.postMessage({ command: 'done', value: response });
                     this.openOutput(JSON.stringify(response), "JSON");
-                }
-                else {
-                    console.log("No resp");
                 }
             });
         }
