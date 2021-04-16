@@ -32,8 +32,9 @@ def count_instructions(args, text):
         exit()
 
     if args.method:
-        if args.method in methods:
-            method = methods[args.method]
+        m = args.method.lower()
+        if m in methods:
+            method = methods[m]
             execute(args.counting_method, method, state)
         else:
             raise simulation_exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
@@ -53,7 +54,7 @@ def get_methods_from_classes(classes):
     methods = {}
     for _, cls in classes.items():
         for m in cls.methods:
-            methods[m.name] = m
+            methods[m.name.lower()] = m
     return methods
 
 

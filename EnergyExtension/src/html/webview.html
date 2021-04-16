@@ -1,322 +1,263 @@
 <!-- Inside header -->
 
+<head>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+</head>
 <!-- This is body -->
-<h2>Calcuate energy consumption</h2>
+<h2>Estimate Energy Consumption</h2>
 </br>
-<label for="types">Type:</label>
-</br>
-<select class="full-width selector" name="types" id="types">
-  <option value="ml">Machine Learning</option>
-  <option value="rapl">RAPL</option>
+<label for="types">Estimation Type:</label>
+<select class="full-width selector" name="types" id="types" onChange="reloadMethods()" )>
+  <option value="ml">Machine Learning (static)</option>
+  <option value="energy_model">Energy Model (static)</option>
+  <option value="rapl">RAPL (dynamic)</option>
 </select>
 </br>
-<p id="reloadMethods" style="cursor: pointer;" onclick="reloadMethods()">Reload</p>
-<label for="functions">Select function:</label>
-</br>
 
+<label for="functions">Methods(s) for Estimation:</label>
+</br>
 <!-- Function selector -->
-<div class="selectBox" onclick="showCheckboxes()">
-  <select class="multiSelector">
-    <option id="selectText">Select an option</option>
-  </select>
-  <div class="overSelect"></div>
+<div id="selector-container">
+  <select id="function-selector" class="full-width selector" multiple size="15"></select>
 </div>
-<div id="checkboxes">
-  <label class="inRow"><input type="checkbox">No methods found in the .dll files. Try to press the reload button to check for new files and methods.</label>
-</div>
+</br>
 
+<button type="button" class="full-width btn" id="reloadMethods" onclick="reloadMethods()">
+  <i class="material-icons" style="font-size:12px; vertical-align: middle;">refresh</i>
+  <span style="font-size:12px; vertical-align: middle;">Reload Methods</span>
+  <i class="material-icons" style="font-size:12px; vertical-align: middle;">refresh</i>
+</button>
 </br>
-<button id="activate-button" class="full-width btn" onclick="activate()">Activate!</button>
 </br>
-<p id="calcText">Select function and click activate.</p>
+
+<button id="activate-button" class="full-width btn" onclick="activate()">
+  <i id="activate-button-icon" class="material-icons" style="font-size:12px; vertical-align: middle;">bolt</i>
+  <span id="activate-button-text" style="font-size:12px; vertical-align: middle;">Begin Estimation</span>
+  <i id="activate-button-icon" class="material-icons" style="font-size:12px; vertical-align: middle;">bolt</i>
+</button>
+</br>
+
 <ul id="running-functions"></ul>
-<button id="stop-button" style="display: none;" class="full-width btn btn-stop" onclick="stop()">Stop</button>
 
 <script>
-  
-const vscode = acquireVsCodeApi(); // acquireVsCodeApi can only be invoked once
 
-var methodsShown = [];
+  const vscode = acquireVsCodeApi(); // acquireVsCodeApi can only be invoked once
 
-window.addEventListener("message", (event) => {
-  const message = event.data;
-  switch (message.command) {
-    case "progress": // value = plannedMethods, classesPlanned, exceptionString, exceptionThrown
-      let values = message.value;
-      let container = document.getElementById("running-functions");
-      container.innerHTML = "";
-      
-      values.PlannedMethods.forEach(method => { // Method = id, runsDone, plannedRuns, methodName, className, stage
-        var methodHTML = document.createElement("li");
-        methodHTML.id = method.Id;
+  var classesShown = [];
 
-        var label = document.createElement("label");
-        label.innerText = method.MethodName;
-        methodHTML.appendChild(label);
+  window.addEventListener("message", (event) => {
+    const message = event.data;
+    switch (message.command) {
+      case "progress": // value = plannedMethods, classesPlanned, exceptionString, exceptionThrown
+        let values = message.value;
+        let container = document.getElementById("running-functions");
+        container.innerHTML = "";
 
-        var progressText = document.createElement("p");
-        progressText.innerText = method.Stage + ": " + method.RunsDone + "/" + method.PlannedRuns + " = " + ((100 / method.PlannedRuns) * method.RunsDone).toFixed(2) + "%";
-        methodHTML.appendChild(progressText);
+        values.PlannedMethods.forEach(method => { // Method = id, runsDone, plannedRuns, methodName, className, stage
+          var label = document.createElement("label");
+          label.innerText = "Method: " + method.MethodName;
+          label.id = "progress-text"
+          container.appendChild(label);
 
-        var progressBar = document.createElement("progress");
-        progressBar.value = method.RunsDone;
-        progressBar.max = method.PlannedRuns;
-        progressBar.style = "width: 100%";
-        methodHTML.appendChild(progressBar);
-        
-        container.appendChild(methodHTML);
-      });
-      
-      break;
+          var surroundDiv = document.createElement("div");
+          surroundDiv.id = "progress";
+          var percentage = ((100 / method.PlannedRuns) * method.RunsDone).toFixed(2) + "%";
+          var percentText = document.createElement("span");
+          percentText.id = "progress-text";
+          percentText.innerText = method.RunsDone + "/" + method.PlannedRuns + " = " + percentage;
+          var progressBar = document.createElement("div");
+          progressBar.id = "bar";
+          progressBar.style = "width: " + percentage;
 
-    case "done":
-      var activateButton = document.getElementById("activate-button");  
-      activateButton.classList.remove("active");
-      activateButton.disabled = false;
-      
-      var stopButton = document.getElementById("stop-button");
-      stopButton.style.display = "none";
-      
-      break;
-
-    case "methods":
-      let methodGroups = message.value;
-      methodsShown = methodGroups;
-      
-      // Clear the dropdown
-      let functionsDropdown = document.getElementById("checkboxes");
-      functionsDropdown.innerHTML = "";
-      
-      // Add methods to the dropdown
-      methodGroups.forEach((methodGroup) => {
-        // Create the surrounding element
-        let surround = document.createElement("div");
-        
-        // Create the grouplabel
-        let groupLabel = document.createElement("label");
-        groupLabel.for = methodGroup.key;
-        groupLabel.textContent = methodGroup.key;
-        groupLabel.classList.add("groupLabel");
-        groupLabel.title = methodGroup.key;
-
-        // Create the checkbox for the group
-        let groupCheck = document.createElement("input");
-        groupCheck.type = "checkbox";
-        groupCheck.id = methodGroup.key;
-
-        groupCheck.addEventListener("change", (event) => {
-          this.groupSelected(methodGroup.key);
-        });
-        groupLabel.insertBefore(groupCheck, groupLabel.childNodes[0]);
-        surround.appendChild(groupLabel);
-
-        // Inserts the methods as children to the group
-        methodGroup.value.forEach((method) => {
-          let option = document.createElement("label");
-          option.for = method.id;
-          option.textContent = method.name;
-          option.classList.add("inRow");
-          option.classList.add("option");
-          option.value = JSON.stringify({ id: method.id, name: method.name });
-
-          let checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.id = method.id;
-          checkbox.value = JSON.stringify({ id: method.id, name: method.name });
-          option.addEventListener("change", (event) => {
-            this.methodSelected(method);
-          });
-          option.insertBefore(checkbox, option.childNodes[0]);
-
-          surround.appendChild(option);
+          surroundDiv.appendChild(percentText);
+          surroundDiv.appendChild(progressBar);
+          container.appendChild(surroundDiv);
         });
 
-        functionsDropdown.appendChild(surround);
-      });
-      break;
-  }
-});
+        break;
 
-function methodSelected(id) {
-  this.updateNumSelected();
-}
+      case "done":
+        isActive = false;
+        document.getElementById("activate-button-text").textContent = "Begin Estimation";
+        document.getElementById("activate-button").classList.remove("active");
+        break;
 
-function activate() {
-  // changeing the color of activate button to green, and disableing it.
-  var activateButton = document.getElementById("activate-button");
-  activateButton.classList.add("active");
-  activateButton.disabled = true;
+      case "methods":
+        let methodGroups = message.value;
+        classesShown = methodGroups;
+        let type = document.getElementById("types").value;
 
-  // Show the stop button
-  var stopButton = document.getElementById("stop-button");
-  stopButton.style.display = "block";
+        // Get selector and clear it
+        var methodSelector = document.getElementById("selector-container").children[0];
+        methodSelector.innerHTML = '';
 
-  // Call the server to activate the selected methods.
-  let selected = getSelectedMethods().map(selected => JSON.parse(selected));
-  let type = document.getElementById("types").value;
-  vscode.postMessage({
-    type: "activate",
-    value: { methods: selected, type: type },
-  });
-
-  
-  document.getElementById("calcText").textContent ="Calculating: " + selected.map(s => s.name).join(', ');
-}
-
-function reloadMethods() {
-  vscode.postMessage({
-    type: "reloadMethods",
-    value: true
-  });
-}
-
-function stop() {
-  vscode.postMessage({
-    type: "stop",
-    value: true
-  });
-}
-
-var expanded = false;
-function showCheckboxes() {
-  var checkboxes = document.getElementById("checkboxes");
-  if (!expanded) {
-    checkboxes.style.display = "block";
-    expanded = true;
-  } else {
-    checkboxes.style.display = "none";
-    expanded = false;
-  }
-}
-
-function groupSelected(group) {
-  let groupElement = document.getElementById(group);
-  let check = groupElement.checked;
-  let next = groupElement.parentNode.nextSibling;
-  while (next) {
-    let input = next.firstChild;
-    if (check) {
-      if (!input.checked) {
-        input.checked = true;
-      }
-    } else {
-      if (input.checked) {
-        input.checked = false;
-      }
+        // Set size of selector
+        let numMethods = methodGroups.map(x => x.Methods).flat().length + methodGroups.length;
+        let size = 15 > numMethods ? numMethods : 15;
+        methodSelector.setAttribute("size", size)
+        //Add methods
+        methodGroups.forEach((methodGroup) => {
+          var optGroup = document.createElement('optgroup')
+          optGroup.label = methodGroup.ClassName;
+          methodGroup.Methods.forEach((method) => {
+            var option = new Option(method.StringRepresentation, method.Id, false)
+            option.addEventListener("change", (event) => {
+              this.updateNumSelected();
+            });
+            option.title = method.StringRepresentation; // Tooltip
+            optGroup.appendChild(option)
+          })
+          methodSelector.appendChild(optGroup)
+        })
+        break;
     }
-    next = next.nextSibling;
-  }
-  this.updateNumSelected();
-}
+  });
 
-function getSelectedMethods() {
-  let selected = [];
-  this.methodsShown.forEach((g) => {
-    g.value.forEach((m) => {
-      elm = document.getElementById(m.id);
-      if (elm.checked || elm.getAttribute("checked")) {
-        selected.push(elm.value);
+  var isActive = false;
+  function activate() {
+    // change the color and text of activate button and disable it.
+    var activateButton = document.getElementById("activate-button");
+    var buttonText = document.getElementById("activate-button-text")
+    if (!isActive) {
+      isActive = true;
+      buttonText.textContent = "Estimating ... Click to stop.";
+      activateButton.classList.add("active");
+
+      // Call the server to activate the selected methods.
+      let selected = getSelectedMethods();
+      let type = document.getElementById("types").value;
+
+      vscode.postMessage({
+        type: "activate",
+        value: { methods: selected, type: type },
+      });
+    }
+    else {
+      isActive = false;
+      buttonText.textContent = "Stopping ...";
+      activateButton.classList.remove("active");
+      vscode.postMessage({
+        type: "stop",
+        value: true
+      });
+      document.getElementById("activate-button-text").textContent = "Begin Estimation";
+    }
+
+    //TODO: Fix text
+    document.getElementById("calcText").textContent = "Calculating: " + selected.map(s => s.ClassName).join(', ');
+  }
+
+  function reloadMethods() {
+    let type = document.getElementById("types").value;
+    type = type == "rapl" ? "dynamic" : "static";
+    vscode.postMessage({
+      type: "reloadMethods",
+      value: { type: type }
+    });
+  }
+
+  // Gets the methods selected in the dropdown.
+  // Returns an ActivateClass[] representing the selected
+  function getSelectedMethods() {
+    let selectElement = document.getElementById('function-selector')
+    let selectedValues = Array.from(selectElement.selectedOptions)
+      .map(option => String(option.value))
+    let selected = [];
+    this.classesShown.forEach((c) => {
+      let selectedMethods = []
+      c.Methods.forEach((m) => {
+        if (selectedValues.includes(String(m.Id))) {
+          selectedMethods.push(m);
+        }
+      });
+      if (selectedMethods.length > 0) {
+        selected.push({ ClassName: c.ClassName, AssemblyPath: c.AssemblyPath, Methods: selectedMethods })
       }
     });
-  });
-  // Value = { id: url, name: string }
-  return selected;
-}
+    return selected;
+  }
 
-function updateNumSelected() {
-  let selected = getSelectedMethods();
-  let counter = document.getElementById("selectText");
-  counter.textContent = selected.length + " methods selected";
-}
+  function updateNumSelected() {
+    let selected = getSelectedMethods().map(x => x.Methods).flat();
+    let counter = document.getElementById("selectText");
+    if (selected.length == 1) {
+      counter.textContent = selected[0].StringRepresentation;
+    }
+    else {
+      counter.textContent = selected.length + " method(s) selected";
+    }
+  }
 
 </script>
 
 
 <style>
-.full-width {
-  width: 100%;
-}
+  .full-width {
+    width: 100%;
+  }
 
-.progress-element {
-  background-color: hotpink;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  display: flex;
-}
+  .inRow {
+    flex-wrap: nowrap;
+    justify-content: right;
+    display: flex;
+  }
 
-.inRow {
-  flex-wrap: nowrap;
-  justify-content: right;
-  display: flex;
-}
+  .selector {
+    background: var(--vscode-dropdown-listBackground);
+    color: var(--vscode-dropdown-foreground);
+    border-color: var(--vscode-dropdown-border);
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    padding: 0.3rem;
+  }
 
-.selector {
-  background: var(--vscode-editor-background);
-  color: var(--vscode-editor-color);
-  margin-bottom: 1rem;
-  margin-top: 1rem;
-  padding: 0.3rem;
-}
-.multiSelector {
-  background: var(--vscode-editor-background);
-  color: var(--vscode-editor-color);
-  padding: 0.3rem;
-}
+  .btn {
+    border-style: none;
+    border-radius: 0.2rem;
+    padding: 0.3rem;
+    cursor: pointer;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+  }
 
-.active {
-  background-color: green;
-}
+  .active {
+    background-color: var(--vscode-button-hoverBackground);
+  }
 
-.btn {
-  border-style: none;
-  border-radius: 0.2rem;
-  padding: 0.3rem;
-  cursor: pointer;
-}
+  .option {
+    background-color: var(--vscode-dropdown-Background);
+    padding-left: 1rem;
+  }
 
-.btn-stop:hover {
-  background-color: red;
-}
+  ul {
+    margin: 1rem 0 1rem 0;
+    padding: 0;
+  }
 
-.option {
-  padding-left: 1rem;
-}
+  #progress {
+    margin-bottom: 1rem;
+    width: 100%;
+    position: relative;
+  }
 
-.multiselect {
-  width: 200px;
-}
+  #progress-text {
+    color: var(--vscode-button-foreground);
+  }
 
-.selectBox {
-  position: relative;
-}
+  #bar {
+    height: 5px;
+    border-radius: 0.2rem;
+    border-color: var(--vscode-dropdown-border);
+    background-color: var(--vscode-button-background);
+  }
 
-.selectBox select {
-  width: 100%;
-}
-
-.overSelect {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-}
-
-#checkboxes {
-  display: none;
-  border: 1px #dadada solid;
-}
-
-#checkboxes label {
-  display: block;
-}
-
-#checkboxes label:hover {
-  background-color: #1e90ff;
-}
-
-.groupLabel {
-  overflow: hidden;
-}
-
+  .overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
 </style>

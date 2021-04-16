@@ -1,69 +1,62 @@
 import axios from 'axios';
-import { MeasureProgess } from '../messageParsers/MeasurePasers';
+import { MeasureProgess, ActivateClass } from '../messageParsers/MeasurePasers';
 
-export class MeasureTestingService
-{
-    public static checkStatus(): Promise<MeasureProgess | string> {
+export class MeasureTestingService {
+    public static checkRAPLStatus(): Promise<MeasureProgess | string> {
         return new Promise(async (resolve, reject) => {
             try {
                 const response = await axios.get('http://localhost:5000');
-                if (response.status == 200)
-                    {resolve(<MeasureProgess>response.data);}
-                else
-                    {reject(response.status);}
-            } catch(exception){
+                if (response.status == 200) { resolve(<MeasureProgess>response.data); }
+                else { reject(response.status); }
+            } catch (exception) {
                 reject(exception);
             }
         });
     }
 
-    public static startRunning(ids: number[]): Promise<MeasureProgess | string>
-    {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const response = await axios.put('http://localhost:5000/', { ids: ids});
-                if (response.status == 200)
-                    {resolve(response.data);}
-                else
-                    {reject(response.status);}
-            } catch(exception){
-                reject(exception);
-            }
-        });
+    public static startRAPL(ids: number[]): Promise<any> {
+        return this.callService('http://localhost:5000/', axios.put, { ids: ids });
     }
 
-    public static stopRunning(): Promise<MeasureProgess | string>
-    {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const response = await axios.delete('http://localhost:5000');
-                if (response.status == 200)
-                    {resolve(response.data);}
-                else
-                    {reject(response.status);}
-            } catch(exception){
-                reject(exception);
-            }
-        });
+    public static stopRAPL(): Promise<any> {
+        return this.callService('http://localhost:5000/', axios.delete);
     }
 
-    public static getMethods(files: string[]): Promise<{ key: string, value: { id: string, name: string }[] }[]> {
+    public static startML(activeClasses: ActivateClass[]): Promise<any> {
+        return this.callService('http://localhost:5002/post', axios.post, { activeClasses: activeClasses });
+    }
+
+    public static getMethods(files: string[], type: string): Promise<ActivateClass[]> {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await axios.put("http://localhost:5000/GetMethods", { files: files });
-                if (response.status == 200){
-                    resolve(response.data);
+                const response = await axios.put("http://localhost:5000/GetMethods", { files: files, type: type });
+                if (response.status == 200) {
+                    resolve(<ActivateClass[]>response.data);
                 }
                 else {
-                    console.log("Did not get a valid response");
-                    console.log(response);
+                    console.log("Did not get a valid response \n" + response);
                     reject([]);
                 }
-            } catch(exception) {
-                console.log("Exception: ");
-                console.log(exception);
+            } catch (exception) {
+                console.log("Exception \n" + exception);
                 reject([]);
             }
         });
+    }
+
+    static callService(url: string, httpMethod: any, data: any = null): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let response;
+                if (data != null) { response = await httpMethod(url, data); }
+                else { response = await httpMethod(url); }
+                
+                if (response.status == 200) {  resolve(response.data); }
+                else { reject(response.status); }
+            } catch (exception) {
+                reject(exception);
+            }
+        });
+
     }
 }

@@ -10,34 +10,35 @@ using System.IO;
 
 namespace Measurement.Repositories
 {
-    public class MeasurementRepository 
+    public class MeasurementRepository
     {
         public Thread MeasureThread;
         private string Path { get; set; }
         private string FinalOutput { get; set; }
-        private static List<TypeMethods> Methods { get; set; }
-        
+        private static List<ClassMethods> Methods { get; set; }
+
         public MeasureProgress GetMeasurements() => Manager.Progress;
-        
-        public string Start(int[] MethodIds)
+
+        public string Start(int[] methodIds)
         {
             //Spawns a new thread to run the testing
             if (Methods == null || !(Methods.Count() > 0))
                 return "Not Started.. Cound not find any methods";
 
-            MeasureThread = new Thread(x => {
+            MeasureThread = new Thread(x =>
+            {
                 // Loop for each dll file of the chosen methods.
-                var chosenClasses = Methods.Where(m => m.methods.Any(method => MethodIds.Contains(method.Id)));
-                
-                var types = new Dictionary<Type, List<int>>();
-                chosenClasses.ToList().ForEach(x => types.Add(x.type, x.methods.Where(method => MethodIds.Contains(method.Id)).Select(m => m.Id).ToList()));
-                
-                FinalOutput = Manager.Test(types);
+                var chosenClasses = Methods.Where(m => m.Methods.Any(method => methodIds.Contains(method.Id)));
+
+                var classes = new Dictionary<Type, List<int>>();
+                chosenClasses.ToList().ForEach(x => classes.Add(x.CurrentClass, x.Methods.Where(method => methodIds.Contains(method.Id)).Select(m => m.Id).ToList()));
+
+                FinalOutput = Manager.Test(classes);
                 Console.WriteLine("I am done");
             });
             MeasureThread.Name = "BenchmarkThread";
             MeasureThread.Start();
-            
+
             return "Started";
         }
 
@@ -48,51 +49,86 @@ namespace Measurement.Repositories
             return true;
         }
 
-        public GetMethodsViewModel[] GetMethods(string[] files)
+        public dynamic GetMethods(string[] files, string type)
         {
-            var result = new List<GetMethodsViewModel>();
-            Methods = new List<TypeMethods>();
-            
-            foreach(var file in files)
+            var result = new List<ClassMethods>();
+            Methods = new List<ClassMethods>();
+            files = getDistinctFiles(files);
+
+            foreach (var file in files)
             {
-                try {
+                try
+                {
                     using (Stream stream = File.OpenRead(file))
                     {
                         byte[] rawAssembly = new byte[stream.Length];
                         stream.Read(rawAssembly, 0, (int)stream.Length);
-                        var ass = Assembly.Load(rawAssembly);
-                        
-                        var types = ass.GetTypes();
-                        foreach(var type in types)
+                        Assembly ass = null;
+                        try
                         {
-                            if (type.GetCustomAttributes().Any(a => a is MeasureClassAttribute)) 
-                            {
-                                var methods = type.GetMethods().Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute));
-                                if (methods.Any())
-                                {
-                                    var method = methods.Select(m => new MethodViewModel() { Id = m.GetHashCode(), Name = m.Name, DllFile = file }).ToArray();
-                                    result.Add(new GetMethodsViewModel {
-                                        key = type.Name,
-                                        value = method,
-                                    });
-                                    
-                                    Methods.Add(new TypeMethods() 
-                                    {
-                                        type = type,
-                                        DllFile = file,
-                                        methods = method.ToList()
-                                    });
-                                }
-                            }
+                            ass = Assembly.Load(rawAssembly);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                        var classes = ass.GetTypes();
+
+                        foreach (var currentClass in classes)
+                        {
+                            if (type == "static")
+                                result.AddRange(getAllMethods(currentClass, file, false));
+                            else if (type == "dynamic" && currentClass.GetCustomAttributes().Any(a => a is MeasureClassAttribute))
+                                result.AddRange(getAllMethods(currentClass, file, true));
                         }
                     }
-                } catch (Exception)
+                }
+                catch (Exception e)
                 {
+                    System.Console.WriteLine(e);
                     Console.WriteLine("Error occured in file: " + file);
                 }
             }
+            return result.Select(x => new { ClassName = x.CurrentClass.Name, AssemblyPath = x.AssemblyPath, Methods = x.Methods }).Distinct();
+        }
 
-            return result.ToArray();
+        private string[] getDistinctFiles(string[] files)
+        {
+            List<string> alreadySeen = new List<string>();
+            List<string> distinctFilse = new List<string>();
+            foreach (string file in files)
+            {
+                string temp = file.Split('/')[^1];
+                if (alreadySeen.Contains(temp))
+                    continue;
+                alreadySeen.Add(temp);
+                distinctFilse.Add(file);
+            }
+            return distinctFilse.ToArray();
+        }
+
+        private List<ClassMethods> getAllMethods(Type currentClass, string file, bool getWithAttributes)
+        {
+            List<ClassMethods> result = new List<ClassMethods>();
+            MethodInfo[] allMethods = currentClass.GetMethods().Where(mi => mi.DeclaringType == currentClass).ToArray();
+
+            if (getWithAttributes)
+                allMethods = allMethods.Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute)).ToArray();
+
+            if (allMethods.Any())
+            {
+                MethodViewModel[] methodViewModels = allMethods.Select(m => new MethodViewModel() { Id = m.GetHashCode(), StringRepresentation = m.ToString(), Name = m.Name }).ToArray();
+                ClassMethods cm = new ClassMethods
+                {
+                    CurrentClass = currentClass,
+                    AssemblyPath = file,
+                    Methods = methodViewModels,
+                };
+                result.Add(cm);
+                if (getWithAttributes)
+                    Methods.Add(cm);
+            }
+            return result;
         }
     }
 }

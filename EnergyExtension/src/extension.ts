@@ -32,8 +32,8 @@ export class EnergyViewProvider implements vscode.WebviewViewProvider {
     };
     webviewView.description = "This is a description for the webview";
     webviewView.webview.html = this.getHTML();
-    
-    Measure.getMethods(webviewView);
+
+    Measure.getMethods(webviewView, "static");
     
     //called when a message from the HTML is sent to the extension
     webviewView.webview.onDidReceiveMessage(message => {
@@ -42,18 +42,19 @@ export class EnergyViewProvider implements vscode.WebviewViewProvider {
           console.log(message.value);
           break;
         case 'activate':
-          var body = message.value as ActivateClass;
-          Measure.activate(body, webviewView);
+          let methods = message.value.methods as ActivateClass[];
+          let type = message.value.type
+          Measure.activate(methods, type, webviewView);
           break;
         case 'stop':
           Measure.stop();
         case 'methodSelected':
           break;
         case 'reloadMethods':
-          Measure.getMethods(webviewView);
+          Measure.getMethods(webviewView, message.value.type);
           break;
         default:
-          console.log("Cound not understand message");
+          console.log("Cound not understand message of type: " + message.type);
           break;
       }
     });

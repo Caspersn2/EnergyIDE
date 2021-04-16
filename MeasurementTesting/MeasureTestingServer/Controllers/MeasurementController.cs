@@ -24,17 +24,14 @@ namespace MeasureTestingServer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<string> GetProgress() 
-        {
-            return Ok(JsonSerializer.Serialize(this.MeasurementRepo.GetMeasurements()));
-        }
+        public ActionResult<string> GetProgress() =>
+            Ok(JsonSerializer.Serialize(MeasurementRepo.GetMeasurements()));
+        
 
         [HttpPut("getmethods")]
-        public ActionResult<GetMethodsViewModel> GetMethods([FromBody] FilesViewModel model)
-        {
-            
-            return Ok(MeasurementRepo.GetMethods(model.Files));
-        }
+        public ActionResult<dynamic> GetMethods([FromBody] FilesViewModel model) =>
+            Ok(JsonSerializer.Serialize(MeasurementRepo.GetMethods(model.Files, model.Type)));
+        
 
         [HttpPut]
         public ActionResult<string> Start([FromBody] StartViewModel model)
@@ -63,29 +60,24 @@ namespace MeasureTestingServer.Controllers
         public int[] Ids { get; set; }
     }
 
-    public class GetMethodsViewModel
+    public class ClassMethods
     {
-        public string key { get; set; }
-        public MethodViewModel[] value { get; set; }
-    }
-
-    public class TypeMethods
-    {
-        public Type type { get; set; }
-        public string DllFile { get; set; }
-        public List<MethodViewModel> methods { get; set; }
+        public Type CurrentClass { get; set; }
+        public string AssemblyPath { get; set; }
+        public MethodViewModel[] Methods { get; set; }
     }
 
     public class MethodViewModel 
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string DllFile { get; set; }
+        public string StringRepresentation { get; set; }
     }
 
     public class FilesViewModel 
     {
         public string[] Files { get; set; }
+        public string Type { get; set; }
     }
 
 }
