@@ -35,13 +35,15 @@ namespace benchmark
         double elapsedTime = 0;
         List<Measure> _resultBuffer = new List<Measure>();
         RAPL _rapl;
-        TextWriter stdout;
+        public TextWriter stdout;
         TextWriter benchmarkOutputStream = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
         public event SingleRun SingleRunComplete;
+        string name;
 
-        public Benchmark(int iterations, List<MeasureTypes> types, bool silenceBenchmarkOutput = true) 
+        public Benchmark(int iterations, List<MeasureTypes> types, bool silenceBenchmarkOutput = true, string name = "not specified") 
         {
             this.stdout = System.Console.Out;
+            this.name = name;
 
             if(!silenceBenchmarkOutput)
                 benchmarkOutputStream = stdout;
@@ -150,6 +152,7 @@ namespace benchmark
             
             foreach (Measure m in _resultBuffer)
             {
+                result += name;
                 foreach (var res in m.apis)
                 {
                     //Temperature api
