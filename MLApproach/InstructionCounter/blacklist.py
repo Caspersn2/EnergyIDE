@@ -1,7 +1,7 @@
 class_blacklist = {
     'System.Threading.ParameterizedThreadStart',
-    'System.Threading.Thread'
-    'System.Threading.Tasks'
+    'System.Threading.Thread',
+    'System.Threading.Tasks',
 }
 
 method_blacklist = {
