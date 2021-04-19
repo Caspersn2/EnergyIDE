@@ -41,9 +41,13 @@ def generate_string(number):
 
 
 def convert_argument(value, datatype):
-    if datatype in ['bool', 'int32', 'uint32', 'char']:
+    data_type = datatype
+    if type(datatype) != str:
+        data_type = datatype.get_name()
+
+    if data_type in ['bool', 'int32', 'uint32', 'char']:
         return int(value)
-    elif datatype in ['float32', 'float64']:
+    elif data_type in ['float32', 'float64']:
         return float(value)
     else:
         return value

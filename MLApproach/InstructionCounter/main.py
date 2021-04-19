@@ -18,16 +18,20 @@ def execute(args, method, state_machine):
         if method.is_entry:
             state_machine.simulate(method, None)
         else:
-            args_list = []
-            for idx, param in enumerate(method.parameters):
-                if args.input and idx < len(args.input):
-                    value = convert_argument(args.input[idx], param)
-                else:
-                    value = create_random_argument(param)
-                args_list.append(value)
-            args_list.reverse()
-            method.set_parameters(args_list)
+            set_args_on_method(args.input, method)
             state_machine.simulate(method, None)
+
+
+def set_args_on_method(args, method):
+    args_list = []
+    for idx, param in enumerate(method.parameters):
+        if args and idx < len(args):
+            value = convert_argument(args[idx], param)
+        else:
+            value = create_random_argument(param)
+        args_list.append(value)
+    args_list.reverse()
+    method.set_parameters(args_list)
 
 
 def load_environment(libraries):
@@ -37,7 +41,7 @@ def load_environment(libraries):
     return library_classes
 
 
-def simulate(file, is_assembly, environment = {}):
+def simulate(file, is_assembly, environment={}, method=None, args=[]):
     # GET IL
     text = ''
     if is_assembly:
@@ -49,15 +53,21 @@ def simulate(file, is_assembly, environment = {}):
     classes = Parser.parse_text(text)
     classes = get_all_classes(classes)
     methods, entry = get_methods_and_entry(classes)
-    if entry is None:
+    if entry is None and method is None:
         raise simulation_exception('The provided file has no entry method, and no other entry was provided')
 
     # EXECUTION
     storage_unit = storage({**classes, **environment})
     state = state_machine(storage_unit)
-    if entry:
+    if entry and not method:
         found_method = methods[entry]
         state.simulate(found_method, None)
+    elif method in methods:
+        found_method = methods[method]
+        set_args_on_method(args, found_method)
+        state.simulate(found_method, None)
+    else:
+        raise simulation_exception(f'The provided method "{method}" was not found in the list of available methods')
 
     # RESULTS
     res = result.get_results()
