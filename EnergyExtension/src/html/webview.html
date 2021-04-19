@@ -112,6 +112,12 @@
           methodSelector.appendChild(optGroup)
         })
         break;
+      case 'model-progress':
+        ul = document.getElementById('running-functions');
+        li = document.createElement('li');
+        li.innerText = message.value;
+        ul.appendChild(li);
+        break;
     }
   });
 

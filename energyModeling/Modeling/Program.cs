@@ -15,8 +15,8 @@ namespace Modeling
     {
         static void Main(string[] args)
         {
-            //var output = Manager.Test(typeof(measureClass));
             var output = Manager.Test(typeof(measureClass));
+            // var output = Manager.Test(typeof(testing));
 
             System.IO.File.WriteAllText("output.xml", output);
             UpdateNew("output.xml");
@@ -141,8 +141,6 @@ namespace Modeling
 
             runMethod(method, ilg, new object[] {2,2,2,2,2});
         }
-
-        
     }
 
     public class Fields
@@ -151,7 +149,7 @@ namespace Modeling
         public int field { get; set; }
     }
 
-    [MeasureClass(false, 0.005F, MeasurementType.Timer)]
+    [MeasureClass(false, 0.05F, MeasurementType.Timer)]
     class measureClass
     {
         private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
@@ -1576,7 +1574,7 @@ namespace Modeling
         }
         #endregion
         #region Store value into adress or array
-        [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
+        /* [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
         public void Stind_I(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -1593,7 +1591,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Stind_I);
 
             runMethod(method, ilg);
-        }
+        } */
 
         [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
         public void Stind_I1(int value1, int value2)
@@ -1652,7 +1650,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
+        /* [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
         public void Stind_I8(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -1670,7 +1668,7 @@ namespace Modeling
 
             runMethod(method, ilg);
         }
-
+ */
         [Measure(1000, new[] { "Empty", "Ldc_R4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_R4", })]
         public void Stind_R4(float value1, float value2)
         {
