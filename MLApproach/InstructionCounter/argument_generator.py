@@ -2,7 +2,7 @@ import random
 from simulation_exception import simulation_exception
 
 
-primitive = ['char', 'bool', 'int32', 'int64', 'uint32', 'float32', 'float64', 'string']
+primitive = ['char', 'bool', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'float32', 'float64', 'string', 'object']
 system_types = ['System.Boolean', 'System.Int32', 'System.Int64', 'System.UInt32', 'System.String', 'System.Single', 'System.Double', 'System.Decimal']
 array_primitives = [f'{x}[]' for x in primitive]
 symbols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
@@ -45,7 +45,7 @@ def convert_argument(value, datatype):
     if type(datatype) != str:
         data_type = datatype.get_name()
 
-    if data_type in ['bool', 'int32', 'uint32', 'char']:
+    if data_type in ['bool', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64', 'char']:
         return int(value)
     elif data_type in ['float32', 'float64']:
         return float(value)
@@ -67,12 +67,14 @@ def get_default(datatype):
         data_type = datatype.get_name()
 
     if can_generate(data_type):
-        if data_type in ['char', 'int32', 'uint32', 'bool']:
+        if data_type in ['bool', 'int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64', 'char']:
             return 0
         elif data_type in ['float32', 'float64']:
             return 0.0
         elif data_type in ['string']:
             return ''
+        elif data_type in ['object']:
+            return None
         elif '[]' in data_type:
             return []
     else:

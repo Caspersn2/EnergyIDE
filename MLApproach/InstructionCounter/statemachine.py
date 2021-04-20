@@ -20,7 +20,7 @@ class state_machine():
             variables = locals.local_storage
             is_init = locals.is_init
             for var in variables:
-                self.storage.add_local(var.index, variable(var.index, var.get_name()), is_init)
+                self.storage.add_local(var.index, variable(var.index, var.get_name(), var.is_valuetype()), is_init)
 
 
     def load_arguments(self, variables):

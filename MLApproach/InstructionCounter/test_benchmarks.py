@@ -17,7 +17,7 @@ def count_benchmark(benchmark, environment):
         _ = main.simulate(dll_path, True, environment)
         return 1
     except Exception as ex:
-        text = f'{benchmark}\n====================\n{ex.args[0]}\n\n'
+        text = f'{benchmark}\n====================\n{str(ex)}\n\n'
         open('errors.txt', 'a+').write(text)
         return -1
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     correct = 0
     not_correct = 0
     
-    libs = ['object', 'int32', 'delegate', 'uint32', 'valuetuple3', 'number', 'math', 'string', 'int64', 'span', 'readOnlySpan', 'byReference', 'array']
+    libs = ['object', 'int32', 'delegate', 'uint32', 'valuetuple3', 'number', 'math', 'string', 'int64', 'span', 'readOnlySpan', 'byReference', 'array', 'timeSpan', 'buffer_text_helper', 'datetime', 'linq', 'list', 'numerics']
     library_paths = ['init_library/' + x + '.il' for x in libs]
     environment = main.load_environment(library_paths)
 
