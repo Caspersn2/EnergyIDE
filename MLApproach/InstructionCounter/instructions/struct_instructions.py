@@ -96,7 +96,7 @@ class load_indirect_instruction(instruction):
 
     def execute(self, storage):
         active_value = storage.get_active_value()
-        if active_value:
+        if active_value or active_value == 0:
             storage.push_stack(active_value)
             return Actions.NOP, None
         else:

@@ -54,7 +54,7 @@ class load_int_instruction(instruction):
     def keys(cls):
         return ['ldc.i4', 'ldc.i4.0', 'ldc.i4.1', 'ldc.i4.2', 'ldc.i4.3',
             'ldc.i4.4', 'ldc.i4.5', 'ldc.i4.6', 'ldc.i4.7', 'ldc.i4.8',
-            'ldc.i4.m1', 'ldc.i4.M1', 'ldc.i4.s', 'ldc.i4.i8']
+            'ldc.i4.m1', 'ldc.i4.M1', 'ldc.i4.s', 'ldc.i4.i8', 'ldc.i8']
 
     def execute(self, storage):
         storage.push_stack(self.value)
