@@ -35,7 +35,7 @@ class Method():
 
 
     def combine_type(self, datatype):
-        combined = DataType.new(datatype)
+        combined = DataType(datatype, False)
         return combined
 
 

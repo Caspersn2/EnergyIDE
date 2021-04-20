@@ -49,12 +49,12 @@ class TypeParser(TextParsers):
     primitive_types = lit('object', 'string', 'typedref', 'char', 'void', 'bool', 'int8', 'int16', 'int32', 'int64', 'float32', 'float64', 'uint8', 'uint16', 'uint32', 'uint64', 'native int', 'native uint', 'native float')
     native_types = primitive_types | lit('lpstruct')
     type1 = \
-            ('class ' >> NameParser.classname > DataType.new) \
+            ('class ' & NameParser.classname > splat(DataType.new)) \
             | lit('value') & lit('class') & NameParser.classname \
-            | ('valuetype ' >> NameParser.classname > DataType.new) \
+            | ('valuetype ' & NameParser.classname > splat(DataType.new)) \
             | ('!' & (reg(POSITIVE_INT) | NameParser.identifier) > GenericClassType) \
             | ('!!' & (reg(POSITIVE_INT) | NameParser.identifier) > GenericMethodType) \
-            | (primitive_types > DataType.new)
+            | (primitive_types > DataType.new_primitive)
     genArgs = fwd()
     typespec = fwd()
     type2 = \
@@ -78,7 +78,7 @@ class TypeParser(TextParsers):
     genArgs.define(repsep(type_ | NameParser.dotted_name, ','))
     typespec.define(type_ | NameParser.classname)
     genParAttr = lit('+', '-', 'class', 'valuetype', '.ctor')
-    genPar = (rep(genParAttr) & opt('(' >> repsep(type_ | NameParser.dotted_name, ',') << ')')) >> NameParser.dotted_name > DataType
+    genPar = (rep(genParAttr) & opt('(' >> repsep(type_ | NameParser.dotted_name, ',') << ')')) >> NameParser.dotted_name > DataType.new_primitive
     ddItem = \
             lit('bytearray') & '(' & rep(reg(BYTES)) & ')' \
             | lit('float32', 'float64') & opt('(' >> reg(DOUBLE) << ')') & opt('(' >> reg(INTEGER) << ')') \
@@ -138,7 +138,7 @@ class MethodParser(TextParsers):
     sigArg = TypeParser.type_ << opt(marshal) & opt(NameParser.identifier) > splat(Parameter.new)
     params = rep(paramAttr) >> sigArg
     methodHeader = rep(methodAttr) & callConv & (TypeParser.type_ | lit('<bad signature>')) & opt(marshal) & methodname & opt('<' >> repsep(TypeParser.genPar, ',') << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
-    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> (TypeParser.genArgs > GenericMethodType.new) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
+    methodHeaderFull = rep(methodAttr) & callConv & TypeParser.type_ & opt(marshal) & (TypeParser.typespec & '::' & methodname) & opt('<' >> (TypeParser.genArgs > GenericMethodType) << '>') & '(' >> repsep(params, ',') << (')' & rep(implAttr))
     method_ = '.method' >> methodHeader > splat(Method)
     customDecl = '.custom' >> methodHeaderFull << opt((lit('=') & '(') & rep(reg(BYTES)) & ')') > Custom
     instruction_ = lit('IL_') >> reg(HEX) << ':' & reg(r'[^\n]+') > splat(Instruction)
@@ -244,7 +244,7 @@ def parse_text(text, path=None):
             outers[cls.get_qualifying_name()] = cls
         return outers
     else:
-        ex = path
+        ex = path if path else ''
         if path:
             ex = '=' * 15
             ex += path

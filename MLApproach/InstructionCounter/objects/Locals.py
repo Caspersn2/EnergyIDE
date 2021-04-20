@@ -16,6 +16,9 @@ class Local():
         else:
             return self.type_name.get_name()
 
+    def is_valuetype(self):
+        return self.type_name.is_valuetype()
+
     @classmethod
     def new(cls, index, l_datatype, name):
         name = name[0] if name else None

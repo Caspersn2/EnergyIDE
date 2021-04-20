@@ -1,12 +1,14 @@
 # Represents a variable
+from simulation_exception import simulation_exception
 from argument_generator import can_generate, get_default, get_primitive
 import copy
 
 
 class variable():
-    def __init__(self, name, type):
+    def __init__(self, name, type, is_valuetype = False):
         self.name = name
         self.type = type
+        self.is_valuetype = is_valuetype
         self.value = None
 
 
@@ -23,6 +25,8 @@ class variable():
             default_value = get_default(datatype)
         elif datatype in storage.classes:
             default_value = storage.get_class_copy(datatype)
+        elif self.is_valuetype:
+            raise simulation_exception(f'The type: "{datatype}" is a valuetype, and therefore has to be instantiated. The class could not be found. Please import it')
         else:
             # Note that this is not totally understood. This statement could potentially break some programs (I do not know)
             return None
