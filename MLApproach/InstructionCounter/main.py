@@ -1,81 +1,157 @@
 import argparse
+from storage import storage
 from simulation_exception import simulation_exception
 from statemachine import state_machine
-import yamlclass
-import utilities
+from argument_generator import create_random_argument, convert_argument
+from collections import Counter
+import Parser
 import subprocess
 import result
+import os
 
 
-def execute(counting_type, method, state_machine):
-    res = None
-
-    if counting_type == 'Simple':
-        res = utilities.simple_count(method.text)
-    elif counting_type == 'Simulation' and method.arguments:
-        raise simulation_exception(f"The chosen method requires arguments, and can therefore not be counted by itself")
+def execute(args, method, state_machine):
+    if args.counting_method == 'Simple':
+        res = Counter([x.name for x in method.instructions.values()])
+        result.add_results(res, method)
     else:
-        res, _ = state_machine.simulate(method, None)
+        if method.is_entry:
+            state_machine.simulate(method, None)
+        else:
+            args_list = []
+            for idx, param in enumerate(method.parameters):
+                if args.input and idx < len(args.input):
+                    value = convert_argument(args.input[idx], param)
+                else:
+                    value = create_random_argument(param)
+                args_list.append(value)
+            args_list.reverse()
+            method.set_parameters(args_list)
+            state_machine.simulate(method, None)
+
+
+def load_environment(libraries):
+    if libraries:
+        library_classes = get_library_classes(libraries)
+        library_classes = get_all_classes(library_classes)
+    return library_classes
+
+
+def simulate(file, is_assembly, environment = {}):
+    # GET IL
+    text = ''
+    if is_assembly:
+        text = get_il_from_dll(file)
+    else:
+        text = open(file, 'r').read()
     
-    result.add_results(res, method.name)
+    # SETUP
+    classes = Parser.parse_text(text)
+    classes = get_all_classes(classes)
+    methods, entry = get_methods_and_entry(classes)
+    if entry is None:
+        raise simulation_exception('The provided file has no entry method, and no other entry was provided')
+
+    # EXECUTION
+    storage_unit = storage({**classes, **environment})
+    state = state_machine(storage_unit)
+    if entry:
+        found_method = methods[entry]
+        state.simulate(found_method, None)
+
+    # RESULTS
+    res = result.get_results()
+    result.clear()
+    return res
 
 
 def count_instructions(args, text):
     ## Split all code into methods
-    instructionset = yamlclass.load(args.instruction_set)
-    classes = utilities.get_all_classes(text)
-    methods = get_methods_from_classes(classes)
-    state = state_machine(instructionset, classes, methods)
+    library_classes = {}
+    outerclasses = Parser.parse_text(text)
+    classes = get_all_classes(outerclasses)
+    if args.library:
+        library_classes = get_library_classes(args.library)
+        library_classes = get_all_classes(library_classes)
+        classes = {**classes, **library_classes}
+    methods, entry = get_methods_and_entry(classes)
+    storage_unit = storage(classes, library_classes)
+    state = state_machine(storage_unit)
 
     if args.list:
-        print_methods(methods)
+        print_methods(classes)
         exit()
+        
+    if entry and not args.method:
+        args.method = entry
+    elif not entry and not args.method:
+        raise simulation_exception('No entry was found in the program, please specify one using the "-m" or "--method" command line argument')
 
-    if args.method:
-        m = args.method.lower()
+    if entry and args.method.lower() == entry.lower() and args.counting_method == 'Simple':
+        for method in methods.values():
+            execute(args, method, state)
+    else:
+         m = args.method.lower()
         if m in methods:
-            method = methods[m]
-            execute(args.counting_method, method, state)
+            method = methods[args.method]
+            execute(args, method, state)
         else:
             raise simulation_exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
-    else:
-        if args.entry not in methods.keys() and args.counting_method == 'Simulation':
-            raise simulation_exception(f"The default method: '{args.entry}' does not exist in the .il file, please specify another method using `-e` or `--entry`")
 
-        for k, method in methods.items():
-            if args.counting_method == 'Simple' or args.entry in k:
-                execute(args.counting_method, method, state)
-    
     result.output(args.output)
     return result.get_results()
 
 
-def get_methods_from_classes(classes):
+def get_library_classes(file_list):
+    classes = {}
+    for file in file_list:
+        classes = {**classes, **Parser.parse_file(file)}
+    return classes
+
+
+def get_all_classes(outerclasses):
+    classes = outerclasses
+    for cls in outerclasses.values():
+        classes = {**classes, **cls.get_nested()}
+    return classes
+    
+
+def get_methods_and_entry(classes):
+    entry = ''
     methods = {}
-    for _, cls in classes.items():
-        for m in cls.methods:
-            methods[m.name.lower()] = m
-    return methods
+    for cls in classes.values():
+        for meth in cls.methods.values():
+            methods[meth.get_full_name().lower()] = meth
+            if meth.is_entry:
+                entry = meth.get_full_name()
+    return methods, entry
 
-
-def print_methods(methods):
+def print_methods(classes):
     print(f'The available methods are as follows:')
-    keys = [f'{x}' for x in methods.keys()]
-    for key in keys:
-        print(key)
+    for cls in classes.values():
+        for meth in cls.methods.values():
+            print(meth.get_full_name())
+
+
+def get_il_from_dll(file_name):
+    file_location = os.path.abspath(file_name)
+    subprocess.call(f'ilspycmd {file_location} --ilcode -o cil/', shell=True, 
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    file_name = os.path.splitext(os.path.basename(file_location))[0]
+    return open(f'cil/{file_name}.il', encoding='utf-8', mode='r').read()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=argparse.FileType('r'), help='Counts all of the instructions used', required=True)
-    parser.add_argument('-c', '--counting-method', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
+    parser.add_argument('-f', '--file', type=argparse.FileType('r', encoding='utf-8'), help='Counts all of the instructions used', required=True)
+    parser.add_argument('-c', '--counting-method', default='Simulation', choices=['Simple', 'Simulation'], help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
     parser.add_argument('-m', '--method', type=str, help='Countes the instructions for the specific method')
-    parser.add_argument('-e', '--entry', default='Main(string[])', help='If "Main(string[])" is not the default entry method please specify with this command')
+    parser.add_argument('-i', '--input', nargs='*', help='If a method is chosen via. --method, then input variables can be chosen using this argument (Otherwise arguments are generated randomly)')
     parser.add_argument('-l', '--list', action='store_true', help='Will print a list of available methods')
     parser.add_argument('-a', '--assembly', action='store_true', help='Will dissamble your .dll file for you')
     parser.add_argument('-o', '--output', type=str, help='The name of the output file')
+    parser.add_argument('--library', type=str, nargs='+', help='Names the library files which should be loaded into the simulator')
     parser.add_argument('-d', '--debug', action='store_true', help='Prints all of the args and their name after parsing')
-    parser.add_argument('-i', '--instruction-set', type=str, default='instructions.yaml', help='Path to the file containing all of the behavior of CIL instructions')
     args = parser.parse_args()
 
     if args.debug:
@@ -83,15 +159,7 @@ if __name__ == '__main__':
 
     ## Read the il file
     if args.assembly:
-        name = args.file.name.split('/')[-1].split('.')[0]
-        try:
-            subprocess.call(
-            f'dotnet-ildasm {args.file.name} -o {name}.il', shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
-            text = open(f'{name}.il').read()
-        except subprocess.CalledProcessError as e:
-            raise simulation_exception("Could not dissamble file").with_traceback(e.__traceback__)
+        text = get_il_from_dll(args.file.name)
     else:
         text = args.file.read()
 
