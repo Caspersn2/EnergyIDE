@@ -22,12 +22,16 @@ def get_il_energy_values(items):
         # Gets the name of method/IL code
         name = getValueOfTagName(item, 'name')
         
+        measureDict = {}
         for measurement in item.getElementsByTagName('measurement'):
             mean = getValueOfTagName(measurement, 'mean-subtracted')
+            measurementName = getValueOfTagName(measurement, 'name')
             if not mean :
                 # Maybe this should not be here i guess
-                mean = mean = getValueOfTagName(measurement, 'mean')
-            ILModelDict[name] = float(mean.replace(',', '.'))
+                mean = getValueOfTagName(measurement, 'mean')
+            measureDict[measurementName] = float(mean.replace(',', '.'))
+        
+        ILModelDict[name] = measureDict
     return ILModelDict
 
 def get_cil_counts(methods,className, text):
@@ -52,6 +56,7 @@ async def get_estimate(request):
     # Read the XML model file
     mydoc = minidom.parse(model_path)
     items = mydoc.getElementsByTagName('method')
+    
     ILModelDict = get_il_energy_values(items)
     
     # Read the request info
@@ -77,13 +82,18 @@ async def get_estimate(request):
         for method_name, counter in counts.items():
             counter = reduce(lambda a, b: a+b, counter, counter[0])
             sum = 0.0
+            methodResult = {}
             for instruction in counter:
                 count = counter[instruction]
                 instruction = ILToEmit(instruction)
                 if instruction in ILModelDict:
-                    cost = ILModelDict[instruction]
-                    sum += count*cost
-            results[method_name] = sum
+                    for measurementType in ILModelDict[instruction]:
+                        cost = ILModelDict[instruction][measurementType]
+                        if measurementType in methodResult:
+                            methodResult[measurementType] += count * cost
+                        else:
+                            methodResult[measurementType] = count * cost
+            results[method_name] = methodResult
         all_results[class_name] = results
 
     # return result
