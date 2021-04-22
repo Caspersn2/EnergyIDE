@@ -30,10 +30,6 @@ export class MeasureTestingService {
         return this.callService('http://localhost:5003/start', axios.post, { activeClasses: activeClasses });
     }
 
-    public static getEnergyModelProgress(): Promise<string> {
-        return this.callService('http://localhost:5003/progress', axios.get);
-    }
-
     public static getMethods(files: string[], type: string): Promise<ActivateClass[]> {
         return new Promise(async (resolve, reject) => {
             try {
