@@ -32,6 +32,30 @@
 </br>
 </br>
 
+<!-- Trigger/Open The Modal -->
+<button type="button" class="full-width btn" onclick="showModal()">
+  <span style="font-size:12px; vertical-align: middle;">Provide Inputs</span>
+</button>
+</br>
+</br>
+
+<!-- The Modal -->
+<div id="inputsModal" class="modal">
+  <div id="modal-container" class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <p>The following methods require input for their energy to be estimated.</p>
+    <p>Provide one input per box.</p>
+    <button type="button" class="full-width btn" onclick="saveInputs()">
+      <i class="material-icons" style="font-size:12px; vertical-align: middle;">save</i>
+      <span style="font-size:12px; vertical-align: middle;">Save Changes</span>
+      <i class="material-icons" style="font-size:12px; vertical-align: middle;">save</i>
+    </button>
+    </br>
+    </br>
+    <div id="input-container"></div>
+  </div>
+</div>
+
 <button id="activate-button" class="full-width btn" onclick="activate()">
   <i id="activate-button-icon" class="material-icons" style="font-size:12px; vertical-align: middle;">bolt</i>
   <span id="activate-button-text" style="font-size:12px; vertical-align: middle;">Begin Estimation</span>
@@ -131,7 +155,7 @@
 
       vscode.postMessage({
         type: "activate",
-        value: { methods: selected, type: type },
+        value: { methods: selected, inputs: inputsDict, type: type },
       });
     }
     else {
@@ -188,6 +212,60 @@
     else {
       counter.textContent = selected.length + " method(s) selected";
     }
+  }
+
+  function showModal() {
+    let selected = getSelectedMethods().map(x => x.Methods).flat();
+    selected = selected.filter(x => x.Args.length > 0);
+
+    var container = document.getElementById("input-container");
+
+    selected.forEach(element => {
+      container.appendChild(document.createTextNode(element.StringRepresentation));
+      container.appendChild(document.createElement("br"));
+
+      // Create an <input> element, set its type and name attributes
+      element.Args.forEach(arg => {
+        var input = document.createElement("input");
+        input.type = "text";
+        input.Name = arg;
+        container.appendChild(input);
+      });
+      // Append a line break 
+      container.appendChild(document.createElement("br"));
+      container.appendChild(document.createElement("br"));
+    });
+    // Show Modal
+    var modal = document.getElementById("inputsModal");
+    modal.style.display = "block";
+
+  }
+
+  function closeModal() {
+    var modal = document.getElementById("inputsModal");
+    modal.style.display = "none";
+    var container = document.getElementById("input-container");
+    //saveInputs();
+
+    // Clear previous contents of the container
+    while (container.childNodes.length > 0) {
+      container.removeChild(container.lastChild);
+    }
+  }
+
+  let inputsDict = {};
+  function saveInputs() {
+    var container = document.getElementById("input-container");
+    let currentMethod;
+    container.childNodes.forEach(node => {
+      if(node.nodeName == "#text"){
+        currentMethod = node.textContent;
+        inputsDict[currentMethod] = [];
+      }
+      if(node.nodeName == "INPUT"){
+        inputsDict[currentMethod].push(node.value);
+      }
+    });
   }
 
 </script>
@@ -259,5 +337,47 @@
     right: 0;
     top: 0;
     bottom: 0;
+  }
+
+  /* The Modal (background) */
+  .modal {
+    /* Hidden by default */
+    display: none;
+    /* Stay in place */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgba(37, 37, 38, 1)
+  }
+
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--vscode-button-foreground);
+    margin: 15% auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    width: 80%;
+    /* Could be more or less, depending on screen size */
+  }
+
+  /* The Close Button */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
   }
 </style>

@@ -22,8 +22,8 @@ export class MeasureTestingService {
         return this.callService('http://localhost:5000/', axios.delete);
     }
 
-    public static startML(activeClasses: ActivateClass[]): Promise<any> {
-        return this.callService('http://localhost:5002/post', axios.post, { activeClasses: activeClasses });
+    public static startML(activeClasses: ActivateClass[], inputs: {}): Promise<any> {
+        return this.callService('http://localhost:5002/post', axios.post, { activeClasses: activeClasses, inputs: inputs });
     }
 
     public static getMethods(files: string[], type: string): Promise<ActivateClass[]> {

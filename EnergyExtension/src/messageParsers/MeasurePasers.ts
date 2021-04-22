@@ -51,7 +51,7 @@ export class Measure {
         });
     }
 
-    static activate(activeClasses: ActivateClass[], type: string, webviewView: vscode.WebviewView) {
+    static activate(activeClasses: ActivateClass[], inputs: {}, type: string, webviewView: vscode.WebviewView) {
         if (type === "rapl") {
             var ids: number[] = [];
             activeClasses.forEach(c => {
@@ -68,7 +68,7 @@ export class Measure {
         }
         else if (type === "ml") {
             //TODO: What to do with results???
-            MeasureTestingService.startML(activeClasses).then(response => {
+            MeasureTestingService.startML(activeClasses, inputs).then(response => {
                 if(response)
                 {
                     webviewView.webview.postMessage({ command: 'done', value: response });
