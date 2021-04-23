@@ -73,6 +73,7 @@ namespace Measurement.Repositories
                             continue;
                         }
                         var classes = ass.GetTypes();
+                        type = "static";
 
                         foreach (var currentClass in classes)
                         {
@@ -117,7 +118,15 @@ namespace Measurement.Repositories
 
             if (allMethods.Any())
             {
-                MethodViewModel[] methodViewModels = allMethods.Select(m => new MethodViewModel() { Id = m.GetHashCode(), StringRepresentation = m.ToString(), Name = m.Name }).ToArray();
+                MethodViewModel[] methodViewModels = allMethods
+                                                        .Select(m => new MethodViewModel() 
+                                                            { 
+                                                                Id = m.GetHashCode(), 
+                                                                Name = m.Name, 
+                                                                Args = m.GetParameters().Select(p => p.ParameterType.ToString()).ToArray(), 
+                                                                StringRepresentation = m.ToString() 
+                                                            })
+                                                        .ToArray();
                 ClassMethods cm = new ClassMethods
                 {
                     CurrentClass = currentClass,

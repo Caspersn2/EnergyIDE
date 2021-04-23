@@ -43,7 +43,8 @@ export class EnergyViewProvider implements vscode.WebviewViewProvider {
         case 'activate':
           let methods = message.value.methods as ActivateClass[];
           let type = message.value.type;
-          Measure.activate(methods, type, webviewView);
+          let inputs = message.value.inputs
+          Measure.activate(methods, inputs, type, webviewView);
           break;
         case 'stop':
           Measure.stop();
