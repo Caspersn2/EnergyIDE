@@ -75,9 +75,8 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     return res
 
 
-def count_instructions(args, text):
+def count_instructions(args, text, library_classes = {}):
     ## Split all code into methods
-    library_classes = {}
     outerclasses = Parser.parse_text(text)
     classes = get_all_classes(outerclasses)
     if args.library:
