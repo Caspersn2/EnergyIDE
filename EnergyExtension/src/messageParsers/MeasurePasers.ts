@@ -76,7 +76,27 @@ export class Measure {
                 }
             });
         }
-        //else if (type === "energy_model")
+        else if (type === "energy_model") {
+            var running: boolean = true;
+            MeasureTestingService.startEnergyModel(activeClasses).then(response => {
+                if (response)
+                {
+                    webviewView.webview.postMessage({ command: 'done', value: response });
+                    this.openOutput(JSON.stringify(response), 'JSON');
+                }
+            })
+                .catch(error => {
+                    console.log(error);
+                })
+                .finally(() => { running = false; });
+            /* while (running) {
+                this.delay(100).then(x => {
+                    MeasureTestingService.getEnergyModelProgress().then(progress => {
+                        webviewView.webview.postMessage({ command: 'model-progress', value: progress });
+                    });
+                });
+            } */
+        }
 
     }
 

@@ -10,7 +10,6 @@ import { ActivateClass, Measure } from './messageParsers/MeasurePasers';
 export function activate(context: vscode.ExtensionContext) {
 	let webviewProvider = new EnergyViewProvider(context);
   vscode.window.registerWebviewViewProvider("energyWebView", webviewProvider);
-  
 }
 
 // this method is called when your extension is deactivated
@@ -43,7 +42,7 @@ export class EnergyViewProvider implements vscode.WebviewViewProvider {
           break;
         case 'activate':
           let methods = message.value.methods as ActivateClass[];
-          let type = message.value.type
+          let type = message.value.type;
           Measure.activate(methods, type, webviewView);
           break;
         case 'stop':

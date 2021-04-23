@@ -15,8 +15,8 @@ namespace Modeling
     {
         static void Main(string[] args)
         {
-            //var output = Manager.Test(typeof(measureClass));
             var output = Manager.Test(typeof(measureClass));
+            // var output = Manager.Test(typeof(testing));
 
             System.IO.File.WriteAllText("output.xml", output);
             UpdateNew("output.xml");
@@ -31,7 +31,7 @@ namespace Modeling
             XmlNodeList allMethods = doc.SelectNodes("/class/method");
             XmlNodeList remainingMethods = allMethods;
 
-            Dictionary<string, double> allMeans = new Dictionary<string, double>();
+            var allMeans = new Dictionary<string, Dictionary<string, double>>();
 
             var current = 0;
             var change = false;
@@ -82,16 +82,26 @@ namespace Modeling
                 var hasAll = dependencies.All(dep => allMeans.ContainsKey(dep.Key));
                 if (hasAll)
                 {
-                    double newMean = double.Parse(methodNode.SelectSingleNode("measurement/mean").InnerText);
-                    foreach (var dependency in dependencies)
-                        newMean -= allMeans[dependency.Key] * dependency.Value;
+                    var measurements = methodNode.SelectNodes("measurement");
+                    foreach (XmlNode measurement in measurements){
+                        double newMean = double.Parse(measurement.SelectSingleNode("mean").InnerText);
+                        var measurementName = measurement.SelectSingleNode("name").InnerText;
+                        
+                        foreach (var dependency in dependencies)
+                            newMean -= allMeans[dependency.Key][measurementName] * dependency.Value;
 
-                    XmlNode newMeanNode = doc.CreateElement("mean-subtracted");
-                    newMeanNode.InnerText = newMean.ToString();
-                    methodNode.SelectSingleNode("measurement").AppendChild(newMeanNode);
+                        XmlNode newMeanNode = doc.CreateElement("mean-subtracted");
+                        newMeanNode.InnerText = newMean.ToString();
+                        measurement.AppendChild(newMeanNode);
+                    
+                        // Update all means with this mean
+                        var methodName = methodNode.SelectSingleNode("name").InnerText;
+                        if (allMeans.ContainsKey(methodName))
+                            allMeans[methodName].Add(measurementName, newMean);
+                        else 
+                            allMeans[methodName] = new Dictionary<string, double>() { { measurementName, newMean } };
+                    }
 
-                    // Update all means with this mean
-                    allMeans.Add(methodNode.SelectSingleNode("name").InnerText, newMean);
 
                     // There has been a change since last run
                     change = true;
@@ -104,7 +114,7 @@ namespace Modeling
         }
     }
 
-    [MeasureClass(false, 0.05F, MeasurementType.Timer)]
+    [MeasureClass(false, 0.05F)]
     class testing
     {
         private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
@@ -125,24 +135,22 @@ namespace Modeling
             ilg.Emit(OpCodes.Ret);
             method.Invoke(null, Type.EmptyTypes);
         }
-        private void runMethod(DynamicMethod method, ILGenerator ilg, object[] args)
+
+        [Measure(10000)]
+        public void Empty()
         {
-            ilg.Emit(OpCodes.Ret);
-            method.Invoke(null, args);
+            var (method, ilg) = newMethod();
+            runMethod(method, ilg);
         }
-
-        [Measure(10000, new[] { "Empty" })]
-        public void Ldarg()
-        {
-            var (method, ilg) = newMethodWithArgs();
-
-            ilg.Emit(OpCodes.Ldarg, 3); // 3 is index, should probably randomise this
-            ilg.Emit(OpCodes.Pop);
-
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
-        }
-
         
+        [Measure(10000, new[] { "Empty" })] // ox20
+        public void Ldc_I4(int value)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
     }
 
     public class Fields
@@ -151,7 +159,7 @@ namespace Modeling
         public int field { get; set; }
     }
 
-    [MeasureClass(false, 0.005F, MeasurementType.Timer)]
+    [MeasureClass(false, 0.005F)]
     class measureClass
     {
         private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
@@ -1576,7 +1584,7 @@ namespace Modeling
         }
         #endregion
         #region Store value into adress or array
-        [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
+        /* [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
         public void Stind_I(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -1593,7 +1601,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Stind_I);
 
             runMethod(method, ilg);
-        }
+        } */
 
         [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
         public void Stind_I1(int value1, int value2)
@@ -1652,7 +1660,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
+        /* [Measure(1000, new[] { "Empty", "Ldc_I4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_I4", })]
         public void Stind_I8(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -1670,7 +1678,7 @@ namespace Modeling
 
             runMethod(method, ilg);
         }
-
+ */
         [Measure(1000, new[] { "Empty", "Ldc_R4", "EmptyDeclareLocal", "Stloc_S", "Ldloca", "Ldc_R4", })]
         public void Stind_R4(float value1, float value2)
         {

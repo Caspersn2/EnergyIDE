@@ -22,41 +22,56 @@ def get_il_energy_values(items):
         # Gets the name of method/IL code
         name = getValueOfTagName(item, 'name')
         
+        measureDict = {}
         for measurement in item.getElementsByTagName('measurement'):
             mean = getValueOfTagName(measurement, 'mean-subtracted')
+            measurementName = getValueOfTagName(measurement, 'name')
             if not mean :
                 # Maybe this should not be here i guess
-                mean = mean = getValueOfTagName(measurement, 'mean')
-            ILModelDict[name] = float(mean.replace(',', '.'))
+                mean = getValueOfTagName(measurement, 'mean')
+            measureDict[measurementName] = float(mean.replace(',', '.'))
+        
+        ILModelDict[name] = measureDict
     return ILModelDict
 
-def get_cil_counts(methods,className):
+def get_cil_counts(methods,className, text):
     counts = {}  # maps method/program name to IL instruction Counter
     if methods:
         for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
-            args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
+            args = argparse.Namespace(method=method_name, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
                                     counting_method='Simple', entry='Main(string[])', output=None)
             counts[method_name] = main.count_instructions(args, text)
     else:
-        args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
+        args = argparse.Namespace(method=None, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
                                 counting_method='Simple', entry='Main(string[])', output=None)
         counts[name] = main.count_instructions(args, text)
-        return counts
+    return counts
 
-@routes.post('/post')
+progress = "Not started"
+@routes.get('/progress')
+async def get_progress():
+    print('progress: ' + progress)
+    return progress
+
+@routes.post('/start')
 async def get_estimate(request):
+    global progress
+    
     # If the energy model is not available
     # return 503: service unavailable
     if model_path not in os.listdir():
         return web.Response(text='This service is currently unavailable. No energy model is pressent', status=503)
-
+    
     # Read the XML model file
+    progress = "Reading Energy model file"
     mydoc = minidom.parse(model_path)
     items = mydoc.getElementsByTagName('method')
+    
     ILModelDict = get_il_energy_values(items)
     
     # Read the request info
-    fileinfo = await request.json()
+    progress = "Reading request"
+    json_data = await request.json()
     activate_classes = json_data['activeClasses']
     all_results = {}
     for current_class in activate_classes:
@@ -65,29 +80,36 @@ async def get_estimate(request):
         methods = current_class['Methods']
         abs_file_path = os.path.splitext(path_to_assembly)[0]
         name = os.path.split(abs_file_path)[-1]
+        progress = 'Calculating methods for class ' + class_name
 
         # dissassemble and get il code
         subprocess.call(f'ilspycmd {path_to_assembly} -o . -il', shell=True)
         text = open(f'{name}.il').read()
-
-        # Count instructions
-        counts = get_cil_counts(methods, class_name)
         
+        # Count instructions
+        counts = get_cil_counts(methods, class_name, text)
+
         # Calculate measurements for all methods in class
         results = {}
         for method_name, counter in counts.items():
             counter = reduce(lambda a, b: a+b, counter, counter[0])
             sum = 0.0
+            methodResult = {}
             for instruction in counter:
                 count = counter[instruction]
                 instruction = ILToEmit(instruction)
                 if instruction in ILModelDict:
-                    cost = ILModelDict[instruction]
-                    sum += count*cost
-            results[method_name] = sum
+                    for measurementType in ILModelDict[instruction]:
+                        cost = ILModelDict[instruction][measurementType]
+                        if measurementType in methodResult:
+                            methodResult[measurementType] += count * cost
+                        else:
+                            methodResult[measurementType] = count * cost
+            results[method_name] = methodResult
         all_results[class_name] = results
 
     # return result
+    progress = "Done / Not started"
     return web.Response(text=json.dumps(all_results), status=200)
 
 # Converts the Assembly IL format to the format used by microsoft reflection.
