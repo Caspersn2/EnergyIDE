@@ -1,0 +1,30 @@
+simpleGenericsMethodExample.Printer::print<T>(!!T) --> {0: '!!T'}
+nop,2
+ldarg.1,1
+box,1
+call,1
+ret,1
+
+simpleGenericsMethodExample.Printer::.ctor()
+ldarg.0,1
+call,1
+nop,1
+ret,1
+
+simpleGenericsMethodExample.Program::Main(string[]) --> {0: 'string[]'}
+nop,4
+newobj,1
+stloc.0,1
+ldloc.0,3
+ldc.i4.s,1
+callvirt,3
+ldstr,1
+ldc.r8,1
+ret,1
+
+simpleGenericsMethodExample.Program::.ctor()
+ldarg.0,1
+call,1
+nop,1
+ret,1
+

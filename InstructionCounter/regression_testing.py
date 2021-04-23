@@ -3,6 +3,7 @@ import subprocess
 import os
 import unittest
 
+FILE_STORAGE = 'results.csv'
 CIL_INSTRUCTIONS = [x.strip()
                     for x in open('CIL_Instructions.txt').readlines()]
 
@@ -25,15 +26,16 @@ def helper(il_file, correct, is_simple):
         subprocess.run(f'python3 main.py -f {il_file} -o results.csv', shell=True)
 
     # Assert Simple
-    res = count_occurrences('results.csv')
+    res = count_occurrences(FILE_STORAGE)
     truth = count_occurrences(correct)
     return res, truth
 
 
 class TestCounting(unittest.TestCase):
     def tearDown(self):
-        if os.path.isfile('results.csv'):
-            os.remove('results.csv')
+        if os.path.isfile(FILE_STORAGE):
+            os.remove(FILE_STORAGE)
+
 
     ## Simple Add
     def test_simpleAdd_simple(self):
@@ -46,6 +48,7 @@ class TestCounting(unittest.TestCase):
                             'testSets/simpleAddSimulation.csv', False)
         self.assertEqual(res, truth)
     
+
     ## Multiple Classes
     def test_multipleClasses_simple(self):
         res, truth = helper('testSets/multipleClasses.il',
@@ -56,6 +59,7 @@ class TestCounting(unittest.TestCase):
         res, truth = helper('testSets/multipleClasses.il',
                             'testSets/multipleClassesSimulation.csv', False)
         self.assertEqual(res, truth)
+
 
     ## 100 Doors
     def test_100Doors_simple(self):
@@ -68,9 +72,52 @@ class TestCounting(unittest.TestCase):
                             'testSets/100DoorsSimulation.csv', False)
         self.assertEqual(res, truth)
 
+
+    ## Conditional Test
     def test_conditionalTest_simple(self):
         res, truth = helper('testSets/conditional_test.il',
                             'testSets/conditional_testSimple.csv', True)
+        self.assertEqual(res, truth)
+
+    def test_conditionalTest_simulation(self):
+        res, truth = helper('testSets/conditional_test.il',
+                            'testSets/conditional_testSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+
+    ## Generics with standalone Method
+    def test_genericMethodExample_simple(self):
+        res, truth = helper('testSets/simpleGenericsMethodExample.il',
+                            'testSets/simpleGenericsMethodExampleSimple.csv', True)
+        self.assertEqual(res, truth)
+
+    def test_genericMethodExample_simulation(self):
+        res, truth = helper('testSets/simpleGenericsMethodExample.il',
+                            'testSets/simpleGenericsMethodExampleSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+
+    ## Generics with generic Class
+    def test_genericClassExample_simulation(self):
+        res, truth = helper('testSets/simpleGenericsClassExample.il',
+                            'testSets/simpleGenericsClassExampleSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+    def test_genericClassExample_simple(self):
+        res, truth = helper('testSets/simpleGenericsClassExample.il',
+                            'testSets/simpleGenericsClassExampleSimple.csv', True)
+        self.assertEqual(res, truth)
+
+
+    ## Simple Interface tests
+    def test_simpleInterface_simulation(self):
+        res, truth = helper('testSets/simple_interface.il',
+                            'testSets/simple_interfaceSimulation.csv', False)
+        self.assertEqual(res, truth)
+
+    def test_simpleInterface_simple(self):
+        res, truth = helper('testSets/simple_interface.il',
+                            'testSets/simple_interfaceSimple.csv', True)
         self.assertEqual(res, truth)
 
 
