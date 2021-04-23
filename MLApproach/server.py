@@ -12,20 +12,6 @@ from collections import Counter
 routes = web.RouteTableDef()
 model_path = 'model.obj'
 
-def get_cil_counts(methods,className):
-    counts = {}  # maps method/program name to IL instruction Counter
-    if methods:
-        for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
-            args = argparse.Namespace(method=method_name, list=False, instruction_set='InstructionCounter/instructions.yaml',
-                                    counting_method='Simple', entry='Main(string[])', output=None)
-            counts[method_name] = main.count_instructions(args, text)
-    else:
-        args = argparse.Namespace(method=None, list=False, instruction_set='InstructionCounter/instructions.yaml',
-                                counting_method='Simple', entry='Main(string[])', output=None)
-        counts[name] = main.count_instructions(args, text)
-        return counts
-
-
 @routes.post('/post')
 async def get_estimate(request):
     # If the machine learning model is not available

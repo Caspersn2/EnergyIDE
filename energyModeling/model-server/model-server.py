@@ -34,19 +34,6 @@ def get_il_energy_values(items):
         ILModelDict[name] = measureDict
     return ILModelDict
 
-def get_cil_counts(methods,className, text):
-    counts = {}  # maps method/program name to IL instruction Counter
-    if methods:
-        for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
-            args = argparse.Namespace(method=method_name, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
-                                    counting_method='Simple', entry='Main(string[])', output=None)
-            counts[method_name] = main.count_instructions(args, text)
-    else:
-        args = argparse.Namespace(method=None, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
-                                counting_method='Simple', entry='Main(string[])', output=None)
-        counts[name] = main.count_instructions(args, text)
-    return counts
-
 progress = "Not started"
 @routes.get('/progress')
 async def get_progress():
@@ -67,7 +54,7 @@ async def get_estimate(request):
     mydoc = minidom.parse(model_path)
     items = mydoc.getElementsByTagName('method')
     
-    ILModelDict = get_il_energy_values(items)
+    ILModelDict = get_il_energy_values(items) 
     
     # Read the request info
     progress = "Reading request"
@@ -87,12 +74,13 @@ async def get_estimate(request):
         text = open(f'{name}.il').read()
         
         # Count instructions
-        counts = get_cil_counts(methods, class_name, text)
+        counts = requests.post('http://0.0.0.0:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods})
+        counts = counts.json()
 
         # Calculate measurements for all methods in class
         results = {}
         for method_name, counter in counts.items():
-            counter = reduce(lambda a, b: a+b, counter, counter[0])
+            counter = reduce(lambda a, b: Counter(a) + Counter(b), count, count[0])
             sum = 0.0
             methodResult = {}
             for instruction in counter:
