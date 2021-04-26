@@ -97,11 +97,11 @@ def count_instructions(args, text):
     elif not entry and not args.method:
         raise simulation_exception('No entry was found in the program, please specify one using the "-m" or "--method" command line argument')
 
-    if entry and args.method.lower() == entry.lower() and args.counting_method == 'Simple':
+    if entry and args.method == entry and args.counting_method == 'Simple':
         for method in methods.values():
             execute(args, method, state)
     else:
-         m = args.method.lower()
+        m = args.method
         if m in methods:
             method = methods[args.method]
             execute(args, method, state)
@@ -131,7 +131,7 @@ def get_methods_and_entry(classes):
     methods = {}
     for cls in classes.values():
         for meth in cls.methods.values():
-            methods[meth.get_full_name().lower()] = meth
+            methods[meth.get_full_name()] = meth
             if meth.is_entry:
                 entry = meth.get_full_name()
     return methods, entry
