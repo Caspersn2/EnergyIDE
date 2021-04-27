@@ -54,6 +54,13 @@ def trim(string):
     tmp.value = stripped
     return tmp
 
+# This one cannot handle more than one super class step. Yet.
+def is_sub_class(cls, super_class):
+    if super_class.name in cls.extends:
+        return True
+    else:
+        return False
+
 
 replacement = {
     'System.Console::Read()': lambda _, __: random_char(),
@@ -90,6 +97,16 @@ replacement = {
     'System.Math::Asin(float64)': lambda args, _: math.asin(args[0]),
     'System.Math::Acos(float64)': lambda args, _: math.acos(args[0]),
     'System.Math::Atan(float64)': lambda args, _: math.atan(args[0]),
+    'System.Math::Exp(float64)': lambda args, _: math.exp(args[0]),
+    'System.Math::Ceiling(float64)': lambda args, _: math.ceil(args[0]),
+    'System.Math::Floor(float64)': lambda args, _: math.floor(args[0]),
+    'System.Math::Log(float64)': lambda args, _: math.log(args[0]),
+    'System.Math::Log2(float64)': lambda args, _: math.log2(args[0]),
+    'System.Math::Log10(float64)': lambda args, _: math.log10(args[0]),
+    'System.Math::Pow(float64, float64)': lambda args, _: math.pow(args[1], args[0]),
+
+    'System.Type::GetTypeFromHandle(System.RuntimeTypeHandle)': lambda args, _: args[0],
+    'System.Type::IsSubclassOf(System.Type)': lambda args, storage: is_sub_class(storage.get_active_class(), args[0]),
 
     'System.Runtime.InteropServices.MemoryMarshal::GetArrayDataReference<!!T>(!!0[])': lambda args, _: args[0],
     'System.ByReference`1<!T>::.ctor(!T&)': lambda args, _: args[0]

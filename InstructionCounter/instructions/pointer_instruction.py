@@ -80,7 +80,7 @@ class load_token_instruction(instruction):
             data = InstructionParser.parse('call', text)
         else:
             data = InstructionParser.parse(name, text)
-            if len(data) != 1:
+            if type(data) == list and len(data) != 1:
                 data = variable(''.join(data[1:]), data[0])
         return load_token_instruction(name, data)
 
@@ -91,6 +91,8 @@ class load_token_instruction(instruction):
     def execute(self, storage):
         if type(self.data) == variable and 'StaticArrayInit' in self.data.get_name():
             storage.push_stack([])
+        elif self.data in storage.classes:
+            storage.push_stack(storage.get_class_copy(self.data))
         else:
             raise NotImplementedError('FIX THIS')
         return Actions.NOP, None

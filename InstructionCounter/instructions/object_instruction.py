@@ -118,8 +118,10 @@ class callvirt_instruction(object_instructions):
             cls, args = self.get_class_and_args(storage)
 
             if function_replacement.contains(self.method_name):
+                storage.set_active_class(cls)
                 res = function_replacement.call(self.method_name, args, storage)
                 storage.push_stack(res)
+                storage.pop_active_class()
                 return Actions.NOP, None
 
             if cls.is_generic or '!!' in self.method_name:

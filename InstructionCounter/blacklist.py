@@ -14,10 +14,13 @@ method_blacklist = {
     'System.Console::Write(object)',
     'System.Console::WriteLine(object)',
     'System.Console::WriteLine(bool)',
+    'System.Console::WriteLine(char)',
     'System.Console::WriteLine(int32)',
     'System.Console::WriteLine(float64)',
     'System.Console::WriteLine(string, object)',
     'System.Console::WriteLine(string, object, object)',
+    'System.Console::WriteLine(string, object, object, object)',
+    'System.Console::set_WindowHeight(int32)',
     'System.Runtime.CompilerServices.RuntimeHelpers::InitializeArray(System.Array, System.RuntimeFieldHandle)'
 }
 
