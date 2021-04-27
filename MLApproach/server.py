@@ -21,7 +21,6 @@ async def get_estimate(request):
         return web.Response(text='This service is currently unavailable. No regression model is present', status=503)
 
     json_data = await request.json()
-    print(json_data)
     activate_classes = json_data['activeClasses']
     inputs = json_data['inputs']
     all_predictions = {}

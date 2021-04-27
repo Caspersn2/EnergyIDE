@@ -77,7 +77,7 @@ export class Measure {
         }
         else if (type === "energy_model") {
             var running: boolean = true;
-            MeasureTestingService.startEnergyModel(activeClasses).then(response => {
+            MeasureTestingService.startEnergyModel(activeClasses, inputs).then(response => {
                 if (response)
                 {
                     webviewView.webview.postMessage({ command: 'done', value: response });

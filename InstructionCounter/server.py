@@ -37,7 +37,7 @@ def load_environment():
     all_library_paths = [
         'init_library/' + path for path in os.listdir('init_library')
     ]
-    libraries = main.load_environment(['init_library/string.il'])
+    libraries = main.load_environment(all_library_paths)
     print('Finished loading environment')
 
 

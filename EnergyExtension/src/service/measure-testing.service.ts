@@ -26,8 +26,8 @@ export class MeasureTestingService {
         return this.callService('http://localhost:5002/post', axios.post, { activeClasses: activeClasses, inputs: inputs });
     }
 
-    public static startEnergyModel(activeClasses: ActivateClass[]): Promise<any> {
-        return this.callService('http://localhost:5003/start', axios.post, { activeClasses: activeClasses });
+    public static startEnergyModel(activeClasses: ActivateClass[], inputs: {}): Promise<any> {
+        return this.callService('http://localhost:5003/start', axios.post, { activeClasses: activeClasses,inputs:inputs });
     }
 
     public static getEnergyModelProgress(): Promise<string> {
