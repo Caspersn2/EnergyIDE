@@ -67,7 +67,6 @@ export class Measure {
             });
         }
         else if (type === "ml") {
-            //TODO: What to do with results???
             MeasureTestingService.startML(activeClasses, inputs).then(response => {
                 if(response)
                 {
@@ -116,6 +115,7 @@ export interface ActivateClass {
 export interface Method {
     Id: number;
     Name: string;
+    Args: string[];
     StringRepresentation: string
 }
 

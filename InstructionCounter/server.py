@@ -10,10 +10,14 @@ routes = web.RouteTableDef()
 model_path = 'model.obj'
 
 libraries = {}
+
+
 def load_environment():
     # load environment
     print('Loading environment')
-    all_library_paths = ['init_library/' + path for path in os.listdir('init_library')]
+    all_library_paths = [
+        'init_library/' + path for path in os.listdir('init_library')
+    ]
     libraries = main.load_environment(['init_library/string.il'])
     print('Finished loading environment')
 
@@ -21,8 +25,10 @@ def load_environment():
 @routes.post('/counts')
 async def get_counts(request):
     fileinfo = await request.json()
+    print(fileinfo)
     path_to_assembly = fileinfo['path_to_assembly']
     methods = fileinfo['methods']
+    inputs = fileinfo['inputs']
     abs_file_path = os.path.splitext(path_to_assembly)[0]
     name = os.path.split(abs_file_path)[-1]
     text = main.get_il_from_dll(path_to_assembly)
@@ -38,7 +44,8 @@ async def get_counts(request):
                 counting_method='Simple',
                 entry='Main(string[])',
                 output=None,
-                library=None)
+                library=None,
+                input=inputs[method_name])
             counts[method_name] = main.count_instructions(
                 args, text, libraries)
     else:
