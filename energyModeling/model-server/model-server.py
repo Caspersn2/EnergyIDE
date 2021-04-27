@@ -60,6 +60,7 @@ async def get_estimate(request):
     progress = "Reading request"
     json_data = await request.json()
     activate_classes = json_data['activeClasses']
+    inputs = json_data['inputs']
     all_results = {}
     for current_class in activate_classes:
         path_to_assembly = current_class['AssemblyPath']
@@ -74,7 +75,7 @@ async def get_estimate(request):
         text = open(f'{name}.il').read()
         
         # Count instructions
-        counts = requests.post('http://0.0.0.0:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods})
+        counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs':inputs, 'class_name': class_name})
         counts = counts.json()
 
         # Calculate measurements for all methods in class

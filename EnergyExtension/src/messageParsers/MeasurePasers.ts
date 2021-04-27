@@ -67,7 +67,6 @@ export class Measure {
             });
         }
         else if (type === "ml") {
-            //TODO: What to do with results???
             MeasureTestingService.startML(activeClasses, inputs).then(response => {
                 if(response)
                 {
@@ -78,7 +77,7 @@ export class Measure {
         }
         else if (type === "energy_model") {
             var running: boolean = true;
-            MeasureTestingService.startEnergyModel(activeClasses).then(response => {
+            MeasureTestingService.startEnergyModel(activeClasses, inputs).then(response => {
                 if (response)
                 {
                     webviewView.webview.postMessage({ command: 'done', value: response });
@@ -116,6 +115,7 @@ export interface ActivateClass {
 export interface Method {
     Id: number;
     Name: string;
+    Args: string[];
     StringRepresentation: string
 }
 

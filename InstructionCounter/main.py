@@ -47,7 +47,7 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     if is_assembly:
         text = get_il_from_dll(file)
     else:
-        text = open(file, 'r').read()
+        text = file
     
     # SETUP
     classes = Parser.parse_text(text)
@@ -67,6 +67,7 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
         set_args_on_method(args, found_method)
         state.simulate(found_method, None)
     else:
+        print(list(methods.keys()))
         raise simulation_exception(f'The provided method "{method}" was not found in the list of available methods')
 
     # RESULTS
