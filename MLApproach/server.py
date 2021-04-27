@@ -12,6 +12,7 @@ from collections import Counter
 routes = web.RouteTableDef()
 model_path = 'model.obj'
 
+
 @routes.post('/post')
 async def get_estimate(request):
     # If the machine learning model is not available
@@ -22,12 +23,12 @@ async def get_estimate(request):
     json_data = await request.json()
     print(json_data)
     activate_classes = json_data['activeClasses']
+    inputs = json_data['inputs']
     all_predictions = {}
     for current_class in activate_classes:
         path_to_assembly = current_class['AssemblyPath']
         className = current_class['ClassName']
         methods = current_class['Methods']
-        inputs = current_class['Inputs']
         abs_file_path = os.path.splitext(path_to_assembly)[0]
         name = os.path.split(abs_file_path)[-1]
 
@@ -36,7 +37,7 @@ async def get_estimate(request):
         text = open(f'{name}.il').read()
 
         # count instructions, maps method/program name to IL instruction Counter
-        counts = requests.post('http://0.0.0.0:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs': inputs})
+        counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs': inputs, 'class_name': className})
         counts = counts.json()
 
         # make prediction
