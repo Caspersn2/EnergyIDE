@@ -33,6 +33,7 @@ def get_method_name(class_name, inputs_name):
 
 def load_environment():
     # load environment
+    global libraries
     print('Loading environment')
     all_library_paths = [
         'init_library/' + path for path in os.listdir('init_library')
