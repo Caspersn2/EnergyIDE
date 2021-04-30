@@ -1,2 +1,5 @@
 benchmarks
+correct_benchmarks
 benchmarks_backup
+*.log
+*.zip
