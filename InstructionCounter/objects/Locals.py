@@ -17,7 +17,10 @@ class Local():
             return self.type_name.get_name()
 
     def is_valuetype(self):
-        return self.type_name.is_valuetype()
+        if type(self.type_name) == list:
+            return False
+        else:
+            return self.type_name.is_valuetype()
 
     @classmethod
     def new(cls, index, l_datatype, name):
