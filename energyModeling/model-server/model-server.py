@@ -1,8 +1,4 @@
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(sys.path[0])),'MLApproach', 'InstructionCounter'))
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(sys.path[0])),'MLApproach'))
-from InstructionCounter import main
-
+import os
 from functools import reduce
 import argparse
 import json

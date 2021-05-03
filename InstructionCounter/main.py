@@ -101,7 +101,7 @@ def count_instructions(args, text):
         for method in methods.values():
             execute(args, method, state)
     else:
-         m = args.method.lower()
+        m = args.method.lower()
         if m in methods:
             method = methods[args.method]
             execute(args, method, state)
