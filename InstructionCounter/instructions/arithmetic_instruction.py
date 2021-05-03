@@ -62,5 +62,5 @@ class unary_arithmetic_instruction(instruction):
     def execute(self, storage):
         value = storage.pop_stack()
         new_val = -1 * value
-        storage.push_stacl(new_val)
+        storage.push_stack(new_val)
         return Actions.NOP, None

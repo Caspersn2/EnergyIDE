@@ -62,9 +62,21 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     state = state_machine(storage_unit)
     if entry and not method:
         found_method = methods[entry]
+
+        # Remember to run CCTOR
+        cctor = create_cctor_name(entry)
+        if cctor in methods:
+            state.simulate(methods[cctor], None)
+
         state.simulate(found_method, None)
     elif method in methods:
         found_method = methods[method]
+
+        # Remember to run CCTOR
+        cctor = create_cctor_name(method)
+        if cctor in methods:
+            state.simulate(methods[cctor], None)
+
         set_args_on_method(args, found_method)
         state.simulate(found_method, None)
     else:
@@ -75,6 +87,11 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     res = result.get_results()
     result.clear()
     return res
+
+def create_cctor_name(entry):
+    class_name = entry.split('::')[0]
+    cctor = class_name + "::.cctor()"
+    return cctor
 
 
 def count_instructions(args, text):

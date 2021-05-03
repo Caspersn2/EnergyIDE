@@ -56,4 +56,4 @@ class store_argument_instruction(instruction):
         return Actions.NOP, None
 
     def __repr__(self) -> str:
-        return self.name if '.s' not in self.name else f'{self.name}: {self.index}'
+        return self.name if '.s' not in self.name else f'{self.name}: {self.var_name}'
