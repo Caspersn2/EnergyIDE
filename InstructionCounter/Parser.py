@@ -30,6 +30,15 @@ def dot_join(*lst):
 def slash_join(*lst):
     return '/'.join(lst)
 
+def empty_join(*lst):
+    string = ''
+    for elem in lst:
+        if type(elem) == str:
+            string += elem
+        else:
+            string += elem.get_name()
+    return string
+
 def convert2float(string):
     if re.match(FULL_HEX, string):
         return float(int(string, 0))
@@ -195,7 +204,7 @@ class ClassParser(TextParsers):
 class InstructionParser(TextParsers):
     method_instruction = MethodParser.methodHeaderFull > splat(Method)
     type_argument_instruction = TypeParser.typespec
-    class_field_instruction = TypeParser.type_ & ((TypeParser.typespec & '::' & NameParser.identifier) > ''.join)
+    class_field_instruction = TypeParser.type_ & ((TypeParser.typespec & '::' & NameParser.identifier) > splat(empty_join))
     load_token_instruction = \
             lit('field') >> TypeParser.type_ & TypeParser.typespec & '::' & NameParser.identifier \
             | TypeParser.typespec 

@@ -1,4 +1,5 @@
 import math
+import time
 from variable import variable
 from argument_generator import get_system_name, random_string, random_char
 
@@ -107,6 +108,8 @@ replacement = {
 
     'System.Type::GetTypeFromHandle(System.RuntimeTypeHandle)': lambda args, _: args[0],
     'System.Type::IsSubclassOf(System.Type)': lambda args, storage: is_sub_class(storage.get_active_class(), args[0]),
+
+    'System.Diagnostics.Stopwatch::QueryPerformanceCounter()': lambda _, __: time.perf_counter(),
 
     'System.Runtime.InteropServices.MemoryMarshal::GetArrayDataReference<!!T>(!!0[])': lambda args, _: args[0],
     'System.ByReference`1<!T>::.ctor(!T&)': lambda args, _: args[0]

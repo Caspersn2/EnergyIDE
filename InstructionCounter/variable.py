@@ -1,7 +1,6 @@
 # Represents a variable
 from simulation_exception import simulation_exception
 from argument_generator import can_generate, get_default, get_primitive
-import copy
 
 
 class variable():
@@ -18,8 +17,14 @@ class variable():
 
     def set_default(self, storage, concrete = None):
         datatype = self.type
+        if type(self.type) != str:
+            datatype = datatype.get_name()
         if concrete:
             datatype = concrete
+
+        # This means the type is generic (and to find the class, we remove the <generics>)
+        if '`' in datatype and '<' in datatype:
+            datatype = datatype.split('<')[0]
 
         if can_generate(datatype):
             default_value = get_default(datatype)

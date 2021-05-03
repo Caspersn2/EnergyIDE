@@ -7,6 +7,7 @@ from collections import Counter
 import Parser
 import subprocess
 import result
+import pickle
 import os
 
 
@@ -86,7 +87,7 @@ def count_instructions(args, text):
         library_classes = get_all_classes(library_classes)
         classes = {**classes, **library_classes}
     methods, entry = get_methods_and_entry(classes)
-    storage_unit = storage(classes, library_classes)
+    storage_unit = storage(classes)
     state = state_machine(storage_unit)
 
     if args.list:
