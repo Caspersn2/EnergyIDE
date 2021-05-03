@@ -111,23 +111,26 @@ def dissamble(path_to_benchmark):
         stderr=subprocess.DEVNULL)
 
 def scrape_benchmark(benchmark):
-    if 'rosetta' in benchmark:
-        paths = get_benchmark_code(benchmark.strip(), type='rosetta')
-    elif 'sanfoundry' in benchmark:
-        paths = get_benchmark_code(benchmark.strip(), type='sanfoundry')
-    elif 'includehelp' in benchmark:
-        paths = get_benchmark_code(benchmark.strip(), type='includehelp')
+    try: 
+        if 'rosetta' in benchmark:
+            paths = get_benchmark_code(benchmark.strip(), type='rosetta')
+        elif 'sanfoundry' in benchmark:
+            paths = get_benchmark_code(benchmark.strip(), type='sanfoundry')
+        elif 'includehelp' in benchmark:
+            paths = get_benchmark_code(benchmark.strip(), type='includehelp')
 
-    for path in paths:
-        # Dissamble C# to CIL
-        try:
-            dissamble(path)
-        except:
-            # If the project cannot be build or dissambled,
-            # delete it from the benchmarks folder
-            os.remove(path)
-            logger.info(f'Could not build or dissamble: {path}')
-            continue
+        for path in paths:
+            # Dissamble C# to CIL
+            try:
+                dissamble(path)
+            except:
+                # If the project cannot be build or dissambled,
+                # delete it from the benchmarks folder
+                os.remove(path)
+                logger.info(f'Could not build or dissamble: {path}')
+                continue
+    except:
+        logger.info(f"Some other error occurred in {benchmark.strip()}")
 
 if __name__ == '__main__':
     logger.add('scraper.log')

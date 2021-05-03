@@ -1,10 +1,13 @@
 import os
 import subprocess
 import main
+import sys
+import shutil
 
+benchmark_folder_path = 'C:/Users/Caspe/Documents/GitHub/EnergyIDE/MLApproach/benchmarks'
 
 def count_benchmark(benchmark, environment):
-    benchmark_path = '../benchmarks/' + benchmark
+    benchmark_path = benchmark_folder_path + '/' + benchmark
     dll_path = benchmark_path + '/bin/Debug/net5.0/project.dll'
     
     print(f'Building: {benchmark}')
@@ -28,7 +31,8 @@ def print_current_stats(correct, not_correct):
 
 
 if __name__ == '__main__':
-    benchmarks = os.listdir('../benchmarks')
+    benchmarks = os.listdir(benchmark_folder_path)
+    correctPath = "C:/Users/Caspe/Documents/GitHub/EnergyIDE/MLApproach/correct_benchmarks"
     correct = 0
     not_correct = 0
     
@@ -39,6 +43,12 @@ if __name__ == '__main__':
     for benchmark in benchmarks:
         output = count_benchmark(benchmark, environment)
         if output == 1:
+            benchmark_path = benchmark_folder_path + '/' + benchmark
+            from_path = f"\"{benchmark_path}\""
+            to_path = f"\"{correctPath}/{benchmark}\""
+
+            shutil.move(from_path, to_path)
+            # subprocess.run(f'move {from_path} {to_path}', shell=True)
             correct += 1
         else:
             not_correct += 1
