@@ -116,19 +116,27 @@ def count_instructions(args, text):
     elif not entry and not args.method:
         raise simulation_exception('No entry was found in the program, please specify one using the "-m" or "--method" command line argument')
 
+    start_counting(args, methods, entry, state)
+
+    result.output(args.output)
+    return result.get_results()
+
+
+def start_counting(args, methods, entry, state):
     if entry and args.method == entry and args.counting_method == 'Simple':
         for method in methods.values():
             execute(args, method, state)
     else:
         m = args.method
         if m in methods:
+            # Remember to run CCTOR
+            cctor = create_cctor_name(entry)
+            if cctor in methods:
+                state.simulate(methods[cctor], None)
             method = methods[args.method]
             execute(args, method, state)
         else:
             raise simulation_exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
-
-    result.output(args.output)
-    return result.get_results()
 
 
 def get_library_classes(file_list):
