@@ -101,3 +101,22 @@ class load_indirect_instruction(instruction):
             return Actions.NOP, None
         else:
             raise simulation_exception('There is no active value in storage to load as an indirect value')
+
+
+
+class store_indirect_instruction(instruction):
+    def __init__(self, name):
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, _):
+        return store_indirect_instruction(name)
+
+    @classmethod
+    def keys(cls):
+        return ['stind.i', 'stind.i1', 'stind.i2', 'stind.i4', 'stind.i8', 'stind.r4', 'stind.r8', 'stind.ref']
+
+    def execute(self, storage):
+        value = storage.pop_stack()
+        storage.active_value = value
+        return Actions.NOP, None

@@ -68,6 +68,7 @@ replacement = {
     'System.Console::ReadLine()': lambda _, __: random_string(),
 
     'System.Number::UInt32ToDecStr(uint32)': lambda args, _: str(args[0]),
+    'System.Number::Int64ToDecStr(int64)': lambda args, _: str(args[0]),
     'System.Number::UInt64ToDecStr(uint64, int32)': lambda args, _: str(args[0]),
 
     # ALL MAJOR STRING OPERATIONS HAVE TO BE PERFORMED HERE

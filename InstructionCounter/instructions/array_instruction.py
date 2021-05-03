@@ -16,6 +16,7 @@ class newarr_instruction(instruction):
             'System.String': '',
             'System.Double': 0.0,
             'System.Int32': 0,
+            'System.Int64': 0,
         }.get(datatype, None)
 
     @classmethod
