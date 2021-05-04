@@ -36,7 +36,7 @@ def load_environment():
     global libraries
     print('Loading environment')
     all_library_paths = ['init_library/' + path for path in os.listdir('init_library')]
-    libraries = main.load_environment(all_library_paths)
+    libraries = main.load_environment([all_library_paths[0]])
     print('Finished loading environment')
 
 
@@ -58,7 +58,10 @@ async def get_counts(request):
         for method_name in methods:
             string_name = method_name['StringRepresentation']
             qualified_method_name = get_method_name(class_name, string_name)
-            counts[string_name] = main.simulate(text, False, libraries, qualified_method_name, inputs[string_name])
+            if inputs:
+                counts[string_name] = main.simulate(text, False, libraries, qualified_method_name, inputs[string_name])
+            else:
+                counts[string_name] = main.simulate(text, False, libraries, qualified_method_name)
     else:
         counts[name] = main.simulate(text, False, libraries)
 
