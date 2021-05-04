@@ -11,6 +11,9 @@ import pickle
 import os
 
 
+BINARY_LOCATION = 'environment.bin'
+
+
 def execute(args, method, state_machine):
     if args.counting_method == 'Simple':
         res = Counter([x.name for x in method.instructions.values()])
@@ -39,7 +42,7 @@ def load_environment(libraries):
     if libraries:
         library_classes = get_library_classes(libraries)
         library_classes = get_all_classes(library_classes)
-    pickle.dump(library_classes, open('environment.bin', 'wb'))
+    pickle.dump(library_classes, open(BINARY_LOCATION, 'wb'))
     return library_classes
 
 
@@ -58,8 +61,8 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     if entry is None and method is None:
         raise simulation_exception('The provided file has no entry method, and no other entry was provided')
 
-    if not environment and os.path.exists('environment.bin'):
-        environment = pickle.load(open('environment.bin', 'rb'))
+    if not environment and os.path.exists(BINARY_LOCATION):
+        environment = pickle.load(open(BINARY_LOCATION, 'rb'))
 
     # EXECUTION
     storage_unit = storage({**classes, **environment})
