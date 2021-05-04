@@ -96,6 +96,13 @@ class load_indirect_instruction(instruction):
 
     def execute(self, storage):
         active_value = storage.get_active_value()
+        if not active_value:
+            addr = storage.pop_stack()
+            if type(addr) == variable:
+                active_value = addr.get_value()
+            else:
+                raise simulation_exception('This error is not fixed completely. INDIRECT LOAD - ADDRESS POP')
+
         if active_value or active_value == 0:
             storage.push_stack(active_value)
             return Actions.NOP, None

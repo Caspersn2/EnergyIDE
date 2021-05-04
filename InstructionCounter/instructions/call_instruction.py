@@ -15,10 +15,19 @@ class call_instruction(instruction):
         self.is_instance = method_inst.is_instance
         self.num_args = len(method_inst.parameters)
         c_gen = UtilityParser.parse_generics(class_name)
-        self.class_generics = c_gen[0] if c_gen else []
+        self.class_generics = self.unpack_list(c_gen)
         m_gen = UtilityParser.parse_generics(method_name)
-        self.method_generics = m_gen[0] if m_gen else []
+        self.method_generics = self.unpack_list(m_gen)
         super().__init__(name)
+
+    def unpack_list(self, lst):
+        if lst:
+            if len(lst) == 1 and type(lst[0]) == list:
+                return self.unpack_list(lst[0])
+            else:
+                return lst
+        else:
+            return []
 
     @classmethod
     def create(cls, name, elements):

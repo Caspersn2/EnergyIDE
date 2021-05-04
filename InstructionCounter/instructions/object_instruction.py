@@ -51,6 +51,11 @@ class new_object_instruction(object_instructions):
         else:
             cls, args = self.get_class_and_args(storage)
 
+            if function_replacement.contains(self.constructor):
+                res = function_replacement.call(self.constructor, args, storage)
+                storage.push_stack(res)
+                return Actions.NOP, None
+
             if cls.is_generic:
                 self.constructor = cls.get_generic_method_name(self.constructor, self.class_generics)
 
