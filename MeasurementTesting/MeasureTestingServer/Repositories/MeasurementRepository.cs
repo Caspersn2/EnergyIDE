@@ -111,7 +111,7 @@ namespace Measurement.Repositories
         private List<ClassMethods> getAllMethods(Type currentClass, string file, bool getWithAttributes)
         {
             List<ClassMethods> result = new List<ClassMethods>();
-            MethodInfo[] allMethods = currentClass.GetMethods().Where(mi => mi.DeclaringType == currentClass).ToArray();
+            MethodInfo[] allMethods = currentClass.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).Where(mi => mi.DeclaringType == currentClass).ToArray();
 
             if (getWithAttributes)
                 allMethods = allMethods.Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute)).ToArray();
