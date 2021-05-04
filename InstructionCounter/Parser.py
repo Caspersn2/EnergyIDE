@@ -235,7 +235,9 @@ class InstructionParser(TextParsers):
 
 
 class UtilityParser(TextParsers):
-    generics = (NameParser.classname & '<') >> repsep(TypeParser.genArgs, ',') << ('>' & opt('(' >> repsep(MethodParser.params, ',') << ')'))
+    param = MethodParser.params | (NameParser.classname << '<' & TypeParser.genArgs << '>' > splat(GenericType.new))
+    parameters = ('>' & opt('(' >> repsep(param, ',') << ')'))
+    generics = (NameParser.classname & '<') >> repsep(TypeParser.genArgs, ',') << parameters
 
     @classmethod
     def parse_generics(cls, datatype):

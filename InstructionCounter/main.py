@@ -39,6 +39,7 @@ def load_environment(libraries):
     if libraries:
         library_classes = get_library_classes(libraries)
         library_classes = get_all_classes(library_classes)
+    pickle.dump(library_classes, open('environment.bin', 'wb'))
     return library_classes
 
 
@@ -56,6 +57,9 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     methods, entry = get_methods_and_entry(classes)
     if entry is None and method is None:
         raise simulation_exception('The provided file has no entry method, and no other entry was provided')
+
+    if not environment and os.path.exists('environment.bin'):
+        environment = pickle.load(open('environment.bin', 'rb'))
 
     # EXECUTION
     storage_unit = storage({**classes, **environment})

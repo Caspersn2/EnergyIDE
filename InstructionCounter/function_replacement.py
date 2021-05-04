@@ -1,5 +1,6 @@
 import math
 import time
+import random
 from variable import variable
 from argument_generator import get_system_name, random_string, random_char
 
@@ -19,7 +20,7 @@ def replace(val, old, replacement):
     return tmp
 
 
-def indexof(val, char, start, count = None):
+def indexof(val, char, start = 0, count = None):
     end = start + count if count else -1
     if chr(char) in val[start:end]:
         return val.index(chr(char), start, end)
@@ -55,6 +56,22 @@ def trim(string):
     tmp.value = stripped
     return tmp
 
+def string_constructor(char, times):
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = ''
+    if times > 0:
+        tmp.value = chr(char) * times
+    return tmp
+
+def array_copy(args):
+    length = args[0]
+    dest = args[1]
+    source = args[2]
+
+    for i in range(length):
+        dest[i] = source[i]
+    
+
 # This one cannot handle more than one super class step. Yet.
 def is_sub_class(cls, super_class):
     if super_class.name in cls.extends:
@@ -83,11 +100,13 @@ replacement = {
     'System.String::EqualsHelper(string, string)': lambda args, _: args[0] == args[1],
     'System.String::PadLeft(int32, char)': lambda args, storage: pad_left(storage.active_value, args[1], args[0]),
     'System.String::Replace(string, string)': lambda args, storage: replace(storage.active_value, args[1], args[0]),
+    'System.String::IndexOf(char)': lambda args, storage: indexof(storage.active_value, args[0]),
     'System.String::IndexOf(char, int32)': lambda args, storage: indexof(storage.active_value, args[1], args[0]),
     'System.String::IndexOf(char, int32, int32)': lambda args, storage: indexof(storage.active_value, args[2], args[1], args[0]),
     'System.String::TrimStart()': lambda _, storage: trim_start(storage.active_value),
     'System.String::TrimEnd()': lambda _, storage: trim_end(storage.active_value),
     'System.String::Trim()': lambda _, storage: trim(storage.active_value),
+    'System.String::.ctor(char, int32)': lambda args, _: string_constructor(args[1], args[0]),
 
     # THE INTIRE MATH LIBRARY IS INTRINSICS
     'System.Math::Abs(float32)': lambda args, _: abs(args[0]),
@@ -107,13 +126,14 @@ replacement = {
     'System.Math::Log10(float64)': lambda args, _: math.log10(args[0]),
     'System.Math::Pow(float64, float64)': lambda args, _: math.pow(args[1], args[0]),
 
+    # OTHER LIBRARIES (These are not sorted)
     'System.Type::GetTypeFromHandle(System.RuntimeTypeHandle)': lambda args, _: args[0],
     'System.Type::IsSubclassOf(System.Type)': lambda args, storage: is_sub_class(storage.get_active_class(), args[0]),
-
     'System.Diagnostics.Stopwatch::QueryPerformanceCounter()': lambda _, __: time.perf_counter(),
-
+    'System.Random::GenerateSeed()': lambda _, __: random.randint(0, 2147483646),
     'System.Runtime.InteropServices.MemoryMarshal::GetArrayDataReference<!!T>(!!0[])': lambda args, _: args[0],
-    'System.ByReference`1<!T>::.ctor(!T&)': lambda args, _: args[0]
+    'System.ByReference`1<!T>::.ctor(!T&)': lambda args, _: args[0],
+    'System.Array::Copy(System.Array, System.Array, int32)': lambda args, _: array_copy(args)
 }
 
 
