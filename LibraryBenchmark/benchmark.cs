@@ -40,8 +40,10 @@ namespace benchmark
         public event SingleRun SingleRunComplete;
         string name;
 
-        public Benchmark(int iterations, List<MeasureTypes> types, bool silenceBenchmarkOutput = true, string name = "not specified") 
+        public Benchmark(int iterations, List<MeasureTypes> types = null, bool silenceBenchmarkOutput = true, string name = "not specified") 
         {
+            if(types == null)
+                types = new List<MeasureTypes> {MeasureTypes.Timer, MeasureTypes.Package, MeasureTypes.DRAM, MeasureTypes.Temp};
             this.stdout = System.Console.Out;
             this.name = name;
 
@@ -127,7 +129,7 @@ namespace benchmark
             if (iterations != 1)
                 print(System.Console.WriteLine);
                 
-            saveResults(res);
+            saveResults();
 
             //Resets console output
             System.Console.SetOut(stdout);
@@ -143,16 +145,16 @@ namespace benchmark
             System.Console.SetOut(benchmarkOutputStream);
         }
 
+        
         //Saves result to temporary file
         //This is overwritten each time SaveResults is run
-        private void saveResults(dynamic name)
+        private void saveResults()
         {
-            //var header = "name;duration(ms);pkg(µj);dram(µj);temp(C)" + "\n";
-            string result = name + ";";
+            var header = "duration(ms);pkg(µj);dram(µj);temp(C)" + "\n";
+            string result = header;
             
             foreach (Measure m in _resultBuffer)
             {
-                result += name;
                 foreach (var res in m.apis)
                 {
                     //Temperature api
@@ -167,7 +169,7 @@ namespace benchmark
                 result += "\n";
             }
 
-            File.AppendAllText(outputFilePath, result);
+            File.WriteAllText(outputFilePath, result);
         }
     }
 }

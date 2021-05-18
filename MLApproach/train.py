@@ -22,6 +22,7 @@ def get_model(method):
         model = LinearRegression()
     return model
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--regression-method', choices=['Linear', 'Ridge', 'Lasso', 'RandomForest', 'SVR'], default='Linear', help='Determine the regression algorithm used')
@@ -30,26 +31,31 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Merge tempResults.csv and training.csv
-    if not os.path.exists('output.csv'):
-        a = pd.read_csv("tempResults.csv", sep=';')
-        b = pd.read_csv("training.csv")
-        b = b.dropna(axis=1)
-        df = a.merge(b, on='name')
-        df.to_csv("output.csv", index=False)
-    else:
-        df = pd.read_csv('output.csv')
+    #if not os.path.exists('output.csv'):
+    package = pd.read_csv("../[2021-05-06T21:33:06.882760]results_stats_pkg_power.csv", sep=';')
+    package = package.iloc[:, : 2]
+    package.columns = map(str.lower, package.columns)
+    package['name'] = package['name'].apply(lambda x: x.replace('MLApproach/correct_benchmarks/', ''))
+    package['sample mean (µj)'] = package['sample mean (µj)'].apply(lambda x: x.replace('.', ''))
+    package['sample mean (µj)'] = package['sample mean (µj)'].apply(lambda x: x.replace(',', '.'))
 
+    b = pd.read_csv("training.csv")
+    b = b.dropna(axis=1)
+    df = package.merge(b, on='name')
+    df.to_csv("output.csv", index=False, header=True)
+    #else:
+    #    df = pd.read_csv('output.csv')
 
-    X = pd.DataFrame(df.drop(['name', 'pkg(µj)', 'duration(ms)', 'dram(µj)', 'temp(C)'], axis=1))
-    y = pd.DataFrame(df['pkg(µj)'])
+    X = pd.DataFrame(df.drop(['name', 'sample mean (µj)'], axis=1))
+    y = pd.DataFrame(df['sample mean (µj)'])
 
     model = get_model(args.regression_method)
     y = np.ravel(y)
 
-    model.fit(X, y)
+    model.fit(X, y) 
     if args.cross_validate:
         splits = int(len(y) /10)
         print(np.mean(cross_val_score(model, X, y, cv=splits,scoring='neg_root_mean_squared_error')))
 
     if args.save_model:
-        pickle.dump(model, open('model.obj','wb'))
+        pickle.dump(model, open(f'model-{args.regression_method}.obj','wb'))

@@ -4,7 +4,7 @@ import main
 import sys
 import shutil
 
-benchmark_folder_path = 'C:/Users/Caspe/Documents/GitHub/EnergyIDE/MLApproach/benchmarks'
+benchmark_folder_path = '/home/anne/EnergyIDE/MLApproach/benchmarks'
 
 def count_benchmark(benchmark, environment):
     benchmark_path = benchmark_folder_path + '/' + benchmark
@@ -32,25 +32,26 @@ def print_current_stats(correct, not_correct):
 
 if __name__ == '__main__':
     benchmarks = os.listdir(benchmark_folder_path)
-    correctPath = "C:/Users/Caspe/Documents/GitHub/EnergyIDE/MLApproach/correct_benchmarks"
+    correctPath = "/home/anne/EnergyIDE/MLApproach/correct_benchmarks"
+    bad_path = "/home/anne/EnergyIDE/MLApproach/bad_benchmarks"
     correct = 0
     not_correct = 0
     
-    libs = ['object', 'int32', 'delegate', 'uint32', 'valuetuple3', 'number', 'math', 'string', 'int64', 'span', 'readOnlySpan', 'byReference', 'array', 'timeSpan', 'buffer_text_helper', 'datetime', 'linq', 'list', 'numerics']
-    library_paths = ['init_library/' + x + '.il' for x in libs]
+    libs = os.listdir('init_library')
+    print(libs)
+    library_paths = ['init_library/' + x for x in libs]
     environment = main.load_environment(library_paths)
 
     for benchmark in benchmarks:
         output = count_benchmark(benchmark, environment)
+        benchmark_path = benchmark_folder_path + '/' + benchmark
         if output == 1:
-            benchmark_path = benchmark_folder_path + '/' + benchmark
-            from_path = f"\"{benchmark_path}\""
-            to_path = f"\"{correctPath}/{benchmark}\""
-
-            shutil.move(from_path, to_path)
-            # subprocess.run(f'move {from_path} {to_path}', shell=True)
+            to_path = f"{correctPath}/{benchmark}"
+            shutil.move(benchmark_path, to_path)
             correct += 1
         else:
+            to_path = f"{bad_path}/{benchmark}"
+            shutil.move(benchmark_path, to_path)
             not_correct += 1
         print_current_stats(correct, not_correct)
     print('Done!')

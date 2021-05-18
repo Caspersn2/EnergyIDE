@@ -36,7 +36,7 @@ def load_environment():
     global libraries
     print('Loading environment')
     all_library_paths = ['init_library/' + path for path in os.listdir('init_library')]
-    libraries = main.load_environment([all_library_paths[0]])
+    libraries = main.load_environment(all_library_paths)
     print('Finished loading environment')
 
 

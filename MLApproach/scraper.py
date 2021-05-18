@@ -69,11 +69,13 @@ def save_benchmark(program, title, index):
 
     # Add implementation
     with open(f'{path}/Program.cs', 'w+') as f:
-        if 'ReadKey' in program:
+        if 'Read' in program:
             program = program.replace('Console.ReadKey(true);', '')
             program = program.replace('Console.ReadKey();', '')
             program = program.replace('Console.Read(true);', '')
             program = program.replace('Console.Read();', '')
+            program = program.replace('Console.ReadLine(true);', '')
+            program = program.replace('Console.ReadLine();', '')
         f.write(program)
     # Add csproj
     with open(f'{path}/project.csproj', 'w+') as f:

@@ -1,12 +1,9 @@
-import sys
-sys.path.append('InstructionCounter')
-import argparse
 import subprocess
 import os
 from collections import Counter
 from tqdm import tqdm
-from InstructionCounter import main
-
+import requests
+from functools import reduce
 
 def add_to_csv(benchmark, counts, filename):
     csv_line = []
@@ -25,29 +22,7 @@ with open('CIL_Instructions.txt') as f:
 base_dir = 'benchmarks'
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--counting-method', choices=['Simple', 'Simulation'],
-                        help='Determines the method to use to count the CIL instructions.\n"Simple": counts all of the CIL instructions used for a given method / program.\n"Simulation": Simulates the program, and counts the executed CIL instructions')
-    parser.add_argument('-m', '--method', type=str,
-                        help='Countes the instructions for the specific method')
-    parser.add_argument('-e', '--entry', default='Main(string[])',
-                        help='If "Main(string[])" is not the default entry method please specify with this command')
-    parser.add_argument('-l', '--list', action='store_true',
-                        help='Will print a list of available methods')
-    parser.add_argument('-o', '--output', type=str, default='results.csv',
-                        help='The name of the output file (Default = "results.csv")')
-    parser.add_argument('-d', '--debug', action='store_true',
-                        help='Prints all of the args and their name after parsing')
-    parser.add_argument('-i', '--instruction-set', type=str, default='InstructionCounter/instructions.yaml',
-                        help='Path to the file containing all of the behavior of CIL instructions')
-    args = parser.parse_args()
-
-    could_not_build = []
-    filename = ''
-    if args.counting_method == 'Simple':
-        filename = "CIL_Counts_Simple.csv"
-    elif args.counting_method == 'Simulationn':
-        filename = "CIL_Counts_Simulation.csv"
+    filename = 'training.csv'
     
     # Adds top line to CSV
     with open(filename, 'w+') as f:
@@ -58,11 +33,20 @@ if __name__ == '__main__':
     # Enumerate all benchmarks
     all_benchmarks = os.listdir(base_dir)
     for benchmark in tqdm(all_benchmarks):
-        text = open(f'benchmarks/{benchmark}/Program.il').read()
+        if 'functional_c#' in benchmark or 'functional_f#' in benchmark or 'procedural_c#' in benchmark or 'procedural_f#' in benchmark or 'oop_c#' in benchmark or 'oop_f#' in benchmark:
+            continue
+        path_to_assembly = f'/home/anne/EnergyIDE/MLApproach/correct_benchmarks/{benchmark}/bin/Release/net5.0/project.dll'
 
-        # Count instructions
-        counts = main.count_instructions(args, text)
+        try:
+            subprocess.run(f'dotnet build --configuration Release --nologo --verbosity quiet correct_benchmarks/{benchmark}', 
+                            shell=True, check=True, stdout=subprocess.DEVNULL)
+        except:
+            continue
+
+        # count instructions, maps method/program name to IL instruction Counter
+        counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': None, 'inputs': None, 'class_name': None})
+        counts = counts.json()['project']
+        counts = reduce(lambda a, b: Counter(a) + Counter(b), counts, counts[0])
 
         # Add to csv (Columns: Benchmark name, instruction1, instruction2 ...)
         add_to_csv(benchmark, counts, filename)
-        break
