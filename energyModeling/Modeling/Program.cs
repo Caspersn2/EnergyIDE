@@ -164,15 +164,47 @@ namespace Modeling
         public int field { get; set; }
     }
 
-    [MeasureClass(false, 0.005F)]
+    [MeasureClass(false, 0.005F, MeasurementType.Timer)]
     class measureClass
     {
-        private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
+        private (TypeBuilder, ILGenerator) newMethod(string name = "MyMethod")
+        {
+            AssemblyName assemblyName = new AssemblyName();
+            assemblyName.Name = "myassembly";
+            // Build: run-only assembly
+            AssemblyBuilder assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+            // Build: module mymodule
+            ModuleBuilder moduleBuilder = 
+            assemblyBuilder.DefineDynamicModule("mymodule");
+            // Build: public class MyClass { ... }
+            TypeBuilder typeBuilder = 
+            moduleBuilder.DefineType("MyClass", 
+                                    TypeAttributes.Class | TypeAttributes.Public, 
+                                    typeof(Object));
+            // Build: public static void MyMethod() { ... }
+            MethodBuilder methodBuilder =
+            typeBuilder.DefineMethod("MyMethod", 
+                                    MethodAttributes.Static | MethodAttributes.Public,
+                                    typeof(void),
+                                    new Type[] { });
+            // Obtain an IL generator to build the method body
+            ILGenerator ilg = methodBuilder.GetILGenerator();
+            return (typeBuilder, ilg);
+        }
+
+        private void runMethod(TypeBuilder typeBuilder, ILGenerator ilg)
+        {
+            Type ty = typeBuilder.CreateType();
+            ty.GetMethod("MyMethod").Invoke(null, new object[] {});
+        }
+        
+        private (DynamicMethod, ILGenerator) old_newMethod(string name = "MyMethod")
         {
             DynamicMethod method = new DynamicMethod(name, typeof(void), Type.EmptyTypes);
             var ilg = method.GetILGenerator();
             return (method, ilg);
         }
+
         private (DynamicMethod, ILGenerator) newMethodWithArgs()
         {
             DynamicMethod method = new DynamicMethod("MyMethod", typeof(void), new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });

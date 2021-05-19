@@ -1,0 +1,23 @@
+{
+    'Stelem_I1': 3
+    'Ldloc_S': 26
+    'Ceq': 37
+    'Call': 162
+    'Ret': 174
+    'Ldc_I4_M1': 5
+    'Ldind_I4': 30
+    'Ldarga_S': 3
+    'Stelem_Ref': 9
+    'Ldsfld': 23
+    'Pop': 57
+    'Ldftn': 13
+    'Newobj': 43
+    'Callvirt': 47
+    'Ldtoken': 10
+    'Ldloca_S': 26
+    'Stfld': 20
+    'Ldfld': 17
+    'Ldflda': 5
+    'Ldind_I8': 1
+    'Switch': 1
+}
