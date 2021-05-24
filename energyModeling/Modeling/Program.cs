@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using MeasurementTesting.Attributes;
@@ -9,11 +9,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Xml;
 
-/*
-For the big run. I had teams open for the models:
-Brtrue, brTrue_s, Beq, Beq_s
-*/
-
 namespace Modeling
 {
     class Program
@@ -21,7 +16,7 @@ namespace Modeling
         static void Main(string[] args)
         {
             var output = Manager.Test(typeof(measureClass));
-            // var output = Manager.Test(typeof(testing));
+            //var output = Manager.Test(typeof(testing));
 
             System.IO.File.WriteAllText("output.xml", output);
             UpdateNew("output.xml");
@@ -119,7 +114,7 @@ namespace Modeling
         }
     }
 
-    [MeasureClass(false, 0.05F)]
+    [MeasureClass(false, 0.05F, MeasurementType.Timer)]
     class testing
     {
         private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
@@ -141,64 +136,22 @@ namespace Modeling
             method.Invoke(null, Type.EmptyTypes);
         }
 
-        [Measure(10000)]
-        public void Empty()
-        {
-            var (method, ilg) = newMethod();
-            runMethod(method, ilg);
-        }
-        
-        [Measure(10000, new[] { "Empty" })] // ox20
-        public void Ldc_I4(int value)
-        {
-            var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Pop);
-            runMethod(method, ilg);
-        }
+
+
     }
 
     public class Fields
     {
         public static int sfield;
         public int field { get; set; }
+
+        public void EmptyMethod(){}
     }
 
-    [MeasureClass(false, 0.005F, MeasurementType.Timer)]
+    [MeasureClass(false, 0.005F)]
     class measureClass
     {
-        private (TypeBuilder, ILGenerator) newMethod(string name = "MyMethod")
-        {
-            AssemblyName assemblyName = new AssemblyName();
-            assemblyName.Name = "myassembly";
-            // Build: run-only assembly
-            AssemblyBuilder assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-            // Build: module mymodule
-            ModuleBuilder moduleBuilder = 
-            assemblyBuilder.DefineDynamicModule("mymodule");
-            // Build: public class MyClass { ... }
-            TypeBuilder typeBuilder = 
-            moduleBuilder.DefineType("MyClass", 
-                                    TypeAttributes.Class | TypeAttributes.Public, 
-                                    typeof(Object));
-            // Build: public static void MyMethod() { ... }
-            MethodBuilder methodBuilder =
-            typeBuilder.DefineMethod("MyMethod", 
-                                    MethodAttributes.Static | MethodAttributes.Public,
-                                    typeof(void),
-                                    new Type[] { });
-            // Obtain an IL generator to build the method body
-            ILGenerator ilg = methodBuilder.GetILGenerator();
-            return (typeBuilder, ilg);
-        }
-
-        private void runMethod(TypeBuilder typeBuilder, ILGenerator ilg)
-        {
-            Type ty = typeBuilder.CreateType();
-            ty.GetMethod("MyMethod").Invoke(null, new object[] {});
-        }
-        
-        private (DynamicMethod, ILGenerator) old_newMethod(string name = "MyMethod")
+        private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
         {
             DynamicMethod method = new DynamicMethod(name, typeof(void), Type.EmptyTypes);
             var ilg = method.GetILGenerator();
@@ -252,6 +205,58 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
+        [Measure(1000, new[] { "Empty" })]
+        public void EmptyDefineMethod()
+        {
+            var (method, ilg) = newMethod();
+
+            MethodInfo m = typeof(Fields).GetMethod("EmptyMethod");
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "EmptyDefineMethod" })]
+        public void Call()
+        {
+            var (method, ilg) = newMethod();
+
+            MethodInfo m = typeof(Fields).GetMethod("EmptyMethod");
+            ilg.EmitCall(OpCodes.Call, m, null);
+            
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty" })]
+        public void EmptyGetCtor()
+        {
+            var (method, ilg) = newMethod();
+            var c = typeof(Fields).GetConstructors()[0];
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "EmptyGetCtor" })]
+        public void Newobj()
+        {
+            var (method, ilg) = newMethod();
+            var c = typeof(Fields).GetConstructors()[0];
+            ilg.Emit(OpCodes.Newobj, c);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "EmptyDefineMethod" })]
+        public void Callvirt()
+        {
+            var (method, ilg) = newMethod();
+
+            var c = typeof(Fields).GetConstructors()[0];
+            ilg.Emit(OpCodes.Newobj, c);
+            var m = typeof(Fields).GetMethod("EmptyMethod");
+            ilg.EmitCall(OpCodes.Callvirt, m, null);
+            
+            runMethod(method, ilg);
+        }
+
         #endregion
         #region Loads
         #region Load (INT, FLOAT): Codes: 0x20 - 0x22
@@ -260,6 +265,15 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4, value);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty" })]
+        public void Ldc_I4_M1()
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4_M1);
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
@@ -519,15 +533,15 @@ namespace Modeling
         }
 
         [Measure(1000, new[] { "Empty", "Ldc_I4_S", "EmptyDeclareLocal", "Stloc_S" })]
-        public void Ldloc_S(sbyte value)
+        public void Ldloc_S(int value)
         {
             var (method, ilg) = newMethod();
 
             var test = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
+            ilg.Emit(OpCodes.Ldc_I4, value);
             ilg.Emit(OpCodes.Stloc_S, 0);
-            ilg.Emit(OpCodes.Ldloc_S);
+            ilg.Emit(OpCodes.Ldloc_S, 0);
             ilg.Emit(OpCodes.Pop);
 
             runMethod(method, ilg);
@@ -631,7 +645,7 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        /* [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD8
+        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD8
         public void Mul_Ovf(int value1, int value2)
         {
             var (method, ilg) = newMethod();
@@ -643,7 +657,7 @@ namespace Modeling
         }
 
         [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD9
-        public void Mul_Ovf_Un(int value1, int value2)
+        public void Mul_Ovf_Un(short value1, int value2)
         {
             var (method, ilg) = newMethod();
             ilg.Emit(OpCodes.Ldc_I4, value1);
@@ -651,7 +665,7 @@ namespace Modeling
             ilg.Emit(OpCodes.Mul_Ovf_Un);
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
-        } */
+        }
 
         [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5A
         public void Div(int value1, int value2)
@@ -725,6 +739,17 @@ namespace Modeling
             ilg.Emit(OpCodes.Ldc_I4, value1);
             ilg.Emit(OpCodes.Ldc_I4, value2);
             ilg.Emit(OpCodes.Xor);
+            ilg.Emit(OpCodes.Pop);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })]
+        public void Ceq(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            ilg.Emit(OpCodes.Ldc_I4, value1);
+            ilg.Emit(OpCodes.Ldc_I4, value2);
+            ilg.Emit(OpCodes.Ceq);
             ilg.Emit(OpCodes.Pop);
             runMethod(method, ilg);
         }
@@ -1181,18 +1206,6 @@ namespace Modeling
 
         #endregion
         #region Compare
-        public void Ceq(int boolValue1, int boolValue2)
-        {
-            var (method, ilg) = newMethod();
-
-            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
-            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
-            ilg.Emit(OpCodes.Ceq);
-            ilg.Emit(OpCodes.Pop);
-
-            runMethod(method, ilg);
-        }
-
         [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })]
         public void Cgt(int boolValue1, int boolValue2)
         {
@@ -1800,13 +1813,13 @@ namespace Modeling
         }
 
         [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4", "Ldc_I4" })]
-        public void Stelem_I1(MeasurementTesting.Manager.PosInt length, sbyte value)
+        public void Stelem_I1(MeasurementTesting.Manager.PosInt length, int value)
         {
             var (method, ilg) = newMethod();
 
             //An object reference to an array, array, is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(sbyte));
+            ilg.Emit(OpCodes.Newarr, typeof(int));
 
             //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
@@ -1820,13 +1833,13 @@ namespace Modeling
             runMethod(method, ilg);
         }
         [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4", "Ldc_I4" })]
-        public void Stelem_I2(MeasurementTesting.Manager.PosInt length, short value)
+        public void Stelem_I2(MeasurementTesting.Manager.PosInt length, int value)
         {
             var (method, ilg) = newMethod();
 
             //An object reference to an array, array, is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(short));
+            ilg.Emit(OpCodes.Newarr, typeof(int));
 
             //An index value, index, to an element in array is pushed onto the stack.
             ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
