@@ -146,6 +146,7 @@ namespace Modeling
         public int field { get; set; }
 
         public void EmptyMethod(){}
+        public static void EmptyStaticMethod(){}
     }
 
     [MeasureClass(false, 0.005F)]
@@ -220,7 +221,7 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            MethodInfo m = typeof(Fields).GetMethod("EmptyMethod");
+            MethodInfo m = typeof(Fields).GetMethod("EmptyStaticMethod");
             ilg.EmitCall(OpCodes.Call, m, null);
             
             runMethod(method, ilg);
