@@ -3419,10 +3419,45 @@
     </dependencies>
   </method>
   <method>
-    <declaring-type>Modeling.measureClass</declaring-type>
+    <declaring-type>Modeling.testing</declaring-type>
     <name>Call</name>
-    <result>Failed</result>
-    <error-message>Error Occurred</error-message>
+    <result>Passed</result>
+    <measurement>
+      <name>timer</name>
+      <mean>0,07938282202882943</mean>
+      <completed-runs>1698629</completed-runs>
+      <deviation>0,029827902176699964</deviation>
+      <ErrorMargin>2,2886187040038274E-05</ErrorMargin>
+      <ErrorPercent>0,00028830150472260494</ErrorPercent>
+    </measurement>
+    <measurement>
+      <name>temp</name>
+      <mean>68093,71616756808</mean>
+      <completed-runs>1698629</completed-runs>
+      <deviation>3190,5822927531435</deviation>
+      <ErrorMargin>2,448052252753541</ErrorMargin>
+      <ErrorPercent>3,595122120709734E-05</ErrorPercent>
+    </measurement>
+    <measurement>
+      <name>package</name>
+      <mean>4696,882065477512</mean>
+      <completed-runs>1698629</completed-runs>
+      <deviation>15841,376291647739</deviation>
+      <ErrorMargin>12,154683176662777</ErrorMargin>
+      <ErrorPercent>0,0025878195379868585</ErrorPercent>
+    </measurement>
+    <measurement>
+      <name>dram</name>
+      <mean>62,897801109012036</mean>
+      <completed-runs>1698629</completed-runs>
+      <deviation>220,0257390452656</deviation>
+      <ErrorMargin>0,1688201264568353</ErrorMargin>
+      <ErrorPercent>0,0026840386067589674</ErrorPercent>
+    </measurement>
+    <dependencies>
+      <instruction>Empty</instruction>
+      <instruction>EmptyDefineMethod</instruction>
+    </dependencies>
   </method>
   <method>
     <declaring-type>Modeling.measureClass</declaring-type>
