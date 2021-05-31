@@ -15,8 +15,8 @@ namespace Modeling
     {
         static void Main(string[] args)
         {
-            var output = Manager.Test(typeof(measureClass));
-            //var output = Manager.Test(typeof(testing));
+            //var output = Manager.Test(typeof(measureClass));
+            var output = Manager.Test(typeof(testing));
 
             System.IO.File.WriteAllText("output.xml", output);
             UpdateNew("output.xml");
@@ -136,7 +136,18 @@ namespace Modeling
             method.Invoke(null, Type.EmptyTypes);
         }
 
+        [Measure(1000, new[] { "Empty", "Newobj", "EmptyGetMethod", "EmptyGetConstructor" })]
+        public void Callvirt()
+        {
+            var (method, ilg) = newMethod();
 
+            ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
+            ilg.Emit(OpCodes.Newobj, ci);
+            var m = typeof(Fields).GetMethod("EmptyMethod");
+            ilg.EmitCall(OpCodes.Callvirt, m, null);
+            
+            runMethod(method, ilg);
+        }
 
     }
 
@@ -207,16 +218,24 @@ namespace Modeling
         }
 
         [Measure(1000, new[] { "Empty" })]
-        public void EmptyDefineMethod()
+        public void EmptyGetConstructor()
+        {
+            var (method, ilg) = newMethod();
+
+            ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty" })]
+        public void EmptyGetMethod()
         {
             var (method, ilg) = newMethod();
 
             MethodInfo m = typeof(Fields).GetMethod("EmptyMethod");
-            
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new[] { "Empty", "EmptyDefineMethod" })]
+        [Measure(1000, new[] { "Empty", "EmptyGetMethod" })]
         public void Call()
         {
             var (method, ilg) = newMethod();
@@ -227,31 +246,13 @@ namespace Modeling
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new[] { "Empty" })]
-        public void EmptyGetCtor()
-        {
-            var (method, ilg) = newMethod();
-            var c = typeof(Fields).GetConstructors()[0];
-            runMethod(method, ilg);
-        }
-
-        [Measure(1000, new[] { "Empty", "EmptyGetCtor" })]
-        public void Newobj()
-        {
-            var (method, ilg) = newMethod();
-            var c = typeof(Fields).GetConstructors()[0];
-            ilg.Emit(OpCodes.Newobj, c);
-            ilg.Emit(OpCodes.Pop);
-            runMethod(method, ilg);
-        }
-
-        [Measure(1000, new[] { "Empty", "EmptyDefineMethod" })]
+        [Measure(1000, new[] { "Empty", "Newobj", "EmptyGetMethod", "EmptyGetConstructor" })]
         public void Callvirt()
         {
             var (method, ilg) = newMethod();
 
-            var c = typeof(Fields).GetConstructors()[0];
-            ilg.Emit(OpCodes.Newobj, c);
+            ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
+            ilg.Emit(OpCodes.Newobj, ci);
             var m = typeof(Fields).GetMethod("EmptyMethod");
             ilg.EmitCall(OpCodes.Callvirt, m, null);
             
@@ -1967,7 +1968,6 @@ namespace Modeling
         }
         #endregion
         #endregion
-
         #region Array look-up
         [Measure(1000, new []{ "Empty", "Ldc_I4" })]
         public void Newarr(MeasurementTesting.Manager.PosInt length, Type type){
@@ -2283,6 +2283,27 @@ namespace Modeling
             ilg.Emit(OpCodes.Unbox_Any, typeof(int));
             ilg.Emit(OpCodes.Pop);
 
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "EmptyGetConstructor" })]
+        public void Newobj()
+        {
+            var (method, ilg) = newMethod();
+            ConstructorInfo fi = typeof(Fields).GetConstructor(Type.EmptyTypes);
+            ilg.Emit(OpCodes.Newobj, fi);
+            ilg.Emit(OpCodes.Pop);
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(1000, new[] { "Empty", "EmptyGetMethod" })]
+        public void Jmp()
+        {
+            var (method, ilg) = newMethod();
+
+            MethodInfo mi = typeof(Fields).GetMethod("EmptyStaticMethod");
+            ilg.Emit(OpCodes.Jmp, mi);
             runMethod(method, ilg);
         }
         #endregion
