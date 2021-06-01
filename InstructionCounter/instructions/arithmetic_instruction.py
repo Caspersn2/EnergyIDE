@@ -1,3 +1,4 @@
+from variable import variable
 from instruction import instruction
 from action_enum import Actions
 
@@ -31,8 +32,17 @@ class arithmetic_instruction(instruction):
     def execute(self, storage):
         first = storage.pop_stack()
         second = storage.pop_stack()
-        res = self.get_operator(self.name)(first, second)
-        storage.push_stack(res)
+
+        if type(second) == variable:
+            first_value = first if type(first) != variable else first.get_value()
+            second_value = second.get_value()
+            res = self.get_operator(self.name)(first_value, second_value)
+            second.set_value(res)
+            storage.push_stack(second)
+        else:
+            first_value = first if type(first) != variable else first.get_value()
+            res = self.get_operator(self.name)(first_value, second)
+            storage.push_stack(res)
         return Actions.NOP, None
 
 
@@ -52,5 +62,5 @@ class unary_arithmetic_instruction(instruction):
     def execute(self, storage):
         value = storage.pop_stack()
         new_val = -1 * value
-        storage.push_stacl(new_val)
+        storage.push_stack(new_val)
         return Actions.NOP, None

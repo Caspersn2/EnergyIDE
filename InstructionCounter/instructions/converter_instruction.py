@@ -1,3 +1,4 @@
+from variable import variable
 from instruction import instruction
 from action_enum import Actions
 
@@ -32,7 +33,13 @@ class convert_instruction(instruction):
         }[name]
 
     def execute(self, storage):
-        value = storage.pop_stack()
-        converted = self.convert(self.name)(value)
-        storage.push_stack(converted)
+        elem = storage.pop_stack()
+        if type(elem) == variable:
+            value = elem.get_value()
+            converted = self.convert(self.name)(value)
+            elem.set_value(converted)      
+            storage.push_stack(elem)
+        else:
+            converted = self.convert(self.name)(elem)
+            storage.push_stack(converted)
         return Actions.NOP, None

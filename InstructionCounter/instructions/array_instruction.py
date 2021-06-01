@@ -1,3 +1,5 @@
+from variable import variable
+from argument_generator import can_generate
 from Parser import InstructionParser
 from instruction import instruction
 from action_enum import Actions
@@ -14,6 +16,7 @@ class newarr_instruction(instruction):
             'System.String': '',
             'System.Double': 0.0,
             'System.Int32': 0,
+            'System.Int64': 0,
         }.get(datatype, None)
 
     @classmethod
@@ -76,6 +79,34 @@ class array_retrieval_instruction(instruction):
         storage.push_stack(value)
         return Actions.NOP, None
 
+
+
+class array_address_load_instruction(instruction):
+    def __init__(self, name, typespec):
+        self.typespec = typespec
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, elements):
+        text = ' '.join(elements)
+        typespec = InstructionParser.parse(name, text)
+        return array_address_load_instruction(name, typespec)
+
+    @classmethod
+    def keys(cls):
+        return ['ldelema']
+
+    def execute(self, storage):
+        index = storage.pop_stack()
+        arr = storage.pop_stack()
+        local_value = arr[index]
+        if can_generate(self.typespec):
+            temp = variable(None, self.typespec)
+            temp.set_value(local_value)
+            local_value = temp
+        storage.push_stack(local_value)
+        return Actions.NOP, None
+        
 
 
 class array_update_ref_instruction(instruction):

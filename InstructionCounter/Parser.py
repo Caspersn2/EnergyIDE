@@ -15,8 +15,10 @@ import re
 
 POSITIVE_INT = r'[0-9]+'
 HEX = r'[0-9a-fA-F]+'
-INTEGER = r'([-+]?[0-9]+|0x[0-9a-f]+)'
-DOUBLE = r'[+-]?\d+\.\d+(e[+-]?\d+)?'
+FULL_HEX = r'0x[0-9a-f]+'
+INTEGER = rf'[+-]?[0-9]+(E[+-]?\d+)?|{FULL_HEX}'
+DOUBLE = r'[+-]?\d+\.\d+(E[+-]?\d+)?'
+NUMBER = rf'{FULL_HEX}|{DOUBLE}|{INTEGER}'
 BYTES = r'[0-9a-f]'
 COMMENT = r'//[^\n]+'
 PARAM = '.param'
@@ -27,6 +29,21 @@ def dot_join(*lst):
 
 def slash_join(*lst):
     return '/'.join(lst)
+
+def empty_join(*lst):
+    string = ''
+    for elem in lst:
+        if type(elem) == str:
+            string += elem
+        else:
+            string += elem.get_name()
+    return string
+
+def convert2float(string):
+    if re.match(FULL_HEX, string):
+        return float(int(string, 0))
+    else:
+        return float(string)
 
 
 class NameParser(TextParsers):
@@ -101,9 +118,9 @@ class FieldParser(TextParsers):
     boolParse = \
             lit('true') > constant(True) \
             | lit('false') > constant(False) 
-    intParse = (reg(INTEGER) > int)
-    uintParse = (reg(POSITIVE_INT) > int)
-    doubleParse = ((reg(DOUBLE) | reg(INTEGER)) > float)
+    intParse = reg(INTEGER) > int
+    uintParse = reg(POSITIVE_INT) > int
+    doubleParse = reg(NUMBER) > convert2float
     boolInit = lit('bool') << '(' & boolParse << ')'
     floatInit = lit('float32', 'float64') << '(' & doubleParse << ')'
     intInit = lit('char', 'int8', 'int16', 'int32', 'int64') << '(' & intParse << ')'
@@ -127,7 +144,7 @@ class MethodParser(TextParsers):
             | opt(callkind)
     pinvattr = lit('ansi', 'autochar', 'cdecl', 'fastcall', 'stdcall', 'thiscall', 'unicode', 'winapi', 'lasterr', 'nomangle')
     pinvoke = lit('pinvokeimpl') & '(' & NameParser.qstring & opt('as' & NameParser.qstring) & rep(pinvattr) & ')'
-    methodAttr = lit('abstract', 'assembly', 'family', 'compilercontrolled', 'famandassem', 'famorassem', 'final', 'hidebysig', 'newslot', 'private', 'public', 'rtspecialname', 'specialname', 'static', 'virtual', 'strict') | pinvoke
+    methodAttr = lit('abstract', 'assembly', 'family', 'compilercontrolled', 'reqsecobj', 'famandassem', 'famorassem', 'final', 'hidebysig', 'newslot', 'private', 'public', 'rtspecialname', 'specialname', 'static', 'virtual', 'strict') | pinvoke
     methodname = \
             lit('.ctor') \
             | lit('.cctor') \
@@ -187,7 +204,7 @@ class ClassParser(TextParsers):
 class InstructionParser(TextParsers):
     method_instruction = MethodParser.methodHeaderFull > splat(Method)
     type_argument_instruction = TypeParser.typespec
-    class_field_instruction = TypeParser.type_ & ((TypeParser.typespec & '::' & NameParser.identifier) > ''.join)
+    class_field_instruction = TypeParser.type_ & ((TypeParser.typespec & '::' & NameParser.identifier) > splat(empty_join))
     load_token_instruction = \
             lit('field') >> TypeParser.type_ & TypeParser.typespec & '::' & NameParser.identifier \
             | TypeParser.typespec 
@@ -218,7 +235,9 @@ class InstructionParser(TextParsers):
 
 
 class UtilityParser(TextParsers):
-    generics = (NameParser.classname & '<') >> repsep(TypeParser.genArgs, ',') << ('>' & opt('(' >> repsep(MethodParser.params, ',') << ')'))
+    param = MethodParser.params | (NameParser.classname << '<' & TypeParser.genArgs << '>' > splat(GenericType.new))
+    parameters = ('>' & opt('(' >> repsep(param, ',') << ')'))
+    generics = (NameParser.classname & '<') >> repsep(TypeParser.genArgs, ',') << parameters
 
     @classmethod
     def parse_generics(cls, datatype):

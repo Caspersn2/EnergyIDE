@@ -52,8 +52,9 @@ class store_argument_instruction(instruction):
 
     def execute(self, storage):
         value = storage.pop_stack()
-        storage.add_argument(self.var_name, value)
+        index = storage.arg_conversion[self.var_name]
+        storage.arguments[index].set_value(value)
         return Actions.NOP, None
 
     def __repr__(self) -> str:
-        return self.name if '.s' not in self.name else f'{self.name}: {self.index}'
+        return self.name if '.s' not in self.name else f'{self.name}: {self.var_name}'
