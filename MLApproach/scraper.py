@@ -15,8 +15,7 @@ blacklist = ['=Read', '=ReadLine', '=ReadKey',
              '= Console.Read', '= Console.ReadLine', '= Console.ReadKey',
              '(Read())', '(ReadLine())', '(ReadKey())',
              # If in function call (int.Parse(Console.XX))
-             '(Console.Read())', '(Console.ReadLine())', '(Console.ReadKey())',
-             'args['  # Index into commandline arguments
+             '(Console.Read())', '(Console.ReadLine())', '(Console.ReadKey())'
              ]
 
 
@@ -43,13 +42,14 @@ def get_benchmark_code(url, type='rosetta'):
     # or take user input
     saved_paths = []
     for index, program in enumerate(all_programs):
-        if any(x in program for x in blacklist):
-            logger.info(
-                f"Benchmark contains something blacklisted: {title}_{index}")
-            continue
         if 'Main' not in program:
-            logger.info(
-                f"Benchmark does not contain a Main function: {title}_{index}")
+            logger.info(f"Benchmark does not contain a Main function: {title}_{index}")
+            continue
+        if 'args[' in program:
+            logger.info(f"Benchmark takes command line args: {title}_{index}")
+            continue
+        if any(x in program for x in blacklist):
+            logger.info(f"Benchmark waits for input: {title}_{index}")
             continue
         saved_paths.append(save_benchmark(
             program, title, index))
@@ -141,6 +141,7 @@ if __name__ == '__main__':
 #
     with open('benchmark_links.txt') as f:
         benchmark_links = f.readlines()
+    logger.info(f"Total programs: {len(benchmark_links)}")
     
     pool = Pool(processes=2)
     pool.map(scrape_benchmark, benchmark_links)
