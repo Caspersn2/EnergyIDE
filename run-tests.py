@@ -10,6 +10,7 @@ from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 import numpy as np
+import time
 
 def get_ml_result(count, model, CIL_INSTRUCTIONS):
     temp = []
@@ -40,7 +41,7 @@ def get_energy_model_result(counter, ILModelDict, name):
                 DoNotHaveInstructions[instruction] += 1
     percentInstructions = (100 / len(counter)) * has
     percentTotal = (100 / total) * hasTotal
-    print(str(percentInstructions) + "\t" + str(percentTotal))
+    #print(str(percentInstructions) + "\t" + str(percentTotal))
     with open("test.csv", "a") as myfile:
         myfile.write("\n" + str(name) + ";" + str(percentInstructions) + ";" + str(percentTotal) + ";" + str(len(counter)) + ";" + str(total) + ";" + str(has) + ";" + str(hasTotal))
     return methodResult
@@ -88,7 +89,8 @@ def get_il_energy_values(items):
 if __name__ == "__main__":
     # Read all benchmarkable benchmarks
     benchmarks = os.listdir('MLApproach/correct_benchmarks')
-    static = pd.DataFrame(columns=['name','LinearRegression', 'Lasso', 'Ridge', 'RandomForestRegressor', 'SVR', 'energy-model'])
+    energy_df = pd.DataFrame(columns=['name','LinearRegression', 'Lasso', 'Ridge', 'RandomForestRegressor', 'SVR', 'energy-model'])
+    time_df = pd.DataFrame()
 
     # ML Preprocess
     df = pd.read_csv('MLApproach/output.csv')
@@ -97,17 +99,26 @@ if __name__ == "__main__":
         CIL_INSTRUCTIONS = [x.strip() for x in f.readlines()]
 
     # Energy Model Preprocess
-    mydoc = minidom.parse('C:/Users/Caspe/Documents/GitHub/EnergyIDE/energyModeling/Modeling/output.xml')
+    mydoc = minidom.parse('/home/anne/EnergyIDE/energyModeling/Modeling/output.xml')
     items = mydoc.getElementsByTagName('method')
     ILModelDict = get_il_energy_values(items) 
+    ITERATIONS = 100
 
     for benchmark in benchmarks:
-        if 'functional_c#' in benchmark or 'functional_f#' in benchmark or 'procedural_c#' in benchmark or 'procedural_f#' in benchmark or 'oop_c#' in benchmark or 'oop_f#' in benchmark:
+        time_measurements = []
+        if 'functional_c#' in benchmark or 'functional_f#' in benchmark or 'procedural_c#' in benchmark or 'procedural_f#' in benchmark or 'oop_c#' in benchmark or 'oop_f#' in benchmark or 'Pythagorean' in benchmark:
             continue
-        path = f'C:/Users/Caspe/Documents/GitHub/EnergyIDE/MLApproach/correct_benchmarks/{benchmark}/bin/Debug/net5.0/project.dll'
-        results_output = {'name' : benchmark}
+        path = f'/home/anne/EnergyIDE/MLApproach/correct_benchmarks/{benchmark}/bin/Debug/net5.0/project.dll'
+        energy_results = {'name' : benchmark}
+        time_results = {'name' : benchmark}
         # count instructions, maps program name to IL instruction Counter
-        counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path, 'methods': None, 'class_name': "hey", 'inputs': None})
+        for _ in range(ITERATIONS):
+            start = time.time()
+            counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path, 'methods': None, 'class_name': "hey", 'inputs': None})
+            end = time.time()
+            time_measurements.append((end-start)*1000)
+        time_results['counts (ms)'] = np.mean(time_measurements)
+        time_measurements = []
         counts = counts.json().get('project')
         counts = reduce(lambda a, b: Counter(a) + Counter(b), counts, counts[0])
         
@@ -118,12 +129,30 @@ if __name__ == "__main__":
             y = pd.DataFrame(new_df['sample mean (µj)'])
             y = np.ravel(y)
             model.fit(X, y)
-            results_output[str(model).split('(')[0]] = get_ml_result(counts, model, CIL_INSTRUCTIONS)
+            estimate = get_ml_result(counts, model, CIL_INSTRUCTIONS)
+            for _ in range(ITERATIONS):
+                start = time.time()
+                get_ml_result(counts, model, CIL_INSTRUCTIONS)
+                end = time.time()
+                time_measurements.append((end-start)*1000)
+            time_results[str(model).split('(')[0] + '(ms)'] = np.mean(time_measurements)
+            time_measurements = []
+            energy_results[str(model).split('(')[0]] = estimate
 
         # Run with energy model
-        results_output['energy-model'] = get_energy_model_result(counts, ILModelDict, benchmark)
-        #print(results_output['energy-model'])
-        static = static.append(results_output, ignore_index=True)
+        for _ in range(ITERATIONS):
+            start = time.time()
+            estimate = get_energy_model_result(counts, ILModelDict, benchmark)
+            end = time.time()
+            time_measurements.append((end-start)*1000)
+        time_results['energy-model (ms)'] = np.mean(time_measurements)
+        time_measurements = []
+        energy_results['energy-model'] = estimate
+
+        # Append results
+        time_df = time_df.append(time_results, ignore_index=True)
+        time_df.to_csv('time_results.csv')
+        energy_df = energy_df.append(energy_results, ignore_index=True)
 
     package = pd.read_csv("results_stats_pkg_power.csv", sep=';')
     package = package.iloc[:, : 2]
@@ -131,9 +160,14 @@ if __name__ == "__main__":
     package['name'] = package['name'].apply(lambda x: x.replace('MLApproach/correct_benchmarks/', ''))
     package['sample mean (µj)'] = package['sample mean (µj)'].apply(lambda x: x.replace('.', ''))
     package['sample mean (µj)'] = package['sample mean (µj)'].apply(lambda x: x.replace(',', '.'))
+    df1 = package.merge(energy_df, on='name')
+    df1.to_csv('energy_results.csv')
 
-    df = package.merge(static, on='name')
+    run_time = pd.read_csv("results_stats_run_time.csv", sep=';')
+    run_time['Sample Mean (ms)'] = run_time['Sample Mean (ms)'].apply(lambda x: x.replace('.', ''))
+    run_time['Sample Mean (ms)'] = run_time['Sample Mean (ms)'].apply(lambda x: x.replace(',', '.'))
+    time_df['dynamic (ms)'] = pd.to_numeric(run_time['Sample Mean (ms)']) * pd.to_numeric(run_time['Runs'])
+    time_df.to_csv('time_results.csv')
 
-    df.to_csv('static_results.csv')
-    #print(df)
+
     print(DoNotHaveInstructions)
