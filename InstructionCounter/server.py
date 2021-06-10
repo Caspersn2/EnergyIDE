@@ -33,14 +33,15 @@ def get_method_name(class_name, inputs_name):
             parameters = parameters.replace(key, system2primitive[key])
     return class_name + '::' + method_name + '(' + parameters
 
-
+BINARY_LOCATION = 'environment.bin'
 def load_environment():
-    # load environment
-    global libraries
-    print('Loading environment')
-    all_library_paths = ['init_library/' + path for path in os.listdir('init_library')]
-    libraries = main.load_environment(all_library_paths)
-    print('Finished loading environment')
+    if not os.path.exists(BINARY_LOCATION):
+        # load environment
+        global libraries
+        print('Loading environment')
+        all_library_paths = ['init_library/' + path for path in os.listdir('init_library')]
+        libraries = main.load_environment(all_library_paths)
+        print('Finished loading environment')
 
 
 @routes.post('/counts')

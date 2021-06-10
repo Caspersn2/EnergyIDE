@@ -10,7 +10,7 @@ from aiohttp import web
 from collections import Counter
 
 routes = web.RouteTableDef()
-model_path = 'model.obj'
+model_path = 'model-RandomForest.obj'
 
 
 @routes.post('/post')
@@ -37,6 +37,7 @@ async def get_estimate(request):
 
         # count instructions, maps method/program name to IL instruction Counter
         counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs': inputs, 'class_name': className})
+        print(counts)
         counts = counts.json()
 
         # make prediction

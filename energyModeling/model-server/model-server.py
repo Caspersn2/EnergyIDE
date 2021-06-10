@@ -7,6 +7,7 @@ import subprocess
 import asyncio
 from aiohttp import web
 from xml.dom import minidom
+from collections import Counter
 
 routes = web.RouteTableDef()
 model_path = 'output.xml'
@@ -77,11 +78,12 @@ async def get_estimate(request):
             return web.Response(text=result.text, status=206)
         counts = result
         counts = counts.json()
-
+        
+        print(counts)
         # Calculate measurements for all methods in class
         results = {}
         for method_name, counter in counts.items():
-            counter = reduce(lambda a, b: Counter(a) + Counter(b), count, count[0])
+            counter = reduce(lambda a, b: Counter(a) + Counter(b), counter, counter[0])
             sum = 0.0
             methodResult = {}
             for instruction in counter:
