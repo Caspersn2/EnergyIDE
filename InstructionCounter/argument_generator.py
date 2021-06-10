@@ -58,7 +58,7 @@ def can_generate(datatype):
     data_type = datatype
     if type(datatype) != str:
         data_type = datatype.get_name()
-    return data_type in primitive or data_type in array_primitives
+    return data_type in primitive or data_type in array_primitives or data_type in system_types
 
 
 def get_default(datatype):

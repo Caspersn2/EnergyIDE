@@ -1,4 +1,4 @@
-import os
+import sys, os
 from functools import reduce
 import argparse
 import json
@@ -30,30 +30,32 @@ def get_il_energy_values(items):
         ILModelDict[name] = measureDict
     return ILModelDict
 
-progress = "Not started"
-@routes.get('/progress')
-async def get_progress():
-    print('progress: ' + progress)
-    return progress
+def get_cil_counts(methods,className, text):
+    counts = {}  # maps method/program name to IL instruction Counter
+    if methods:
+        for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
+            args = argparse.Namespace(method=method_name, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
+                                    counting_method='Simple', entry='Main(string[])', output=None)
+            counts[method_name] = main.count_instructions(args, text)
+    else:
+        args = argparse.Namespace(method=None, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
+                                counting_method='Simple', entry='Main(string[])', output=None)
+        counts[name] = main.count_instructions(args, text)
+    return counts
 
 @routes.post('/start')
 async def get_estimate(request):
-    global progress
-    
     # If the energy model is not available
     # return 503: service unavailable
     if model_path not in os.listdir():
         return web.Response(text='This service is currently unavailable. No energy model is pressent', status=503)
-    
     # Read the XML model file
-    progress = "Reading Energy model file"
     mydoc = minidom.parse(model_path)
     items = mydoc.getElementsByTagName('method')
     
     ILModelDict = get_il_energy_values(items) 
     
     # Read the request info
-    progress = "Reading request"
     json_data = await request.json()
     activate_classes = json_data['activeClasses']
     inputs = json_data['inputs']
@@ -64,14 +66,16 @@ async def get_estimate(request):
         methods = current_class['Methods']
         abs_file_path = os.path.splitext(path_to_assembly)[0]
         name = os.path.split(abs_file_path)[-1]
-        progress = 'Calculating methods for class ' + class_name
 
         # dissassemble and get il code
         subprocess.call(f'ilspycmd {path_to_assembly} -o . -il', shell=True)
         text = open(f'{name}.il').read()
         
         # Count instructions
-        counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs':inputs, 'class_name': class_name})
+        result = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs':inputs, 'class_name': class_name})
+        if result.status_code == 500:
+            return web.Response(text=result.text, status=206)
+        counts = result
         counts = counts.json()
 
         # Calculate measurements for all methods in class
@@ -94,7 +98,6 @@ async def get_estimate(request):
         all_results[class_name] = results
 
     # return result
-    progress = "Done / Not started"
     return web.Response(text=json.dumps(all_results), status=200)
 
 # Converts the Assembly IL format to the format used by microsoft reflection.

@@ -17,7 +17,10 @@ system2primitive = {
     'Int32': 'int32',
     'Int64': 'int64',
     'Float32': 'float32',
-    'Float64': 'float64'
+    'Float64': 'float64',
+    'Bool': 'bool',
+    'Boolean': 'bool',
+    'boolean': 'bool'
 }
 
 
@@ -44,26 +47,30 @@ def load_environment():
 async def get_counts(request):
     fileinfo = await request.json()
     print(fileinfo)
-    path_to_assembly = fileinfo['path_to_assembly']
-    methods = fileinfo['methods']
-    class_name = fileinfo['class_name']
-    inputs = fileinfo['inputs']
-    abs_file_path = os.path.splitext(path_to_assembly)[0]
-    name = os.path.split(abs_file_path)[-1]
-    text = main.get_il_from_dll(path_to_assembly)
-
-    # count instructions
     counts = {}  # maps method/program name to IL instruction Counter
-    if methods:
-        for method_name in methods:
-            string_name = method_name['StringRepresentation']
-            qualified_method_name = get_method_name(class_name, string_name)
-            if inputs:
-                counts[string_name] = main.simulate(text, False, libraries, qualified_method_name, inputs[string_name])
-            else:
-                counts[string_name] = main.simulate(text, False, libraries, qualified_method_name)
-    else:
-        counts[name] = main.simulate(text, False, libraries)
+    try:
+        path_to_assembly = fileinfo['path_to_assembly']
+        methods = fileinfo['methods']
+        class_name = fileinfo['class_name']
+        inputs = fileinfo['inputs']
+        abs_file_path = os.path.splitext(path_to_assembly)[0]
+        name = os.path.split(abs_file_path)[-1]
+        text = main.get_il_from_dll(path_to_assembly)
+
+        # count instructions
+        if methods:
+            for method_name in methods:
+                string_name = method_name['StringRepresentation']
+                qualified_method_name = get_method_name(class_name, string_name)
+                
+                if (string_name in inputs):
+                    counts[string_name] = main.simulate(text, False, libraries, qualified_method_name, inputs[string_name])
+                else:
+                    counts[string_name] = main.simulate(text, False, libraries, qualified_method_name)
+        else:
+            counts[name] = main.simulate(text, False, libraries)
+    except Exception as e:
+        return web.Response(text=str(e), status=500)
 
     # return result
     return web.Response(text=json.dumps(counts), status=200)

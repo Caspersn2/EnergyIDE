@@ -56,6 +56,7 @@
   </div>
 </div>
 
+<!-- Buttons -->
 <button id="activate-button" class="full-width btn" onclick="activate()">
   <i id="activate-button-icon" class="material-icons" style="font-size:12px; vertical-align: middle;">bolt</i>
   <span id="activate-button-text" style="font-size:12px; vertical-align: middle;">Begin Estimation</span>
@@ -64,6 +65,16 @@
 </br>
 
 <ul id="running-functions"></ul>
+
+<!-- Error stuff -->
+<div id="not_started_error" style="display: none;">
+  <p style="color: red;">Could not start the estimation: An error occurred</p>
+  <div id="large_error_box" style="max-height:15rem;width:100%;border:1px solid #ccc ;overflow:auto;margin-bottom: 2rem;">
+    Undefined Error
+  </div>
+  <button id="close_error" class="full-width btn" onclick="closeError()">Close Error</button>
+</div>
+
 
 <script>
 
@@ -136,14 +147,26 @@
           methodSelector.appendChild(optGroup)
         })
         break;
-      case 'model-progress':
-        ul = document.getElementById('running-functions');
-        li = document.createElement('li');
-        li.innerText = message.value;
-        ul.appendChild(li);
+      case "error_starting":
+        var error_box = document.getElementById("not_started_error");
+        error_box.style = "display: block";
+
+        var large_error_box = document.getElementById("large_error_box");
+        large_error_box.innerText = message.value;
+        
+        // Makes sure that the activate button is set to inactive
+        isActive = true;
+        activate();
         break;
     }
   });
+
+  function closeError() {
+    var error_box = document.getElementById("not_started_error");
+    error_box.style = "display: none";
+    var large_error_box = document.getElementById("large_error_box");
+    large_error_box.innerText = "Undefined error";
+  }
 
   var isActive = false;
   function activate() {
@@ -272,6 +295,7 @@
         inputsDict[currentMethod].push(node.value);
       }
     });
+    closeModal();
   }
 
 </script>

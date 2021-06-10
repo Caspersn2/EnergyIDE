@@ -7,7 +7,10 @@ from collections import Counter
 import Parser
 import subprocess
 import result
+import pickle
 import os
+
+BINARY_LOCATION = 'environment.bin'
 
 def execute(args, method, state_machine):
     if args.counting_method == 'Simple':
@@ -37,6 +40,7 @@ def load_environment(libraries):
     if libraries:
         library_classes = get_library_classes(libraries)
         library_classes = get_all_classes(library_classes)
+    pickle.dump(library_classes, open(BINARY_LOCATION, 'wb'))
     return library_classes
 
 
@@ -55,14 +59,29 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     if entry is None and method is None:
         raise simulation_exception('The provided file has no entry method, and no other entry was provided')
 
+    if not environment and os.path.exists(BINARY_LOCATION):
+        environment = pickle.load(open(BINARY_LOCATION, 'rb'))
+
     # EXECUTION
     storage_unit = storage({**classes, **environment})
     state = state_machine(storage_unit)
     if entry and not method:
         found_method = methods[entry]
+
+        # Remember to run CCTOR
+        cctor = create_cctor_name(entry)
+        if cctor in methods:
+            state.simulate(methods[cctor], None)
+
         state.simulate(found_method, None)
     elif method in methods:
         found_method = methods[method]
+
+        # Remember to run CCTOR
+        cctor = create_cctor_name(method)
+        if cctor in methods:
+            state.simulate(methods[cctor], None)
+
         set_args_on_method(args, found_method)
         state.simulate(found_method, None)
     else:
@@ -73,6 +92,11 @@ def simulate(file, is_assembly, environment={}, method=None, args=[]):
     res = result.get_results()
     result.clear()
     return res
+
+def create_cctor_name(entry):
+    class_name = entry.split('::')[0]
+    cctor = class_name + "::.cctor()"
+    return cctor
 
 
 def count_instructions(args, text):
@@ -85,7 +109,7 @@ def count_instructions(args, text):
         library_classes = get_all_classes(library_classes)
         classes = {**classes, **library_classes}
     methods, entry = get_methods_and_entry(classes)
-    storage_unit = storage(classes, library_classes)
+    storage_unit = storage(classes)
     state = state_machine(storage_unit)
 
     if args.list:
@@ -97,19 +121,27 @@ def count_instructions(args, text):
     elif not entry and not args.method:
         raise simulation_exception('No entry was found in the program, please specify one using the "-m" or "--method" command line argument')
 
+    start_counting(args, methods, entry, state)
+
+    result.output(args.output)
+    return result.get_results()
+
+
+def start_counting(args, methods, entry, state):
     if entry and args.method == entry and args.counting_method == 'Simple':
         for method in methods.values():
             execute(args, method, state)
     else:
         m = args.method
         if m in methods:
+            # Remember to run CCTOR
+            cctor = create_cctor_name(entry)
+            if cctor in methods:
+                state.simulate(methods[cctor], None)
             method = methods[args.method]
             execute(args, method, state)
         else:
             raise simulation_exception(f"The specified method '{args.method}' was not found. Please look at the available options: {methods.keys()}")
-
-    result.output(args.output)
-    return result.get_results()
 
 
 def get_library_classes(file_list):

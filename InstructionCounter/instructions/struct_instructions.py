@@ -96,8 +96,34 @@ class load_indirect_instruction(instruction):
 
     def execute(self, storage):
         active_value = storage.get_active_value()
+        if not active_value:
+            addr = storage.pop_stack()
+            if type(addr) == variable:
+                active_value = addr.get_value()
+            else:
+                raise simulation_exception('This error is not fixed completely. INDIRECT LOAD - ADDRESS POP')
+
         if active_value or active_value == 0:
             storage.push_stack(active_value)
             return Actions.NOP, None
         else:
             raise simulation_exception('There is no active value in storage to load as an indirect value')
+
+
+
+class store_indirect_instruction(instruction):
+    def __init__(self, name):
+        super().__init__(name)
+
+    @classmethod
+    def create(cls, name, _):
+        return store_indirect_instruction(name)
+
+    @classmethod
+    def keys(cls):
+        return ['stind.i', 'stind.i1', 'stind.i2', 'stind.i4', 'stind.i8', 'stind.r4', 'stind.r8', 'stind.ref']
+
+    def execute(self, storage):
+        value = storage.pop_stack()
+        storage.active_value = value
+        return Actions.NOP, None

@@ -1,3 +1,4 @@
+import { privateEncrypt } from 'crypto';
 import * as vscode from 'vscode';
 import { WebviewView } from "vscode";
 import { MeasureTestingService } from "../service/measure-testing.service";
@@ -83,6 +84,8 @@ export class Measure {
                     this.stopProgress = false;
                     this.startProgressListen(webviewView);
                 }
+            }).catch(error => {
+                webviewView.webview.postMessage({ command: 'error_starting', value: error.message });
             });
         }
         else if (type === "ml") {
@@ -92,28 +95,20 @@ export class Measure {
                     webviewView.webview.postMessage({ command: 'done', value: response });
                     this.openOutput(JSON.stringify(response), "JSON");
                 }
+            }).catch(error => {
+                webviewView.webview.postMessage({ command: 'error_starting', value: error.message });
             });
         }
         else if (type === "energy_model") {
-            var running: boolean = true;
             MeasureTestingService.startEnergyModel(activeClasses, inputs).then(response => {
-                if (response)
-                {
-                    webviewView.webview.postMessage({ command: 'done', value: response });
-                    this.openOutput(JSON.stringify(response), 'JSON');
-                }
-            })
-                .catch(error => {
-                    console.log(error);
-                })
-                .finally(() => { running = false; });
-            /* while (running) {
-                this.delay(100).then(x => {
-                    MeasureTestingService.getEnergyModelProgress().then(progress => {
-                        webviewView.webview.postMessage({ command: 'model-progress', value: progress });
-                    });
+                    if (response)
+                    {
+                        webviewView.webview.postMessage({ command: 'done', value: response });
+                        this.openOutput(JSON.stringify(response), 'JSON');
+                    }
+                }).catch(error => {
+                    webviewView.webview.postMessage({ command: 'error_starting', value: error.data });
                 });
-            } */
         }
 
     }
