@@ -50,7 +50,6 @@ async def get_estimate(request):
             temporary = []
             for instruction in CIL_INSTRUCTIONS:
                 temporary.append(count[instruction]) if instruction in count else temporary.append(0)
-            print(model.predict([temporary]))
             predictions[name] = model.predict([temporary])[0]
         all_predictions[className] = predictions
 
