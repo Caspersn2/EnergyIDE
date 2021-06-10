@@ -47,7 +47,7 @@ namespace MeasurementTesting
             Progress.Done = false;
             Progress.ClassesPlanned = new List<string>{ type.Name };
 
-            var methods = type.GetMethods().Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute));
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute));
             
             Progress.PlannedMethods = methods.Select(m => new MethodProgress()
             {
@@ -74,7 +74,7 @@ namespace MeasurementTesting
             Progress.ClassesPlanned = types.Select(t => t.Name).ToList();
 
             var methods = types.SelectMany(type => 
-                    type.GetMethods()
+                    type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
                     .Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute)));
             
             Progress.PlannedMethods = methods.Select(m => new MethodProgress()
@@ -107,7 +107,7 @@ namespace MeasurementTesting
             Progress.ClassesPlanned = types.Keys.Select(t => t.Name).ToList();
             
             var methods = types.Keys.SelectMany(type => 
-                    type.GetMethods()
+                    type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
                     .Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute) && types.Values.Any(v => v.Any(value => value.Equals(m.GetHashCode())))));
             
             Progress.PlannedMethods = methods.Select(m => new MethodProgress()
@@ -146,7 +146,7 @@ namespace MeasurementTesting
             var cleanUp = classAtt.GetCleanupMethod(type);
 
             // Getting all methods in the class and checking for measure attributes 
-            var methods = type.GetMethods();
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
             if (methodHashCodes != null)
             {
                 methods = methods.Where(m => methodHashCodes.Contains(m.GetHashCode())).ToArray();
@@ -156,9 +156,10 @@ namespace MeasurementTesting
             foreach(var method in methods)
             {
                 var methodProgress = Progress.PlannedMethods.FirstOrDefault(m => m.Id.Equals(method.GetHashCode()));
+                
                 if (methodProgress == default(MethodProgress))
                 {
-                    //Console.WriteLine($"The method {method.Name} could not be found");
+                    Console.WriteLine($"The method {method.Name} could not be found");
                     continue;
                 }
 

@@ -73,8 +73,7 @@ namespace Measurement.Repositories
                             continue;
                         }
                         var classes = ass.GetTypes();
-                        type = "static";
-
+                        
                         foreach (var currentClass in classes)
                         {
                             if (type == "static")
