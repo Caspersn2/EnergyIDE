@@ -73,6 +73,7 @@ namespace Measurement.Repositories
                             continue;
                         }
                         var classes = ass.GetTypes();
+                        type = "static";
 
                         foreach (var currentClass in classes)
                         {
@@ -110,14 +111,22 @@ namespace Measurement.Repositories
         private List<ClassMethods> getAllMethods(Type currentClass, string file, bool getWithAttributes)
         {
             List<ClassMethods> result = new List<ClassMethods>();
-            MethodInfo[] allMethods = currentClass.GetMethods().Where(mi => mi.DeclaringType == currentClass).ToArray();
+            MethodInfo[] allMethods = currentClass.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).Where(mi => mi.DeclaringType == currentClass).ToArray();
 
             if (getWithAttributes)
                 allMethods = allMethods.Where(m => m.GetCustomAttributes().Any(a => a is MeasureAttribute)).ToArray();
 
             if (allMethods.Any())
             {
-                MethodViewModel[] methodViewModels = allMethods.Select(m => new MethodViewModel() { Id = m.GetHashCode(), StringRepresentation = m.ToString(), Name = m.Name }).ToArray();
+                MethodViewModel[] methodViewModels = allMethods
+                                                        .Select(m => new MethodViewModel() 
+                                                            { 
+                                                                Id = m.GetHashCode(), 
+                                                                Name = m.Name, 
+                                                                Args = m.GetParameters().Select(p => p.ParameterType.ToString()).ToArray(), 
+                                                                StringRepresentation = m.ToString() 
+                                                            })
+                                                        .ToArray();
                 ClassMethods cm = new ClassMethods
                 {
                     CurrentClass = currentClass,

@@ -1,0 +1,145 @@
+import math
+import time
+import random
+from variable import variable
+from argument_generator import get_system_name, random_string, random_char
+
+def pad_left(value, num, char):
+    diff = num - len(value)
+    if diff > 0:
+        value = (chr(char) * num) + value
+        tmp = variable(None, get_system_name('string'))
+        tmp.value = value
+        return tmp
+
+
+def replace(val, old, replacement):
+    val = val.replace(old.value, replacement.value)
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = val
+    return tmp
+
+
+def indexof(val, char, start = 0, count = None):
+    end = start + count if count else -1
+    if chr(char) in val[start:end]:
+        return val.index(chr(char), start, end)
+    else:
+        return -1
+
+
+def join(values):
+    strings = []
+    for val in values:
+        if type(val) == str:
+            strings.append(val)
+        else:
+            strings.append(val.value)
+    return ''.join(strings)
+
+
+def trim_start(string):
+    stripped = string.lstrip()
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = stripped
+    return tmp
+
+def trim_end(string):
+    stripped = string.rstrip()
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = stripped
+    return tmp
+
+def trim(string):
+    stripped = string.strip()
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = stripped
+    return tmp
+
+def string_constructor(char, times):
+    tmp = variable(None, get_system_name('string'))
+    tmp.value = ''
+    if times > 0:
+        tmp.value = chr(char) * times
+    return tmp
+
+def array_copy(args):
+    length = args[0]
+    dest = args[1]
+    source = args[2]
+
+    for i in range(length):
+        dest[i] = source[i]
+    
+
+# This one cannot handle more than one super class step. Yet.
+def is_sub_class(cls, super_class):
+    if super_class.name in cls.extends:
+        return True
+    else:
+        return False
+
+
+replacement = {
+    'System.Console::Read()': lambda _, __: random_char(),
+    'System.Console::ReadLine()': lambda _, __: random_string(),
+
+    'System.Number::UInt32ToDecStr(uint32)': lambda args, _: str(args[0]),
+    'System.Number::Int64ToDecStr(int64)': lambda args, _: str(args[0]),
+    'System.Number::UInt64ToDecStr(uint64, int32)': lambda args, _: str(args[0]),
+
+    # ALL MAJOR STRING OPERATIONS HAVE TO BE PERFORMED HERE
+    'System.String::Concat(string, string)': lambda args, _: join(args),
+    'System.String::Concat(string, string, string)': lambda args, _: join(args),
+    'System.String::Concat(string, string, string, string)': lambda args, _: join(args),
+    'System.String::Concat(string[])': lambda args, _: join(args[0]),
+    'System.String::Format(string, object)': lambda _, __: random_string(),
+    'System.String::Format(string, object, object)': lambda _, __: random_string(),
+    'System.String::get_Length()': lambda _, storage: len(storage.active_value),
+    'System.String::Contains(string)': lambda args, storage: args[0].value in storage.active_value,
+    'System.String::EqualsHelper(string, string)': lambda args, _: args[0] == args[1],
+    'System.String::PadLeft(int32, char)': lambda args, storage: pad_left(storage.active_value, args[1], args[0]),
+    'System.String::Replace(string, string)': lambda args, storage: replace(storage.active_value, args[1], args[0]),
+    'System.String::IndexOf(char)': lambda args, storage: indexof(storage.active_value, args[0]),
+    'System.String::IndexOf(char, int32)': lambda args, storage: indexof(storage.active_value, args[1], args[0]),
+    'System.String::IndexOf(char, int32, int32)': lambda args, storage: indexof(storage.active_value, args[2], args[1], args[0]),
+    'System.String::TrimStart()': lambda _, storage: trim_start(storage.active_value),
+    'System.String::TrimEnd()': lambda _, storage: trim_end(storage.active_value),
+    'System.String::Trim()': lambda _, storage: trim(storage.active_value),
+    'System.String::.ctor(char, int32)': lambda args, _: string_constructor(args[1], args[0]),
+
+    # THE INTIRE MATH LIBRARY IS INTRINSICS
+    'System.Math::Abs(float32)': lambda args, _: abs(args[0]),
+    'System.Math::Abs(float64)': lambda args, _: abs(args[0]),
+    'System.Math::Sqrt(float64)': lambda args, _: math.sqrt(args[0]),
+    'System.Math::Sin(float64)': lambda args, _: math.sin(args[0]),
+    'System.Math::Cos(float64)': lambda args, _: math.cos(args[0]),
+    'System.Math::Tan(float64)': lambda args, _: math.tan(args[0]),
+    'System.Math::Asin(float64)': lambda args, _: math.asin(args[0]),
+    'System.Math::Acos(float64)': lambda args, _: math.acos(args[0]),
+    'System.Math::Atan(float64)': lambda args, _: math.atan(args[0]),
+    'System.Math::Exp(float64)': lambda args, _: math.exp(args[0]),
+    'System.Math::Ceiling(float64)': lambda args, _: math.ceil(args[0]),
+    'System.Math::Floor(float64)': lambda args, _: math.floor(args[0]),
+    'System.Math::Log(float64)': lambda args, _: math.log(args[0]),
+    'System.Math::Log2(float64)': lambda args, _: math.log2(args[0]),
+    'System.Math::Log10(float64)': lambda args, _: math.log10(args[0]),
+    'System.Math::Pow(float64, float64)': lambda args, _: math.pow(args[1], args[0]),
+
+    # OTHER LIBRARIES (These are not sorted)
+    'System.Type::GetTypeFromHandle(System.RuntimeTypeHandle)': lambda args, _: args[0],
+    'System.Type::IsSubclassOf(System.Type)': lambda args, storage: is_sub_class(storage.get_active_class(), args[0]),
+    'System.Diagnostics.Stopwatch::QueryPerformanceCounter()': lambda _, __: time.perf_counter(),
+    'System.Random::GenerateSeed()': lambda _, __: random.randint(0, 2147483646),
+    'System.Runtime.InteropServices.MemoryMarshal::GetArrayDataReference<!!T>(!!0[])': lambda args, _: args[0],
+    'System.ByReference`1<!T>::.ctor(!T&)': lambda args, _: args[0],
+    'System.Array::Copy(System.Array, System.Array, int32)': lambda args, _: array_copy(args)
+}
+
+
+def call(invocation, args, storage):
+    return replacement[invocation](args, storage)
+
+
+def contains(invocation):
+    return invocation in replacement

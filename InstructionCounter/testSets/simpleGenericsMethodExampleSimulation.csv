@@ -1,0 +1,38 @@
+simpleGenericsMethodExample.Printer::.ctor()
+ldarg.0,1
+call,1
+nop,1
+ret,1
+
+simpleGenericsMethodExample.Printer::print<int32>(int32) --> {0: ('100' - int32)}
+nop,2
+ldarg.1,1
+box,1
+call,1
+ret,1
+
+simpleGenericsMethodExample.Printer::print<string>(string) --> {0: ('Hello' - string)}
+nop,2
+ldarg.1,1
+box,1
+call,1
+ret,1
+
+simpleGenericsMethodExample.Printer::print<float64>(float64) --> {0: ('5.55' - float64)}
+nop,2
+ldarg.1,1
+box,1
+call,1
+ret,1
+
+simpleGenericsMethodExample.Program::Main(string[]) --> {0: 'string[]'}
+nop,4
+newobj,1
+stloc.0,1
+ldloc.0,3
+ldc.i4.s,1
+callvirt,3
+ldstr,1
+ldc.r8,1
+ret,1
+

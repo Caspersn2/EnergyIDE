@@ -1,8 +1,4 @@
 import sys, os
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(sys.path[0])),'MLApproach', 'InstructionCounter'))
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(sys.path[0])),'MLApproach'))
-from InstructionCounter import main
-
 from functools import reduce
 import argparse
 import json
@@ -57,11 +53,12 @@ async def get_estimate(request):
     mydoc = minidom.parse(model_path)
     items = mydoc.getElementsByTagName('method')
     
-    ILModelDict = get_il_energy_values(items)
+    ILModelDict = get_il_energy_values(items) 
     
     # Read the request info
     json_data = await request.json()
     activate_classes = json_data['activeClasses']
+    inputs = json_data['inputs']
     all_results = {}
     for current_class in activate_classes:
         path_to_assembly = current_class['AssemblyPath']
@@ -75,12 +72,16 @@ async def get_estimate(request):
         text = open(f'{name}.il').read()
         
         # Count instructions
-        counts = get_cil_counts(methods, class_name, text)
+        result = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs':inputs, 'class_name': class_name})
+        if result.status_code == 500:
+            return web.Response(text=result.text, status=206)
+        counts = result
+        counts = counts.json()
 
         # Calculate measurements for all methods in class
         results = {}
         for method_name, counter in counts.items():
-            counter = reduce(lambda a, b: a+b, counter, counter[0])
+            counter = reduce(lambda a, b: Counter(a) + Counter(b), count, count[0])
             sum = 0.0
             methodResult = {}
             for instruction in counter:

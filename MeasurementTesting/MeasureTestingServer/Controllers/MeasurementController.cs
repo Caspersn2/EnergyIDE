@@ -70,6 +70,7 @@ namespace MeasureTestingServer.Controllers
     public class MethodViewModel 
     {
         public int Id { get; set; }
+        public String[] Args { get; set; }
         public string Name { get; set; }
         public string StringRepresentation { get; set; }
     }

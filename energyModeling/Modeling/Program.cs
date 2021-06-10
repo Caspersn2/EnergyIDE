@@ -9,6 +9,11 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Xml;
 
+/*
+For the big run. I had teams open for the models:
+Brtrue, brTrue_s, Beq, Beq_s
+*/
+
 namespace Modeling
 {
     class Program

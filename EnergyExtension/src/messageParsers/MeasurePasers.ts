@@ -1,3 +1,4 @@
+import { privateEncrypt } from 'crypto';
 import * as vscode from 'vscode';
 import { WebviewView } from "vscode";
 import { MeasureTestingService } from "../service/measure-testing.service";
@@ -51,7 +52,7 @@ export class Measure {
         });
     }
 
-    static activate(activeClasses: ActivateClass[], type: string, webviewView: vscode.WebviewView) {
+    static activate(activeClasses: ActivateClass[], inputs: {}, type: string, webviewView: vscode.WebviewView) {
         if (type === "rapl") {
             var ids: number[] = [];
             activeClasses.forEach(c => {
@@ -64,26 +65,31 @@ export class Measure {
                     this.stopProgress = false;
                     this.startProgressListen(webviewView);
                 }
+            }).catch(error => {
+                webviewView.webview.postMessage({ command: 'error_starting', value: error.message });
             });
         }
         else if (type === "ml") {
-            //TODO: What to do with results???
-            MeasureTestingService.startML(activeClasses).then(response => {
+            MeasureTestingService.startML(activeClasses, inputs).then(response => {
                 if(response)
                 {
                     webviewView.webview.postMessage({ command: 'done', value: response });
                     this.openOutput(JSON.stringify(response), "JSON");
                 }
+            }).catch(error => {
+                webviewView.webview.postMessage({ command: 'error_starting', value: error.message });
             });
         }
         else if (type === "energy_model") {
-            MeasureTestingService.startEnergyModel(activeClasses).then(response => {
-                if (response)
-                {
-                    webviewView.webview.postMessage({ command: 'done', value: response });
-                    this.openOutput(JSON.stringify(response), 'JSON');
-                }
-            });
+            MeasureTestingService.startEnergyModel(activeClasses, inputs).then(response => {
+                    if (response)
+                    {
+                        webviewView.webview.postMessage({ command: 'done', value: response });
+                        this.openOutput(JSON.stringify(response), 'JSON');
+                    }
+                }).catch(error => {
+                    webviewView.webview.postMessage({ command: 'error_starting', value: error.data });
+                });
         }
 
     }
@@ -104,6 +110,7 @@ export interface ActivateClass {
 export interface Method {
     Id: number;
     Name: string;
+    Args: string[];
     StringRepresentation: string
 }
 
