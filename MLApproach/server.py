@@ -33,7 +33,6 @@ async def get_estimate(request):
 
         # dissassemble and get il code
         subprocess.call(f'ilspycmd {path_to_assembly} -o . -il', shell=True)
-        text = open(f'{name}.il').read()
 
         # count instructions, maps method/program name to IL instruction Counter
         counts = requests.post('http://localhost:5004/counts', json={'path_to_assembly' : path_to_assembly, 'methods': methods, 'inputs': inputs, 'class_name': className})
@@ -48,10 +47,11 @@ async def get_estimate(request):
 
         for name, count in counts.items():
             count = reduce(lambda a, b: Counter(a) + Counter(b), count, count[0])
-            temp = []
+            temporary = []
             for instruction in CIL_INSTRUCTIONS:
-                temp.append(count[instruction]) if instruction in count else temp.append(0)
-            predictions[name] = model.predict([temp])[0][0] / 1000000 # µj to j
+                temporary.append(count[instruction]) if instruction in count else temporary.append(0)
+            print(model.predict([temporary]))
+            predictions[name] = model.predict([temporary])[0]
         all_predictions[className] = predictions
 
     # return result
