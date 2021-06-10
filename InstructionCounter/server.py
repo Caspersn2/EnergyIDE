@@ -38,9 +38,7 @@ def load_environment():
     # load environment
     global libraries
     print('Loading environment')
-    all_library_paths = [
-        'init_library/' + path for path in os.listdir('init_library')
-    ]
+    all_library_paths = ['init_library/' + path for path in os.listdir('init_library')]
     libraries = main.load_environment(all_library_paths)
     print('Finished loading environment')
 
@@ -50,7 +48,6 @@ async def get_counts(request):
     fileinfo = await request.json()
     print(fileinfo)
     counts = {}  # maps method/program name to IL instruction Counter
-    
     try:
         path_to_assembly = fileinfo['path_to_assembly']
         methods = fileinfo['methods']
@@ -74,7 +71,6 @@ async def get_counts(request):
             counts[name] = main.simulate(text, False, libraries)
     except Exception as e:
         return web.Response(text=str(e), status=500)
-
 
     # return result
     return web.Response(text=json.dumps(counts), status=200)

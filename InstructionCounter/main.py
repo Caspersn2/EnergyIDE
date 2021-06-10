@@ -10,9 +10,7 @@ import result
 import pickle
 import os
 
-
 BINARY_LOCATION = 'environment.bin'
-
 
 def execute(args, method, state_machine):
     if args.counting_method == 'Simple':
@@ -177,11 +175,9 @@ def print_methods(classes):
             print(meth.get_full_name())
 
 
-def get_il_from_dll(file_name):
-    file_location = os.path.abspath(file_name)
-    subprocess.call(f'ilspycmd {file_location} --ilcode -o cil/', shell=True, 
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    file_name = os.path.splitext(os.path.basename(file_location))[0]
+def get_il_from_dll(file_path):
+    subprocess.call(f'ilspycmd {file_path} --ilcode -o cil/', shell=True)
+    file_name = os.path.splitext(os.path.basename(file_path))[0]
     return open(f'cil/{file_name}.il', encoding='utf-8', mode='r').read()
 
 

@@ -4,6 +4,8 @@ import { WebviewView } from "vscode";
 import { MeasureTestingService } from "../service/measure-testing.service";
 
 export class Measure {
+    private static fs = require('fs');
+
     static getMethods(webviewView: WebviewView, type: string) {
         vscode.workspace.findFiles('**/*.dll').then(files => {
             MeasureTestingService.getMethods(files.map(f => f.fsPath), type).then(methods => {
@@ -13,6 +15,23 @@ export class Measure {
     }
 
     static async openOutput(output: string, language: string) {
+        // Save the result to the filesystem
+        let folders = vscode.workspace.workspaceFolders;
+        if (folders) {
+            let rootFolder = folders[0].uri.fsPath;
+            let path = rootFolder + '/energyResults.' + language;
+            this.fs.writeFile(path, output,  (err: string) => {
+                if (err) {
+                    return console.error(err);
+                }
+                console.log("File created!");
+            });
+        }
+        else {
+            console.log("Could not save the results to file system as no folders are open");
+        }
+
+        // opens the result to a new window
         const document = await vscode.workspace.openTextDocument({
             language: language,
             content: output,

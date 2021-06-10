@@ -57,16 +57,16 @@ if __name__ == '__main__':
         data.write('name;duration(ms);pkg(µj);dram(µj);temp(C)\n')
 
     # Enumerate all benchmarks
-    all_benchmarks = os.listdir('benchmarks')
-    all_benchmarks = list(map(lambda x: f'benchmarks/' + x, all_benchmarks))
-    clbg_benchmarks = os.listdir('clbg_benchmarks')
-    all_benchmarks.extend(list(map(lambda x: f'clbg_benchmarks/' + x, clbg_benchmarks)))
+    all_benchmarks = os.listdir('correct_benchmarks')
+    all_benchmarks = list(map(lambda x: f'correct_benchmarks/' + x, all_benchmarks))
 
     for benchmark in tqdm(all_benchmarks):
 
         # Refactor code to implement benchmark library, such that ww can get
         # energy measurements of the benchmark
-        refactor_for_energy_measurement(benchmark)
+        if 'functional_c#' in benchmark or 'functional_f#' in benchmark or 'procedural_c#' in benchmark or 'procedural_f#' in benchmark or 'oop_c#' in benchmark or 'oop_f#' in benchmark:
+            continue
+        #refactor_for_energy_measurement(benchmark)
 
 
         # Start timer. If exceeds 5 min, the benchmark is probably waiting for input,
@@ -75,12 +75,12 @@ if __name__ == '__main__':
 
         # Perform energy measurement
         try:
-            subprocess.run(f'dotnet build {benchmark}', shell=True, check=True,
-                           stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL)
-            subprocess.run(f'dotnet run -p {benchmark}', shell=True, check=True,
-                           stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL)
+            subprocess.run(f'dotnet build {benchmark}', shell=True, check=True)
+                           #stdout=subprocess.DEVNULL,
+                           #stderr=subprocess.DEVNULL)
+            subprocess.run(f'dotnet run -p {benchmark}', shell=True, check=True)
+                           #stdout=subprocess.DEVNULL,
+                           #stderr=subprocess.DEVNULL)
         except TimeoutException:
             logger.info(f'Benchmark timed out: {benchmark}')
             continue
