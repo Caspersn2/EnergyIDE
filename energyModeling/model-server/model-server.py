@@ -30,6 +30,18 @@ def get_il_energy_values(items):
         ILModelDict[name] = measureDict
     return ILModelDict
 
+def get_cil_counts(methods,className, text):
+    counts = {}  # maps method/program name to IL instruction Counter
+    if methods:
+        for method_name in [className+'::'+m['StringRepresentation'].split()[1].replace('System.','') for m in methods]:
+            args = argparse.Namespace(method=method_name, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
+                                    counting_method='Simple', entry='Main(string[])', output=None)
+            counts[method_name] = main.count_instructions(args, text)
+    else:
+        args = argparse.Namespace(method=None, list=False, instruction_set='../../MLApproach/InstructionCounter/instructions.yaml',
+                                counting_method='Simple', entry='Main(string[])', output=None)
+        counts[name] = main.count_instructions(args, text)
+    return counts
 
 @routes.post('/start')
 async def get_estimate(request):
@@ -54,7 +66,7 @@ async def get_estimate(request):
         methods = current_class['Methods']
         abs_file_path = os.path.splitext(path_to_assembly)[0]
         name = os.path.split(abs_file_path)[-1]
-      
+
         # dissassemble and get il code
         subprocess.call(f'ilspycmd {path_to_assembly} -o . -il', shell=True)
         text = open(f'{name}.il').read()
