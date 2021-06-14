@@ -15,8 +15,8 @@ namespace Modeling
     {
         static void Main(string[] args)
         {
-            //var output = Manager.Test(typeof(measureClass));
-            var output = Manager.Test(typeof(testing));
+            var output = Manager.Test(typeof(measureClass));
+            //var output = Manager.Test(typeof(testing));
 
             System.IO.File.WriteAllText("output.xml", output);
             UpdateNew("output.xml");
@@ -83,22 +83,23 @@ namespace Modeling
                 if (hasAll)
                 {
                     var measurements = methodNode.SelectNodes("measurement");
-                    foreach (XmlNode measurement in measurements){
+                    foreach (XmlNode measurement in measurements)
+                    {
                         double newMean = double.Parse(measurement.SelectSingleNode("mean").InnerText);
                         var measurementName = measurement.SelectSingleNode("name").InnerText;
-                        
+
                         foreach (var dependency in dependencies)
                             newMean -= allMeans[dependency.Key][measurementName] * dependency.Value;
 
                         XmlNode newMeanNode = doc.CreateElement("mean-subtracted");
                         newMeanNode.InnerText = newMean.ToString();
                         measurement.AppendChild(newMeanNode);
-                    
+
                         // Update all means with this mean
                         var methodName = methodNode.SelectSingleNode("name").InnerText;
                         if (allMeans.ContainsKey(methodName))
                             allMeans[methodName].Add(measurementName, newMean);
-                        else 
+                        else
                             allMeans[methodName] = new Dictionary<string, double>() { { measurementName, newMean } };
                     }
 
@@ -117,6 +118,7 @@ namespace Modeling
     [MeasureClass(false, 0.05F, MeasurementType.Timer)]
     class testing
     {
+        public static int TIMES = 1000;
         private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
         {
             DynamicMethod method = new DynamicMethod(name, typeof(void), Type.EmptyTypes);
@@ -136,16 +138,44 @@ namespace Modeling
             method.Invoke(null, Type.EmptyTypes);
         }
 
-        [Measure(1000, new[] { "Empty", "Newobj", "EmptyGetMethod", "EmptyGetConstructor" })]
-        public void Callvirt()
+        [Measure(10000)]
+        public void Empty()
         {
             var (method, ilg) = newMethod();
 
-            ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
-            ilg.Emit(OpCodes.Newobj, ci);
-            var m = typeof(Fields).GetMethod("EmptyMethod");
-            ilg.EmitCall(OpCodes.Callvirt, m, null);
-            
+            for (int i = 0; i < TIMES; i++)
+            {
+
+            }
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty" })] // ox20
+        public void Ldc_I4(int value)
+        {
+            var (method, ilg) = newMethod();
+
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Pop);
+            }
+
+            runMethod(method, ilg);
+        }
+
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x58
+        public void Add(int value1, int value2)
+        {
+            var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Add);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -156,13 +186,14 @@ namespace Modeling
         public static int sfield;
         public int field { get; set; }
 
-        public void EmptyMethod(){}
-        public static void EmptyStaticMethod(){}
+        public void EmptyMethod() { }
+        public static void EmptyStaticMethod() { }
     }
 
     [MeasureClass(false, 0.005F)]
     class measureClass
     {
+        public static int TIMES = 1000;
         private (DynamicMethod, ILGenerator) newMethod(string name = "MyMethod")
         {
             DynamicMethod method = new DynamicMethod(name, typeof(void), Type.EmptyTypes);
@@ -195,6 +226,12 @@ namespace Modeling
         public void Empty()
         {
             var (method, ilg) = newMethod();
+
+            for (int i = 0; i < TIMES; i++)
+            {
+
+            }
+
             runMethod(method, ilg);
         }
 
@@ -203,7 +240,10 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            var test = ilg.DeclareLocal(typeof(int));
+            for (int i = 0; i < TIMES; i++)
+            {
+                var test = ilg.DeclareLocal(typeof(int));
+            }
 
             runMethod(method, ilg);
         }
@@ -213,7 +253,11 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            FieldInfo fi = typeof(Fields).GetField("sfield");
+            for (int i = 0; i < TIMES; i++)
+            {
+                FieldInfo fi = typeof(Fields).GetField("sfield");
+            }
+
             runMethod(method, ilg);
         }
 
@@ -222,7 +266,10 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
+            }
             runMethod(method, ilg);
         }
 
@@ -231,7 +278,10 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            MethodInfo m = typeof(Fields).GetMethod("EmptyMethod");
+            for (int i = 0; i < TIMES; i++)
+            {
+                MethodInfo m = typeof(Fields).GetMethod("EmptyMethod");
+            }
             runMethod(method, ilg);
         }
 
@@ -240,9 +290,11 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            MethodInfo m = typeof(Fields).GetMethod("EmptyStaticMethod");
-            ilg.EmitCall(OpCodes.Call, m, null);
-            
+            for (int i = 0; i < TIMES; i++)
+            {
+                MethodInfo m = typeof(Fields).GetMethod("EmptyStaticMethod");
+                ilg.EmitCall(OpCodes.Call, m, null);
+            }
             runMethod(method, ilg);
         }
 
@@ -251,11 +303,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
-            ilg.Emit(OpCodes.Newobj, ci);
-            var m = typeof(Fields).GetMethod("EmptyMethod");
-            ilg.EmitCall(OpCodes.Callvirt, m, null);
-            
+            for (int i = 0; i < TIMES; i++)
+            {
+                ConstructorInfo ci = typeof(Fields).GetConstructor(Type.EmptyTypes);
+                ilg.Emit(OpCodes.Newobj, ci);
+                var m = typeof(Fields).GetMethod("EmptyMethod");
+                ilg.EmitCall(OpCodes.Callvirt, m, null);
+            }
             runMethod(method, ilg);
         }
 
@@ -266,8 +320,13 @@ namespace Modeling
         public void Ldc_I4(int value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Pop);
+
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Pop);
+            }
+
             runMethod(method, ilg);
         }
 
@@ -275,8 +334,11 @@ namespace Modeling
         public void Ldc_I4_M1()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_M1);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_M1);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -285,8 +347,12 @@ namespace Modeling
         public void Ldc_I4_0()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_0);
-            ilg.Emit(OpCodes.Pop);
+
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_0);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -294,8 +360,11 @@ namespace Modeling
         public void Ldc_I4_1()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -303,8 +372,11 @@ namespace Modeling
         public void Ldc_I4_2()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_2);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_2);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -312,8 +384,11 @@ namespace Modeling
         public void Ldc_I4_3()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_3);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_3);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -321,8 +396,11 @@ namespace Modeling
         public void Ldc_I4_4()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_4);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_4);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -330,8 +408,11 @@ namespace Modeling
         public void Ldc_I4_5()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_5);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_5);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -339,8 +420,11 @@ namespace Modeling
         public void Ldc_I4_6()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_6);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_6);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -348,8 +432,11 @@ namespace Modeling
         public void Ldc_I4_7()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_7);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_7);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -357,8 +444,11 @@ namespace Modeling
         public void Ldc_I4_8()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_8);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_8);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
         #endregion
@@ -367,8 +457,11 @@ namespace Modeling
         public void Ldc_I4_S(sbyte value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -376,8 +469,11 @@ namespace Modeling
         public void Ldc_I8(long value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I8, value);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I8, value);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -385,8 +481,11 @@ namespace Modeling
         public void Ldc_R4(float value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_R4, value);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_R4, value);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -394,8 +493,11 @@ namespace Modeling
         public void Ldc_R8(double value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_R8, value);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_R8, value);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
         #endregion
@@ -405,10 +507,12 @@ namespace Modeling
         {
             var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg, 3); // 3 is index, should probably randomise this
-            ilg.Emit(OpCodes.Pop);
-
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldarg, 3); // 3 is index, should probably randomise this
+                ilg.Emit(OpCodes.Pop);
+            }
+            runMethod(method, ilg, new object[] { 2, 2, 2, 2, 2 });
         }
 
         [Measure(10000, new[] { "Empty" })]
@@ -416,10 +520,12 @@ namespace Modeling
         {
             var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg_0); // Arg0 is 'this'
-            ilg.Emit(OpCodes.Pop);
-
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldarg_0); // Arg0 is 'this'
+                ilg.Emit(OpCodes.Pop);
+            }
+            runMethod(method, ilg, new object[] { 2, 2, 2, 2, 2 });
         }
 
         [Measure(10000, new[] { "Empty" })]
@@ -427,10 +533,12 @@ namespace Modeling
         {
             var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg_1);
-            ilg.Emit(OpCodes.Pop);
-
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldarg_1);
+                ilg.Emit(OpCodes.Pop);
+            }
+            runMethod(method, ilg, new object[] { 2, 2, 2, 2, 2 });
         }
 
         [Measure(10000, new[] { "Empty" })]
@@ -438,10 +546,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg_2);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldarg_2);
+                ilg.Emit(OpCodes.Pop);
+            }
 
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
+            runMethod(method, ilg, new object[] { 2, 2, 2, 2, 2 });
         }
 
         [Measure(10000, new[] { "Empty" })]
@@ -449,10 +560,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg_3);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldarg_3);
+                ilg.Emit(OpCodes.Pop);
+            }
 
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
+            runMethod(method, ilg, new object[] { 2, 2, 2, 2, 2 });
         }
 
         [Measure(10000, new[] { "Empty" })]
@@ -460,10 +574,13 @@ namespace Modeling
         {
             var (method, ilg) = newMethodWithArgs();
 
-            ilg.Emit(OpCodes.Ldarg_S, 3);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldarg_S, 3);
+                ilg.Emit(OpCodes.Pop);
+            }
 
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
+            runMethod(method, ilg, new object[] { 2, 2, 2, 2, 2 });
 
         }
         #endregion
@@ -473,13 +590,15 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            var test = ilg.DeclareLocal(typeof(int));
+            for (int i = 0; i < TIMES; i++)
+            {
+                var test = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloc_0);
-            ilg.Emit(OpCodes.Pop);
-
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_0);
+                ilg.Emit(OpCodes.Ldloc_0);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -488,14 +607,16 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
+            for (int i = 0; i < TIMES; i++)
+            {
+                var test = ilg.DeclareLocal(typeof(int));
+                var test2 = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_1);
-            ilg.Emit(OpCodes.Ldloc_1);
-            ilg.Emit(OpCodes.Pop);
-
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_1);
+                ilg.Emit(OpCodes.Ldloc_1);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -504,14 +625,17 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
+            for (int i = 0; i < TIMES; i++)
+            {
+                var test = ilg.DeclareLocal(typeof(int));
+                var test2 = ilg.DeclareLocal(typeof(int));
+                var test3 = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_2);
-            ilg.Emit(OpCodes.Ldloc_2);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_2);
+                ilg.Emit(OpCodes.Ldloc_2);
+                ilg.Emit(OpCodes.Pop);
+            }
 
             runMethod(method, ilg);
         }
@@ -521,15 +645,18 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
-            var test4 = ilg.DeclareLocal(typeof(int));
+            for (int i = 0; i < TIMES; i++)
+            {
+                var test = ilg.DeclareLocal(typeof(int));
+                var test2 = ilg.DeclareLocal(typeof(int));
+                var test3 = ilg.DeclareLocal(typeof(int));
+                var test4 = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_3);
-            ilg.Emit(OpCodes.Ldloc_3);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_3);
+                ilg.Emit(OpCodes.Ldloc_3);
+                ilg.Emit(OpCodes.Pop);
+            }
 
             runMethod(method, ilg);
         }
@@ -539,12 +666,15 @@ namespace Modeling
         {
             var (method, ilg) = newMethod();
 
-            var test = ilg.DeclareLocal(typeof(int));
+            for (int i = 0; i < TIMES; i++)
+            {
+                var test = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_S, 0);
-            ilg.Emit(OpCodes.Ldloc_S, 0);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_S, 0);
+                ilg.Emit(OpCodes.Ldloc_S, 0);
+                ilg.Emit(OpCodes.Pop);
+            }
 
             runMethod(method, ilg);
         }
@@ -554,8 +684,11 @@ namespace Modeling
         public void Ldnull()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldnull);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldnull);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -563,8 +696,11 @@ namespace Modeling
         public void Ldstr(string value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldstr, value);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldstr, value);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
         #endregion
@@ -574,10 +710,13 @@ namespace Modeling
         public void Add(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Add);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Add);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -585,10 +724,13 @@ namespace Modeling
         public void Add_ovf(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Add_Ovf);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Add_Ovf);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -596,10 +738,13 @@ namespace Modeling
         public void Add_Ovf_Un(uint value1, uint value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Add_Ovf_Un);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Add_Ovf_Un);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -607,10 +752,13 @@ namespace Modeling
         public void Sub(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Sub);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Sub);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -618,10 +766,13 @@ namespace Modeling
         public void Sub_Ovf(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Sub_Ovf);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Sub_Ovf);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -629,10 +780,13 @@ namespace Modeling
         public void Sub_Ovf_Un(uint value1, uint value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Sub_Ovf_Un);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Sub_Ovf_Un);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -640,32 +794,41 @@ namespace Modeling
         public void Mul(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Mul);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Mul);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD8
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD8
         public void Mul_Ovf(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Mul_Ovf);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Mul_Ovf);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD9
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0xD9
         public void Mul_Ovf_Un(short value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Mul_Ovf_Un);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Mul_Ovf_Un);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -673,10 +836,13 @@ namespace Modeling
         public void Div(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Div);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Div);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -684,10 +850,13 @@ namespace Modeling
         public void Div_Un(uint value1, uint value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Div_Un);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Div_Un);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -695,10 +864,13 @@ namespace Modeling
         public void Dup(int value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Dup);
-            ilg.Emit(OpCodes.Pop);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Dup);
+                ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -707,9 +879,12 @@ namespace Modeling
         public void Neg(int value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Neg);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Neg);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -717,9 +892,12 @@ namespace Modeling
         public void Not(int value)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Not);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Not);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -727,10 +905,13 @@ namespace Modeling
         public void Or(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Or);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Or);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -738,10 +919,13 @@ namespace Modeling
         public void Xor(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Xor);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Xor);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -749,32 +933,41 @@ namespace Modeling
         public void Ceq(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Ceq);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Ceq);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })]
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })]
         public void And(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.And);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.And);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(10000, new []{ "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
+        [Measure(10000, new[] { "Empty", "Ldc_I4", "Ldc_I4" })] // 0x5D
         public void Rem(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Rem);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Rem);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -782,10 +975,13 @@ namespace Modeling
         public void Rem_Un(uint value1, uint value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Rem_Un);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Rem_Un);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -793,10 +989,13 @@ namespace Modeling
         public void Shl(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Shl);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Shl);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -804,10 +1003,13 @@ namespace Modeling
         public void Shr(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Shr);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Shr);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -815,10 +1017,13 @@ namespace Modeling
         public void Shr_Un(uint value1, uint value2)
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Shr_Un);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Shr_Un);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -829,8 +1034,11 @@ namespace Modeling
         public void BranchDefineLabelEmpty()
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
-            ilg.MarkLabel(end);
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
+                ilg.MarkLabel(end);
+            }
             runMethod(method, ilg);
         }
 
@@ -838,11 +1046,14 @@ namespace Modeling
         public void Br()
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Br, end);
+                ilg.Emit(OpCodes.Br, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
+            }
             runMethod(method, ilg);
         }
 
@@ -850,11 +1061,14 @@ namespace Modeling
         public void Br_S()
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Br_S, end);
+                ilg.Emit(OpCodes.Br_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
+            }
             runMethod(method, ilg);
         }
 
@@ -862,12 +1076,15 @@ namespace Modeling
         public void Brfalse(int boolValue)
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, boolValue);
-            ilg.Emit(OpCodes.Brfalse, end);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue);
+                ilg.Emit(OpCodes.Brfalse, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
+            }
             runMethod(method, ilg);
         }
 
@@ -875,12 +1092,15 @@ namespace Modeling
         public void Brfalse_S(byte boolValue)
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, boolValue);
-            ilg.Emit(OpCodes.Brfalse_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, boolValue);
+                ilg.Emit(OpCodes.Brfalse_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
+            }
             runMethod(method, ilg);
         }
 
@@ -888,12 +1108,15 @@ namespace Modeling
         public void Brtrue(int boolValue) // if 'bool' is in the parameter name, then it is either 1 or 0
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, boolValue);
-            ilg.Emit(OpCodes.Brtrue, end);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue);
+                ilg.Emit(OpCodes.Brtrue, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
+            }
             runMethod(method, ilg);
         }
 
@@ -901,12 +1124,15 @@ namespace Modeling
         public void Brtrue_S(byte boolValue)
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, boolValue);
-            ilg.Emit(OpCodes.Brtrue_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, boolValue);
+                ilg.Emit(OpCodes.Brtrue_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
+            }
             runMethod(method, ilg);
         }
 
@@ -914,14 +1140,17 @@ namespace Modeling
         public void Beq(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
-            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
-            ilg.Emit(OpCodes.Beq, end);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+                ilg.Emit(OpCodes.Beq, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -929,14 +1158,17 @@ namespace Modeling
         public void Beq_S(sbyte boolValue1, sbyte boolValue2)
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, boolValue1);
-            ilg.Emit(OpCodes.Ldc_I4_S, boolValue2);
-            ilg.Emit(OpCodes.Beq_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, boolValue1);
+                ilg.Emit(OpCodes.Ldc_I4_S, boolValue2);
+                ilg.Emit(OpCodes.Beq_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -944,14 +1176,17 @@ namespace Modeling
         public void Bge(int value1, int value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Bge, end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Bge, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -959,14 +1194,17 @@ namespace Modeling
         public void Bge_S(sbyte value1, sbyte value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Bge_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Bge_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -974,14 +1212,17 @@ namespace Modeling
         public void Bge_Un(uint value1, uint value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Bge_Un, end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Bge_Un, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -989,14 +1230,17 @@ namespace Modeling
         public void Bge_Un_S(byte value1, byte value2) // Greater than or equal to
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Bge_Un_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Bge_Un_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1004,14 +1248,17 @@ namespace Modeling
         public void Bgt(int value1, int value2) // Greater than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Bgt, end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Bgt, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1019,14 +1266,17 @@ namespace Modeling
         public void Bgt_S(sbyte value1, sbyte value2) // Greater than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Bgt_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Bgt_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1034,14 +1284,17 @@ namespace Modeling
         public void Bgt_Un(uint value1, uint value2) // Greater than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Bgt_Un, end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Bgt_Un, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1049,14 +1302,17 @@ namespace Modeling
         public void Bgt_Un_S(byte value1, byte value2) // Greater than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Bgt_Un_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Bgt_Un_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1064,13 +1320,16 @@ namespace Modeling
         public void Ble(int value1, int value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Ble, end);
-            ilg.MarkLabel(end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Ble, end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1078,13 +1337,16 @@ namespace Modeling
         public void Ble_S(sbyte value1, sbyte value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Ble_S, end);
-            ilg.MarkLabel(end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Ble_S, end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1092,13 +1354,16 @@ namespace Modeling
         public void Ble_Un(uint value1, uint value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Ble_Un, end);
-            ilg.MarkLabel(end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Ble_Un, end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1106,13 +1371,16 @@ namespace Modeling
         public void Ble_Un_S(byte value1, byte value2) // Less than or equal
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Ble_Un_S, end);
-            ilg.MarkLabel(end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Ble_Un_S, end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1120,14 +1388,17 @@ namespace Modeling
         public void Blt(int value1, int value2) // Less than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Blt, end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Blt, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1135,14 +1406,17 @@ namespace Modeling
         public void Blt_S(byte value1, byte value2) // Less than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Blt_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Blt_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1150,14 +1424,17 @@ namespace Modeling
         public void Blt_Un(uint value1, uint value2) // Less than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Blt_Un, end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Blt_Un, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1165,14 +1442,17 @@ namespace Modeling
         public void Blt_Un_S(byte value1, byte value2) // Less than
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Blt_Un_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Blt_Un_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1180,14 +1460,17 @@ namespace Modeling
         public void Bne_Un(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Ldc_I4, value2);
-            ilg.Emit(OpCodes.Bne_Un, end);
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Ldc_I4, value2);
+                ilg.Emit(OpCodes.Bne_Un, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1195,14 +1478,17 @@ namespace Modeling
         public void Bne_Un_S(sbyte value1, sbyte value2)
         {
             var (method, ilg) = newMethod();
-            var end = ilg.DefineLabel();
+            for (int i = 0; i < TIMES; i++)
+            {
+                var end = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value1);
-            ilg.Emit(OpCodes.Ldc_I4_S, value2);
-            ilg.Emit(OpCodes.Bne_Un_S, end);
+                ilg.Emit(OpCodes.Ldc_I4_S, value1);
+                ilg.Emit(OpCodes.Ldc_I4_S, value2);
+                ilg.Emit(OpCodes.Bne_Un_S, end);
 
-            ilg.MarkLabel(end);
+                ilg.MarkLabel(end);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1212,12 +1498,15 @@ namespace Modeling
         public void Cgt(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
-            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
-            ilg.Emit(OpCodes.Cgt);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+                ilg.Emit(OpCodes.Cgt);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1225,12 +1514,15 @@ namespace Modeling
         public void Cgt_Un(uint boolValue1, uint boolValue2)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
-            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
-            ilg.Emit(OpCodes.Cgt_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+                ilg.Emit(OpCodes.Cgt_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1238,11 +1530,14 @@ namespace Modeling
         public void Ckfinite(float value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_R4, value);
-            ilg.Emit(OpCodes.Ckfinite);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_R4, value);
+                ilg.Emit(OpCodes.Ckfinite);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1250,12 +1545,15 @@ namespace Modeling
         public void Clt(int boolValue1, int boolValue2)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
-            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
-            ilg.Emit(OpCodes.Clt);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+                ilg.Emit(OpCodes.Clt);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1263,12 +1561,15 @@ namespace Modeling
         public void Clt_Un(uint boolValue1, uint boolValue2)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, boolValue1);
-            ilg.Emit(OpCodes.Ldc_I4, boolValue2);
-            ilg.Emit(OpCodes.Clt_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue1);
+                ilg.Emit(OpCodes.Ldc_I4, boolValue2);
+                ilg.Emit(OpCodes.Clt_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
         #endregion
@@ -1278,11 +1579,14 @@ namespace Modeling
         public void Conv_I(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_I);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_I);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1290,11 +1594,14 @@ namespace Modeling
         public void Conv_I1(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_I1);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_I1);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1302,11 +1609,14 @@ namespace Modeling
         public void Conv_I2(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_I2);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_I2);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1314,11 +1624,14 @@ namespace Modeling
         public void Conv_I4(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_I4);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_I4);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1326,11 +1639,14 @@ namespace Modeling
         public void Conv_I8(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_I8);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_I8);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1338,11 +1654,14 @@ namespace Modeling
         public void Conv_Ovf_I(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1350,11 +1669,14 @@ namespace Modeling
         public void Conv_Ovf_I1(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I1);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I1);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1362,11 +1684,14 @@ namespace Modeling
         public void Conv_Ovf_I2(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I2);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I2);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1374,11 +1699,14 @@ namespace Modeling
         public void Conv_Ovf_I4(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I4);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I4);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1386,11 +1714,14 @@ namespace Modeling
         public void Conv_Ovf_I8(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I8);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I8);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1399,11 +1730,14 @@ namespace Modeling
         public void Conv_Ovf_I_Un(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1411,11 +1745,14 @@ namespace Modeling
         public void Conv_Ovf_I1_Un(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I1_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I1_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1423,11 +1760,14 @@ namespace Modeling
         public void Conv_Ovf_I2_Un(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I2_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I2_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1435,11 +1775,14 @@ namespace Modeling
         public void Conv_Ovf_I4_Un(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I4_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I4_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1447,11 +1790,14 @@ namespace Modeling
         public void Conv_Ovf_I8_Un(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_Ovf_I8_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_Ovf_I8_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1459,11 +1805,14 @@ namespace Modeling
         public void Conv_R_Un(uint value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Conv_R_Un);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Conv_R_Un);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1471,11 +1820,14 @@ namespace Modeling
         public void Conv_R4(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_R4);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_R4);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1483,11 +1835,14 @@ namespace Modeling
         public void Conv_R8(byte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Conv_R8);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Conv_R8);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1495,11 +1850,14 @@ namespace Modeling
         public void Conv_U(uint value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Conv_U);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Conv_U);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1507,11 +1865,14 @@ namespace Modeling
         public void Conv_U1(uint value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Conv_U1);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Conv_U1);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1519,11 +1880,14 @@ namespace Modeling
         public void Conv_U2(uint value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Conv_U2);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Conv_U2);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1531,11 +1895,14 @@ namespace Modeling
         public void Conv_U4(uint value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Conv_U4);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Conv_U4);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1543,11 +1910,14 @@ namespace Modeling
         public void Conv_U8(uint value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I8, value);
-            ilg.Emit(OpCodes.Conv_U1);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I8, value);
+                ilg.Emit(OpCodes.Conv_U1);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1558,9 +1928,12 @@ namespace Modeling
         public void Stloc(int value)
         {
             var (method, ilg) = newMethod();
-            var test = ilg.DeclareLocal(typeof(int));
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc, 0);
+            for (int i = 0; i < TIMES; i++)
+            {
+                var test = ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc, 0);
+            }
             runMethod(method, ilg);
         }
 
@@ -1568,12 +1941,15 @@ namespace Modeling
         public void Stloc_0(int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            var test = ilg.DeclareLocal(typeof(int));
+                var test = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_0);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_0);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1581,13 +1957,16 @@ namespace Modeling
         public void Stloc_1(int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
+                var test = ilg.DeclareLocal(typeof(int));
+                var test2 = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_1);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_1);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1595,14 +1974,17 @@ namespace Modeling
         public void Stloc_2(int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
+                var test = ilg.DeclareLocal(typeof(int));
+                var test2 = ilg.DeclareLocal(typeof(int));
+                var test3 = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_2);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_2);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1610,15 +1992,18 @@ namespace Modeling
         public void Stloc_3(int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            var test = ilg.DeclareLocal(typeof(int));
-            var test2 = ilg.DeclareLocal(typeof(int));
-            var test3 = ilg.DeclareLocal(typeof(int));
-            var test4 = ilg.DeclareLocal(typeof(int));
+                var test = ilg.DeclareLocal(typeof(int));
+                var test2 = ilg.DeclareLocal(typeof(int));
+                var test3 = ilg.DeclareLocal(typeof(int));
+                var test4 = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Stloc_3);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Stloc_3);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1626,12 +2011,15 @@ namespace Modeling
         public void Stloc_S(sbyte value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            var test = ilg.DeclareLocal(typeof(int));
+                var test = ilg.DeclareLocal(typeof(int));
 
-            ilg.Emit(OpCodes.Ldc_I4_S, value);
-            ilg.Emit(OpCodes.Stloc_S, 0);
+                ilg.Emit(OpCodes.Ldc_I4_S, value);
+                ilg.Emit(OpCodes.Stloc_S, 0);
 
+            }
             runMethod(method, ilg);
         }
         #endregion
@@ -1640,6 +2028,7 @@ namespace Modeling
         public void Stind_I(int value1, int value2)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++) {
             //Push Address
             ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4, value1);
@@ -1652,6 +2041,7 @@ namespace Modeling
             //Store value at adress
             ilg.Emit(OpCodes.Stind_I);
 
+            }
             runMethod(method, ilg);
         } */
 
@@ -1659,18 +2049,21 @@ namespace Modeling
         public void Stind_I1(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            //Push Address
-            ilg.DeclareLocal(typeof(int));
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloca, 0);
+            for (int i = 0; i < TIMES; i++)
+            {
+                //Push Address
+                ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Stloc_0);
+                ilg.Emit(OpCodes.Ldloca, 0);
 
-            //Push Value
-            ilg.Emit(OpCodes.Ldc_I4, value2);
+                //Push Value
+                ilg.Emit(OpCodes.Ldc_I4, value2);
 
-            //Store value at adress
-            ilg.Emit(OpCodes.Stind_I1);
+                //Store value at adress
+                ilg.Emit(OpCodes.Stind_I1);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1678,18 +2071,21 @@ namespace Modeling
         public void Stind_I2(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            //Push Address
-            ilg.DeclareLocal(typeof(int));
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloca, 0);
+            for (int i = 0; i < TIMES; i++)
+            {
+                //Push Address
+                ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Stloc_0);
+                ilg.Emit(OpCodes.Ldloca, 0);
 
-            //Push Value
-            ilg.Emit(OpCodes.Ldc_I4, value2);
+                //Push Value
+                ilg.Emit(OpCodes.Ldc_I4, value2);
 
-            //Store value at adress
-            ilg.Emit(OpCodes.Stind_I2);
+                //Store value at adress
+                ilg.Emit(OpCodes.Stind_I2);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1697,18 +2093,21 @@ namespace Modeling
         public void Stind_I4(int value1, int value2)
         {
             var (method, ilg) = newMethod();
-            //Push Address
-            ilg.DeclareLocal(typeof(int));
-            ilg.Emit(OpCodes.Ldc_I4, value1);
-            ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloca, 0);
+            for (int i = 0; i < TIMES; i++)
+            {
+                //Push Address
+                ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldc_I4, value1);
+                ilg.Emit(OpCodes.Stloc_0);
+                ilg.Emit(OpCodes.Ldloca, 0);
 
-            //Push Value
-            ilg.Emit(OpCodes.Ldc_I4, value2);
+                //Push Value
+                ilg.Emit(OpCodes.Ldc_I4, value2);
 
-            //Store value at adress
-            ilg.Emit(OpCodes.Stind_I4);
+                //Store value at adress
+                ilg.Emit(OpCodes.Stind_I4);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1716,6 +2115,7 @@ namespace Modeling
         public void Stind_I8(int value1, int value2)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++) {
             //Push Address
             ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4, value1);
@@ -1728,6 +2128,7 @@ namespace Modeling
             //Store value at adress
             ilg.Emit(OpCodes.Stind_I8);
 
+            }
             runMethod(method, ilg);
         }
  */
@@ -1735,18 +2136,21 @@ namespace Modeling
         public void Stind_R4(float value1, float value2)
         {
             var (method, ilg) = newMethod();
-            //Push Address
-            ilg.DeclareLocal(typeof(float));
-            ilg.Emit(OpCodes.Ldc_R4, value1);
-            ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloca, 0);
+            for (int i = 0; i < TIMES; i++)
+            {
+                //Push Address
+                ilg.DeclareLocal(typeof(float));
+                ilg.Emit(OpCodes.Ldc_R4, value1);
+                ilg.Emit(OpCodes.Stloc_0);
+                ilg.Emit(OpCodes.Ldloca, 0);
 
-            //Push Value
-            ilg.Emit(OpCodes.Ldc_R4, value2);
+                //Push Value
+                ilg.Emit(OpCodes.Ldc_R4, value2);
 
-            //Store value at adress
-            ilg.Emit(OpCodes.Stind_R4);
+                //Store value at adress
+                ilg.Emit(OpCodes.Stind_R4);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1754,19 +2158,22 @@ namespace Modeling
         public void Stind_R8(double value1, double value2)
         {
             var (method, ilg) = newMethod();
-            //Push Address
-            ilg.DeclareLocal(typeof(double));
-            ilg.Emit(OpCodes.Ldc_R8, value1);
-            ilg.Emit(OpCodes.Stloc_0);
-            ilg.Emit(OpCodes.Ldloca, 0);
+            for (int i = 0; i < TIMES; i++)
+            {
+                //Push Address
+                ilg.DeclareLocal(typeof(double));
+                ilg.Emit(OpCodes.Ldc_R8, value1);
+                ilg.Emit(OpCodes.Stloc_0);
+                ilg.Emit(OpCodes.Ldloca, 0);
 
-            //Push Value
-            ilg.Emit(OpCodes.Ldc_R8, value2);
+                //Push Value
+                ilg.Emit(OpCodes.Ldc_R8, value2);
 
-            //Store value at adress
-            ilg.Emit(OpCodes.Stind_R8);
+                //Store value at adress
+                ilg.Emit(OpCodes.Stind_R8);
 
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1776,20 +2183,23 @@ namespace Modeling
         public void Stelem(MeasurementTesting.Manager.PosInt length, int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem, typeof(int));
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem, typeof(int));
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1797,20 +2207,23 @@ namespace Modeling
         public void Stelem_I(MeasurementTesting.Manager.PosInt length, int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem_I);
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem_I);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1818,60 +2231,69 @@ namespace Modeling
         public void Stelem_I1(MeasurementTesting.Manager.PosInt length, int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem_I1);
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem_I1);
 
+            }
             runMethod(method, ilg);
         }
         [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4", "Ldc_I4" })]
         public void Stelem_I2(MeasurementTesting.Manager.PosInt length, int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem_I2);
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem_I2);
 
+            }
             runMethod(method, ilg);
         }
         [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4", "Ldc_I4" })]
         public void Stelem_I4(MeasurementTesting.Manager.PosInt length, int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem_I4);
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem_I4);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1879,20 +2301,23 @@ namespace Modeling
         public void Stelem_I8(MeasurementTesting.Manager.PosInt length, long value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(long));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(long));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem_I8);
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem_I8);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1900,20 +2325,23 @@ namespace Modeling
         public void Stelem_R4(MeasurementTesting.Manager.PosInt length, float value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(float));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(float));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_R4, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_R4, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem_R4);
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem_R4);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1921,20 +2349,23 @@ namespace Modeling
         public void Stelem_R8(MeasurementTesting.Manager.PosInt length, double value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, typeof(double));
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, typeof(double));
 
-            //An index value, index, to an element in array is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, (int)(length.i/2));
+                //An index value, index, to an element in array is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, (int)(length.i / 2));
 
-            //A value of the type specified in the instruction is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_R8, value);
+                //A value of the type specified in the instruction is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_R8, value);
 
-            //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
-            ilg.Emit(OpCodes.Stelem_R8);
+                //The value, the index, and the array reference are popped from the stack; the value is put into the array element at the given index.
+                ilg.Emit(OpCodes.Stelem_R8);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1946,13 +2377,16 @@ namespace Modeling
         public void Stsfld(int value)
         {
             var (method, ilg) = newMethod();
-            //Get static field and push value
-            FieldInfo fi = typeof(Fields).GetField("sfield");
-            ilg.Emit(OpCodes.Ldc_I4, value);
+            for (int i = 0; i < TIMES; i++)
+            {
+                //Get static field and push value
+                FieldInfo fi = typeof(Fields).GetField("sfield");
+                ilg.Emit(OpCodes.Ldc_I4, value);
 
-            //Store value in static field
-            ilg.Emit(OpCodes.Stsfld, fi);
+                //Store value in static field
+                ilg.Emit(OpCodes.Stsfld, fi);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -1960,250 +2394,292 @@ namespace Modeling
         public void Starg(int value)
         {
             var (method, ilg) = newMethodWithArgs();
-            //The value currently on top of the stack is popped and placed in argument slot num.
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Starg, 0);
-
-            runMethod(method, ilg, new object[] {2,2,2,2,2});
+            for (int i = 0; i < TIMES; i++)
+            {
+                //The value currently on top of the stack is popped and placed in argument slot num.
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Starg, 0);
+            }
+            runMethod(method, ilg, new object[] { 2, 2, 2, 2, 2 });
         }
         #endregion
         #endregion
         #region Array look-up
-        [Measure(1000, new []{ "Empty", "Ldc_I4" })]
-        public void Newarr(MeasurementTesting.Manager.PosInt length, Type type){
+        [Measure(1000, new[] { "Empty", "Ldc_I4" })]
+        public void Newarr(MeasurementTesting.Manager.PosInt length, Type type)
+        {
             var (method, ilg) = newMethod();
-    
-            ilg.Emit(OpCodes.Ldc_I4, length.i);
-            ilg.Emit(OpCodes.Newarr, type);
-            ilg.Emit(OpCodes.Pop);
-            
+            for (int i = 0; i < TIMES; i++)
+            {
+
+                ilg.Emit(OpCodes.Ldc_I4, length.i);
+                ilg.Emit(OpCodes.Newarr, type);
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_8", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_8", "Newarr", "Ldc_I4_1" })]
         public void Ldelem()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4_8);
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4_8);
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem, typeof(int));
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem, typeof(int));
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_2", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_2", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_I()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4_2);
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4_2);
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_I);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_I);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4_S", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4_S", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_I1()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4_S, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(byte));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4_S, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(byte));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_I1);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_I1);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_I2()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(Int16));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(Int16));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_I2);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_I2);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_I4()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(int));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(int));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_I4);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_I4);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_I8()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(long));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(long));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_I8);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_I8);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_R4()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(float));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(float));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_R4);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_R4);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_R8()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(double));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(double));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_R8);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_R8);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_Ref()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(Fields));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(Fields));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_Ref);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_Ref);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_U1()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(byte));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(byte));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_U1);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_U1);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_U2()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(UInt16));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(UInt16));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_U2);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_U2);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
 
-        [Measure(1000, new []{ "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1"})]
+        [Measure(1000, new[] { "Empty", "Ldc_I4", "Newarr", "Ldc_I4_1" })]
         public void Ldelem_U4()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            // Create array of length 2
-            ilg.Emit(OpCodes.Ldc_I4, 10);
-            ilg.Emit(OpCodes.Newarr, typeof(uint));
+                // Create array of length 2
+                ilg.Emit(OpCodes.Ldc_I4, 10);
+                ilg.Emit(OpCodes.Newarr, typeof(uint));
 
-            // Push index
-            ilg.Emit(OpCodes.Ldc_I4_1);
-            // Pop index and array. Push index value onto the stack
-            ilg.Emit(OpCodes.Ldelem_U4);
-            
-            ilg.Emit(OpCodes.Pop);
+                // Push index
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                // Pop index and array. Push index value onto the stack
+                ilg.Emit(OpCodes.Ldelem_U4);
 
+                ilg.Emit(OpCodes.Pop);
+
+            }
             runMethod(method, ilg);
         }
         #endregion
@@ -2212,7 +2688,10 @@ namespace Modeling
         public void Nop()
         {
             var (method, ilg) = newMethod();
-            ilg.Emit(OpCodes.Nop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ilg.Emit(OpCodes.Nop);
+            }
             runMethod(method, ilg);
         }
 
@@ -2220,9 +2699,12 @@ namespace Modeling
         public void Break()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Break);
+                ilg.Emit(OpCodes.Break);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -2230,21 +2712,29 @@ namespace Modeling
         public void Sizeof(Type type)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Sizeof, type);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Sizeof, type);
+                ilg.Emit(OpCodes.Pop);
+            }
+            runMethod(method, ilg);
         }
+
         [Measure(10000, new[] { "Empty", "Ldc_I4" })] // 0x38
         public void Ldlen(MeasurementTesting.Manager.PosInt length, Type type)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            //An object reference to an array, array, is pushed onto the stack.
-            ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
-            ilg.Emit(OpCodes.Newarr, type);
+                //An object reference to an array, array, is pushed onto the stack.
+                ilg.Emit(OpCodes.Ldc_I4, length.i); // Length
+                ilg.Emit(OpCodes.Newarr, type);
 
-            ilg.Emit(OpCodes.Ldlen);
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldlen);
+                ilg.Emit(OpCodes.Pop);
+            }
             runMethod(method, ilg);
         }
 
@@ -2252,11 +2742,14 @@ namespace Modeling
         public void Box(int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Box, typeof(int));
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Box, typeof(int));
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -2264,12 +2757,15 @@ namespace Modeling
         public void Unbox(int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Box, typeof(int));
-            ilg.Emit(OpCodes.Unbox, typeof(int));
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Box, typeof(int));
+                ilg.Emit(OpCodes.Unbox, typeof(int));
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -2277,12 +2773,15 @@ namespace Modeling
         public void Unbox_Any(int value)
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            ilg.Emit(OpCodes.Ldc_I4, value);
-            ilg.Emit(OpCodes.Box, typeof(int));
-            ilg.Emit(OpCodes.Unbox_Any, typeof(int));
-            ilg.Emit(OpCodes.Pop);
+                ilg.Emit(OpCodes.Ldc_I4, value);
+                ilg.Emit(OpCodes.Box, typeof(int));
+                ilg.Emit(OpCodes.Unbox_Any, typeof(int));
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -2290,10 +2789,13 @@ namespace Modeling
         public void Newobj()
         {
             var (method, ilg) = newMethod();
-            ConstructorInfo fi = typeof(Fields).GetConstructor(Type.EmptyTypes);
-            ilg.Emit(OpCodes.Newobj, fi);
-            ilg.Emit(OpCodes.Pop);
+            for (int i = 0; i < TIMES; i++)
+            {
+                ConstructorInfo fi = typeof(Fields).GetConstructor(Type.EmptyTypes);
+                ilg.Emit(OpCodes.Newobj, fi);
+                ilg.Emit(OpCodes.Pop);
 
+            }
             runMethod(method, ilg);
         }
 
@@ -2301,9 +2803,12 @@ namespace Modeling
         public void Jmp()
         {
             var (method, ilg) = newMethod();
+            for (int i = 0; i < TIMES; i++)
+            {
 
-            MethodInfo mi = typeof(Fields).GetMethod("EmptyStaticMethod");
-            ilg.Emit(OpCodes.Jmp, mi);
+                MethodInfo mi = typeof(Fields).GetMethod("EmptyStaticMethod");
+                ilg.Emit(OpCodes.Jmp, mi);
+            }
             runMethod(method, ilg);
         }
         #endregion
