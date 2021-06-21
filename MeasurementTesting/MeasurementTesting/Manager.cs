@@ -62,6 +62,10 @@ namespace MeasurementTesting
             TestRunner(type, output);
 
             Progress.Done = true;
+
+            // Devides the output by 1000.
+            output.methodsCalled.ForEach(m => m.Measurements.ForEach(me => me.Mean = me.Mean / 1000));
+
             Progress.Output = output.ToString();
             return output.ToString();
         }
@@ -159,7 +163,7 @@ namespace MeasurementTesting
                 
                 if (methodProgress == default(MethodProgress))
                 {
-                    Console.WriteLine($"The method {method.Name} could not be found");
+                    //Console.WriteLine($"The method {method.Name} could not be found");
                     continue;
                 }
 
