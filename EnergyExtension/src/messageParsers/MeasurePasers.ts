@@ -52,6 +52,7 @@ export class Measure {
                 if (status.Done) {
                     this.stopProgress = status.Done;
                     webviewview.webview.postMessage({ command: 'done', value: status });
+                    webviewview.webview.postMessage({ command: 'progress', value: status });
                     if (status.Output) {
                         this.openOutput(status.Output, "XML");
                     }
